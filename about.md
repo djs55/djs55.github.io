@@ -4,15 +4,17 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
+I currently work for
+[Docker](https://www.docker.com/) in the UK on
+[Docker for Mac](https://www.docker.com/docker-mac)
+and
+[Docker for Windows](https://www.docker.com/docker-windows).
+I maintain some
+[OCaml packages](https://opam.ocaml.org/)
+and work from-time-to-time on the
+[Mirage unikernel](https://mirage.io/).
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
+My main website is [http://dave.recoil.org/](http://dave.recoil.org/).
 
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
+My github page is [https://github.com/djs55](https://github.com/djs55).
 
-
-[jekyll-organization]: https://github.com/jekyll
