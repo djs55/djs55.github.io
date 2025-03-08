@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLOS Network Visualization with Three.js</title>
+    <title>5-Stage CLOS Network Visualization with Three.js</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -11,6 +11,7 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.js"></script>
     <script>
         // Scene setup
         const scene = new THREE.Scene();
@@ -19,7 +20,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
         // Camera position
-        camera.position.set(0, 20, 50);
+        camera.position.set(0, 20, 80);
         camera.lookAt(0, 0, 0);
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040);
@@ -27,23 +28,40 @@
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
-        // CLOS Network Parameters
-        const ingressNodes = 8;  // Number of ingress nodes
-        const middleNodes = 8;  // Number of middle nodes (for non-blocking, could be >= ingressNodes)
-        const egressNodes = 8;  // Number of egress nodes
-        const nodeSize = 2;     // Size of each cube
-        const spacing = 10;     // Spacing between nodes
+        // OrbitControls for mouse rotation
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableRotate = true;   // Allow rotation
+        controls.enablePan = false;     // Disable panning
+        controls.enableZoom = false;    // Disable zooming
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,   // Left-click to rotate
+            MIDDLE: null,               // Disable middle click
+            RIGHT: null                 // Disable right click
+        };
+        // CLOS Network Parameters (5 stages)
+        const ingressNodes = 4;  // Ingress stage
+        const middle1Nodes = 3;  // First middle stage
+        const middle2Nodes = 3;  // Second middle stage
+        const middle3Nodes = 3;  // Third middle stage
+        const egressNodes = 4;   // Egress stage
+        const nodeSize = 2;      // Size of each cube
+        const spacing = 10;      // Vertical spacing between nodes
+        const stageSpacing = 20; // Horizontal spacing between stages
         // Store node positions and objects
         const nodes = {
             ingress: [],
-            middle: [],
+            middle1: [],
+            middle2: [],
+            middle3: [],
             egress: []
         };
-        // Create cube geometry and material
+        // Create cube geometry and materials
         const geometry = new THREE.BoxGeometry(nodeSize, nodeSize, nodeSize);
-        const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red for ingress
-        const middleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });  // Green for middle
-        const egressMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });  // Blue for egress
+        const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
+        const middle1Material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green
+        const middle2Material = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow
+        const middle3Material = new THREE.MeshBasicMaterial({ color: 0x00ffff }); // Cyan
+        const egressMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });  // Blue
         // Function to create a cube node
         function createNode(x, y, z, material) {
             const cube = new THREE.Mesh(geometry, material);
@@ -51,56 +69,79 @@
             scene.add(cube);
             return cube;
         }
-        // Place ingress nodes (left side)
+        // Place ingress nodes (leftmost)
         for (let i = 0; i < ingressNodes; i++) {
-            const x = -spacing * 2;
+            const x = -stageSpacing * 2;
             const y = (i - (ingressNodes - 1) / 2) * spacing;
             const z = 0;
             nodes.ingress.push(createNode(x, y, z, ingressMaterial));
         }
-        // Place middle nodes (center)
-        for (let i = 0; i < middleNodes; i++) {
-            const x = 0;
-            const y = (i - (middleNodes - 1) / 2) * spacing;
+        // Place middle1 nodes
+        for (let i = 0; i < middle1Nodes; i++) {
+            const x = -stageSpacing;
+            const y = (i - (middle1Nodes - 1) / 2) * spacing;
             const z = 0;
-            nodes.middle.push(createNode(x, y, z, middleMaterial));
+            nodes.middle1.push(createNode(x, y, z, middle1Material));
         }
-        // Place egress nodes (right side)
+        // Place middle2 nodes
+        for (let i = 0; i < middle2Nodes; i++) {
+            const x = 0;
+            const y = (i - (middle2Nodes - 1) / 2) * spacing;
+            const z = 0;
+            nodes.middle2.push(createNode(x, y, z, middle2Material));
+        }
+        // Place middle3 nodes
+        for (let i = 0; i < middle3Nodes; i++) {
+            const x = stageSpacing;
+            const y = (i - (middle3Nodes - 1) / 2) * spacing;
+            const z = 0;
+            nodes.middle3.push(createNode(x, y, z, middle3Material));
+        }
+        // Place egress nodes (rightmost)
         for (let i = 0; i < egressNodes; i++) {
-            const x = spacing * 2;
+            const x = stageSpacing * 2;
             const y = (i - (egressNodes - 1) / 2) * spacing;
             const z = 0;
             nodes.egress.push(createNode(x, y, z, egressMaterial));
         }
         // Draw edges (lines) between stages
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-        // Ingress to Middle connections (fully connected)
+        // Ingress to Middle1
         for (let ingress of nodes.ingress) {
-            for (let middle of nodes.middle) {
-                const points = [];
-                points.push(ingress.position);
-                points.push(middle.position);
+            for (let middle1 of nodes.middle1) {
+                const points = [ingress.position, middle1.position];
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                const line = new THREE.Line(lineGeometry, lineMaterial);
-                scene.add(line);
+                scene.add(new THREE.Line(lineGeometry, lineMaterial));
             }
         }
-        // Middle to Egress connections (fully connected)
-        for (let middle of nodes.middle) {
-            for (let egress of nodes.egress) {
-                const points = [];
-                points.push(middle.position);
-                points.push(egress.position);
+        // Middle1 to Middle2
+        for (let middle1 of nodes.middle1) {
+            for (let middle2 of nodes.middle2) {
+                const points = [middle1.position, middle2.position];
                 const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                const line = new THREE.Line(lineGeometry, lineMaterial);
-                scene.add(line);
+                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+            }
+        }
+        // Middle2 to Middle3
+        for (let middle2 of nodes.middle2) {
+            for (let middle3 of nodes.middle3) {
+                const points = [middle2.position, middle3.position];
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+            }
+        }
+        // Middle3 to Egress
+        for (let middle3 of nodes.middle3) {
+            for (let egress of nodes.egress) {
+                const points = [middle3.position, egress.position];
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                scene.add(new THREE.Line(lineGeometry, lineMaterial));
             }
         }
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            // Rotate the entire scene for a dynamic view
-            scene.rotation.y += 0.005;
+            controls.update(); // Update controls for mouse interaction
             renderer.render(scene, camera);
         }
         animate();
