@@ -20,7 +20,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
         // Camera position (angled to better see the orbit)
-        camera.position.set(40, 40, 80);
+        camera.position.set(0, 20, 80);
         camera.lookAt(0, 0, 0);
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040);
@@ -140,6 +140,7 @@
         // Mouse interaction for orbiting middle nodes around X-axis
         let isDragging = false;
         let previousMouseX = 0;
+        let previousMouseY = 0;
         let twistAngle = 0; // Rotation angle in radians
         const maxTwist = Math.PI / 2; // 90 degrees
         renderer.domElement.addEventListener('contextmenu', (event) => {
@@ -149,13 +150,14 @@
             if (event.button === 2) { // Right-click
                 isDragging = true;
                 previousMouseX = event.clientX;
+                previousMouseY = event.clientY;
             }
         });
         renderer.domElement.addEventListener('mousemove', (event) => {
             if (isDragging) {
-                const deltaX = event.clientX - previousMouseX;
-                const sensitivity = 0.005; // Adjust rotation speed
-                twistAngle += deltaX * sensitivity;
+                const deltaY = event.clientY - previousMouseY;
+                const sensitivity = 0.0001; // Adjust rotation speed
+                twistAngle += deltaY * sensitivity;
                 twistAngle = Math.max(-maxTwist, Math.min(maxTwist, twistAngle)); // Clamp between -90 and 90 degrees
                 // Orbit middle nodes around X-axis
                 for (let i = 0; i < nodes.middle1.length; i++) {
