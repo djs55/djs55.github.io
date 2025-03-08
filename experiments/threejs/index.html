@@ -12,15 +12,15 @@
 <body>
     <script type="module">
         import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
-         // Scene setup
-         const scene = new THREE.Scene();
+        // Scene setup
+        const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Camera position (angled to better see the orbit and connections)
-        camera.position.set(0, 20, 80);
+        // Camera position (side view to see triangular shape)
+        camera.position.set(0, 40, 100); // Adjusted for side view
         camera.lookAt(0, 0, 0);
 
         // Lighting
@@ -30,7 +30,7 @@
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
 
-        // CLOS Network Parameters (5 stages, 8 nodes each)
+        // CLOS Network Parameters
         const nodesPerLayer = 8;  // 8 nodes per stage
         const inputsPerNode = 2;  // 2 inputs per node
         const outputsPerNode = 2; // 2 outputs per node
@@ -52,7 +52,7 @@
             egress: []
         };
 
-        // Store initial positions for orbiting
+        // Store initial positions for twisting
         const initialPositions = {
             middle1: [],
             middle2: [],
@@ -145,7 +145,6 @@
             const middle1Group = Math.floor(i / 2); // Middle1 groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
             const middle2Group = Math.floor(middle1Group / 2); // Map to middle2 groups: 0-1 → group 0 (0-3), 2-3 → group 1 (4-7)
             const baseIndex = middle2Group * 4; // Start of the group in middle2
-            // Connect to 2 nodes within the group (e.g., first 2 nodes of the group)
             const target1 = baseIndex + (i % 2); // Alternate within the group
             const target2 = baseIndex + ((i % 2) + 2) % 4; // Second connection within the group
             lines.push(createLine(middle1, nodes.middle2[target1]));
@@ -155,30 +154,25 @@
         // Middle2 to Middle3: 1 group of 8
         for (let i = 0; i < nodesPerLayer; i++) {
             const middle2 = nodes.middle2[i];
-            const middle2Group = Math.floor(i / 4); // Middle2 groups: 0-3 (group 0), 4-7 (group 1)
-            // Since middle3 is one group, connect to 2 nodes in middle3
-            // Use a pattern to distribute connections: connect to nodes i and (i+4) % 8
             const target1 = i;
             const target2 = (i + 4) % nodesPerLayer;
             lines.push(createLine(middle2, nodes.middle3[target1]));
             lines.push(createLine(middle2, nodes.middle3[target2]));
         }
 
-        // Middle3 to Egress: Distribute connections to ensure 2 inputs per egress node
+        // Middle3 to Egress
         for (let i = 0; i < nodesPerLayer; i++) {
             const middle3 = nodes.middle3[i];
-            // Connect to 2 egress nodes: i and (i+4) % 8
             const target1 = i;
             const target2 = (i + 4) % nodesPerLayer;
             lines.push(createLine(middle3, nodes.egress[target1]));
             lines.push(createLine(middle3, nodes.egress[target2]));
         }
 
-        // Mouse interaction for orbiting middle nodes around X-axis
+        // Mouse interaction for twisting middle nodes around group centers
         let isDragging = false;
         let previousMouseX = 0;
-        let twistAngle = 0; // Rotation angle in radians
-        const maxTwist = Math.PI / 2; // 90 degrees
+        let twistAngle = 0; // Twist angle in radians (0 to π/2)
 
         renderer.domElement.addEventListener('contextmenu', (event) => {
             event.preventDefault(); // Prevent right-click context menu
@@ -194,25 +188,46 @@
         renderer.domElement.addEventListener('mousemove', (event) => {
             if (isDragging) {
                 const deltaX = event.clientX - previousMouseX;
-                const sensitivity = 0.005; // Adjust rotation speed
+                const sensitivity = 0.005; // Adjust twist speed
                 twistAngle += deltaX * sensitivity;
-                twistAngle = Math.max(-maxTwist, Math.min(maxTwist, twistAngle)); // Clamp between -90 and 90 degrees
+                twistAngle = Math.max(0, Math.min(Math.PI / 2, twistAngle)); // Clamp from 0 to 90 degrees
 
-                // Orbit middle nodes around X-axis
-                for (let i = 0; i < nodes.middle1.length; i++) {
-                    const pos = initialPositions.middle1[i].clone();
-                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
-                    nodes.middle1[i].position.copy(rotatedPos);
+                // Calculate group centers and rotate nodes
+                // Middle1: 4 groups of 2
+                for (let i = 0; i < nodesPerLayer; i++) {
+                    const groupIndex = Math.floor(i / 2);
+                    const isFirstInGroup = i % 2 === 0;
+                    const initialPos = initialPositions.middle1[i].clone();
+                    const centerY = (initialPositions.middle1[groupIndex * 2].y + initialPositions.middle1[groupIndex * 2 + 1].y) / 2;
+                    const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                    const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    const offsetX = (isFirstInGroup ? -spacing / 2 : spacing / 2) * Math.sin(twistAngle); // Horizontal spread
+                    //rotatedPos.x += offsetX;
+                    nodes.middle1[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
                 }
-                for (let i = 0; i < nodes.middle2.length; i++) {
-                    const pos = initialPositions.middle2[i].clone();
-                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
-                    nodes.middle2[i].position.copy(rotatedPos);
+
+                // Middle2: 2 groups of 4
+                for (let i = 0; i < nodesPerLayer; i++) {
+                    const groupIndex = Math.floor(i / 4);
+                    const posInGroup = i % 4;
+                    const initialPos = initialPositions.middle2[i].clone();
+                    const centerY = (initialPositions.middle2[groupIndex * 4].y + initialPositions.middle2[groupIndex * 4 + 3].y) / 2;
+                    const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                    const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    const offsetX = ((posInGroup - 1.5) * spacing) * Math.sin(twistAngle); // Wider horizontal spread
+                    //rotatedPos.x += offsetX;
+                    nodes.middle2[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
                 }
-                for (let i = 0; i < nodes.middle3.length; i++) {
-                    const pos = initialPositions.middle3[i].clone();
-                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
-                    nodes.middle3[i].position.copy(rotatedPos);
+
+                // Middle3: 1 group of 8
+                for (let i = 0; i < nodesPerLayer; i++) {
+                    const initialPos = initialPositions.middle3[i].clone();
+                    const centerY = (initialPositions.middle3[0].y + initialPositions.middle3[7].y) / 2;
+                    const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                    const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
+                    //rotatedPos.x += offsetX;
+                    nodes.middle3[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
                 }
 
                 // Update line positions
