@@ -10,9 +10,9 @@
     </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/examples/js/controls/OrbitControls.js"></script>
-    <script>
+    <script type="module">
+import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
+import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/controls/OrbitControls.js";
         // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -29,7 +29,7 @@
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
         // OrbitControls for mouse rotation
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableRotate = true;   // Allow rotation
         controls.enablePan = false;     // Disable panning
         controls.enableZoom = false;    // Disable zooming
