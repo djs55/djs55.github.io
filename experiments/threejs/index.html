@@ -12,13 +12,15 @@
 <body>
     <script type="module">
         import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
+
+        // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        // Camera position
-        camera.position.set(0, 20, 80);
+        // Camera position (angled to better see the orbit)
+        camera.position.set(40, 40, 80);
         camera.lookAt(0, 0, 0);
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040);
@@ -43,6 +45,12 @@
             middle3: [],
             egress: []
         };
+        // Store initial positions for orbiting
+        const initialPositions = {
+            middle1: [],
+            middle2: [],
+            middle3: []
+        };
         // Create cube geometry and materials
         const geometry = new THREE.BoxGeometry(nodeSize, nodeSize, nodeSize);
         const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
@@ -64,26 +72,29 @@
             const z = 0;
             nodes.ingress.push(createNode(x, y, z, ingressMaterial));
         }
-        // Place middle1 nodes
+        // Place middle1 nodes and store initial positions
         for (let i = 0; i < middle1Nodes; i++) {
             const x = -stageSpacing;
             const y = (i - (middle1Nodes - 1) / 2) * spacing;
             const z = 0;
             nodes.middle1.push(createNode(x, y, z, middle1Material));
+            initialPositions.middle1.push(new THREE.Vector3(x, y, z));
         }
-        // Place middle2 nodes
+        // Place middle2 nodes and store initial positions
         for (let i = 0; i < middle2Nodes; i++) {
             const x = 0;
             const y = (i - (middle2Nodes - 1) / 2) * spacing;
             const z = 0;
             nodes.middle2.push(createNode(x, y, z, middle2Material));
+            initialPositions.middle2.push(new THREE.Vector3(x, y, z));
         }
-        // Place middle3 nodes
+        // Place middle3 nodes and store initial positions
         for (let i = 0; i < middle3Nodes; i++) {
             const x = stageSpacing;
             const y = (i - (middle3Nodes - 1) / 2) * spacing;
             const z = 0;
             nodes.middle3.push(createNode(x, y, z, middle3Material));
+            initialPositions.middle3.push(new THREE.Vector3(x, y, z));
         }
         // Place egress nodes (rightmost)
         for (let i = 0; i < egressNodes; i++) {
@@ -126,7 +137,7 @@
                 lines.push(createLine(middle3, egress));
             }
         }
-        // Mouse interaction for twisting middle nodes around Z-axis
+        // Mouse interaction for orbiting middle nodes around X-axis
         let isDragging = false;
         let previousMouseX = 0;
         let twistAngle = 0; // Rotation angle in radians
@@ -146,10 +157,22 @@
                 const sensitivity = 0.005; // Adjust rotation speed
                 twistAngle += deltaX * sensitivity;
                 twistAngle = Math.max(-maxTwist, Math.min(maxTwist, twistAngle)); // Clamp between -90 and 90 degrees
-                // Apply rotation to middle nodes around Z-axis
-                nodes.middle1.forEach(node => node.rotation.z = twistAngle);
-                nodes.middle2.forEach(node => node.rotation.z = twistAngle);
-                nodes.middle3.forEach(node => node.rotation.z = twistAngle);
+                // Orbit middle nodes around X-axis
+                for (let i = 0; i < nodes.middle1.length; i++) {
+                    const pos = initialPositions.middle1[i].clone();
+                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    nodes.middle1[i].position.copy(rotatedPos);
+                }
+                for (let i = 0; i < nodes.middle2.length; i++) {
+                    const pos = initialPositions.middle2[i].clone();
+                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    nodes.middle2[i].position.copy(rotatedPos);
+                }
+                for (let i = 0; i < nodes.middle3.length; i++) {
+                    const pos = initialPositions.middle3[i].clone();
+                    const rotatedPos = pos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    nodes.middle3[i].position.copy(rotatedPos);
+                }
                 // Update line positions
                 let lineIndex = 0;
                 for (let ingress of nodes.ingress) {
@@ -159,10 +182,9 @@
                         positions[0] = ingress.position.x;
                         positions[1] = ingress.position.y;
                         positions[2] = ingress.position.z;
-                        const rotatedPos = middle1.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[3] = rotatedPos.x;
-                        positions[4] = rotatedPos.y;
-                        positions[5] = rotatedPos.z;
+                        positions[3] = middle1.position.x;
+                        positions[4] = middle1.position.y;
+                        positions[5] = middle1.position.z;
                         line.geometry.attributes.position.needsUpdate = true;
                     }
                 }
@@ -170,14 +192,12 @@
                     for (let middle2 of nodes.middle2) {
                         const line = lines[lineIndex++];
                         const positions = line.geometry.attributes.position.array;
-                        const startPos = middle1.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[0] = startPos.x;
-                        positions[1] = startPos.y;
-                        positions[2] = startPos.z;
-                        const endPos = middle2.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[3] = endPos.x;
-                        positions[4] = endPos.y;
-                        positions[5] = endPos.z;
+                        positions[0] = middle1.position.x;
+                        positions[1] = middle1.position.y;
+                        positions[2] = middle1.position.z;
+                        positions[3] = middle2.position.x;
+                        positions[4] = middle2.position.y;
+                        positions[5] = middle2.position.z;
                         line.geometry.attributes.position.needsUpdate = true;
                     }
                 }
@@ -185,14 +205,12 @@
                     for (let middle3 of nodes.middle3) {
                         const line = lines[lineIndex++];
                         const positions = line.geometry.attributes.position.array;
-                        const startPos = middle2.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[0] = startPos.x;
-                        positions[1] = startPos.y;
-                        positions[2] = startPos.z;
-                        const endPos = middle3.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[3] = endPos.x;
-                        positions[4] = endPos.y;
-                        positions[5] = endPos.z;
+                        positions[0] = middle2.position.x;
+                        positions[1] = middle2.position.y;
+                        positions[2] = middle2.position.z;
+                        positions[3] = middle3.position.x;
+                        positions[4] = middle3.position.y;
+                        positions[5] = middle3.position.z;
                         line.geometry.attributes.position.needsUpdate = true;
                     }
                 }
@@ -200,10 +218,9 @@
                     for (let egress of nodes.egress) {
                         const line = lines[lineIndex++];
                         const positions = line.geometry.attributes.position.array;
-                        const startPos = middle3.position.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), twistAngle);
-                        positions[0] = startPos.x;
-                        positions[1] = startPos.y;
-                        positions[2] = startPos.z;
+                        positions[0] = middle3.position.x;
+                        positions[1] = middle3.position.y;
+                        positions[2] = middle3.position.z;
                         positions[3] = egress.position.x;
                         positions[4] = egress.position.y;
                         positions[5] = egress.position.z;
