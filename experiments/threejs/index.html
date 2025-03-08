@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5-Stage CLOS Network Visualization with Three.js</title>
+    <title>5-Stage CLOS Network with Twistable Middle Nodes</title>
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
@@ -11,8 +11,7 @@
 </head>
 <body>
     <script type="module">
-import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
-import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/controls/OrbitControls.js";
+        import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
         // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -28,16 +27,6 @@ import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/contro
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
         directionalLight.position.set(0, 1, 1);
         scene.add(directionalLight);
-        // OrbitControls for mouse rotation
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableRotate = true;   // Allow rotation
-        controls.enablePan = false;     // Disable panning
-        controls.enableZoom = false;    // Disable zooming
-        controls.mouseButtons = {
-            LEFT: THREE.MOUSE.ROTATE,   // Left-click to rotate
-            MIDDLE: null,               // Disable middle click
-            RIGHT: null                 // Disable right click
-        };
         // CLOS Network Parameters (5 stages)
         const ingressNodes = 4;  // Ingress stage
         const middle1Nodes = 3;  // First middle stage
@@ -47,7 +36,7 @@ import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/contro
         const nodeSize = 2;      // Size of each cube
         const spacing = 10;      // Vertical spacing between nodes
         const stageSpacing = 20; // Horizontal spacing between stages
-        // Store node positions and objects
+        // Store node objects with their initial positions
         const nodes = {
             ingress: [],
             middle1: [],
@@ -106,42 +95,133 @@ import { OrbitControls } from "https://unpkg.com/three@0.112/examples/jsm/contro
         }
         // Draw edges (lines) between stages
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+        const lines = []; // Store lines for updating positions
+        function createLine(startNode, endNode) {
+            const points = [startNode.position.clone(), endNode.position.clone()];
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            scene.add(line);
+            return line;
+        }
         // Ingress to Middle1
         for (let ingress of nodes.ingress) {
             for (let middle1 of nodes.middle1) {
-                const points = [ingress.position, middle1.position];
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+                lines.push(createLine(ingress, middle1));
             }
         }
         // Middle1 to Middle2
         for (let middle1 of nodes.middle1) {
             for (let middle2 of nodes.middle2) {
-                const points = [middle1.position, middle2.position];
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+                lines.push(createLine(middle1, middle2));
             }
         }
         // Middle2 to Middle3
         for (let middle2 of nodes.middle2) {
             for (let middle3 of nodes.middle3) {
-                const points = [middle2.position, middle3.position];
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+                lines.push(createLine(middle2, middle3));
             }
         }
         // Middle3 to Egress
         for (let middle3 of nodes.middle3) {
             for (let egress of nodes.egress) {
-                const points = [middle3.position, egress.position];
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                scene.add(new THREE.Line(lineGeometry, lineMaterial));
+                lines.push(createLine(middle3, egress));
             }
         }
+        // Mouse interaction for twisting middle nodes
+        let isDragging = false;
+        let previousMouseX = 0;
+        let twistAngle = 0; // Rotation angle in radians
+        const maxTwist = Math.PI / 2; // 90 degrees
+        renderer.domElement.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Prevent right-click context menu
+        });
+        renderer.domElement.addEventListener('mousedown', (event) => {
+            if (event.button === 2) { // Right-click
+                isDragging = true;
+                previousMouseX = event.clientX;
+            }
+        });
+        renderer.domElement.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const deltaX = event.clientX - previousMouseX;
+                const sensitivity = 0.005; // Adjust rotation speed
+                twistAngle += deltaX * sensitivity;
+                twistAngle = Math.max(-maxTwist, Math.min(maxTwist, twistAngle)); // Clamp between -90 and 90 degrees
+                // Apply rotation to middle nodes
+                nodes.middle1.forEach(node => node.rotation.y = twistAngle);
+                nodes.middle2.forEach(node => node.rotation.y = twistAngle);
+                nodes.middle3.forEach(node => node.rotation.y = twistAngle);
+                // Update line positions
+                let lineIndex = 0;
+                for (let ingress of nodes.ingress) {
+                    for (let middle1 of nodes.middle1) {
+                        const line = lines[lineIndex++];
+                        const positions = line.geometry.attributes.position.array;
+                        positions[0] = ingress.position.x;
+                        positions[1] = ingress.position.y;
+                        positions[2] = ingress.position.z;
+                        const rotatedPos = middle1.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[3] = rotatedPos.x;
+                        positions[4] = rotatedPos.y;
+                        positions[5] = rotatedPos.z;
+                        line.geometry.attributes.position.needsUpdate = true;
+                    }
+                }
+                for (let middle1 of nodes.middle1) {
+                    for (let middle2 of nodes.middle2) {
+                        const line = lines[lineIndex++];
+                        const positions = line.geometry.attributes.position.array;
+                        const startPos = middle1.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[0] = startPos.x;
+                        positions[1] = startPos.y;
+                        positions[2] = startPos.z;
+                        const endPos = middle2.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[3] = endPos.x;
+                        positions[4] = endPos.y;
+                        positions[5] = endPos.z;
+                        line.geometry.attributes.position.needsUpdate = true;
+                    }
+                }
+                for (let middle2 of nodes.middle2) {
+                    for (let middle3 of nodes.middle3) {
+                        const line = lines[lineIndex++];
+                        const positions = line.geometry.attributes.position.array;
+                        const startPos = middle2.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[0] = startPos.x;
+                        positions[1] = startPos.y;
+                        positions[2] = startPos.z;
+                        const endPos = middle3.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[3] = endPos.x;
+                        positions[4] = endPos.y;
+                        positions[5] = endPos.z;
+                        line.geometry.attributes.position.needsUpdate = true;
+                    }
+                }
+                for (let middle3 of nodes.middle3) {
+                    for (let egress of nodes.egress) {
+                        const line = lines[lineIndex++];
+                        const positions = line.geometry.attributes.position.array;
+                        const startPos = middle3.position.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), twistAngle);
+                        positions[0] = startPos.x;
+                        positions[1] = startPos.y;
+                        positions[2] = startPos.z;
+                        positions[3] = egress.position.x;
+                        positions[4] = egress.position.y;
+                        positions[5] = egress.position.z;
+                        line.geometry.attributes.position.needsUpdate = true;
+                    }
+                }
+                previousMouseX = event.clientX;
+            }
+        });
+        renderer.domElement.addEventListener('mouseup', (event) => {
+            if (event.button === 2) { // Right-click release
+                isDragging = false;
+            }
+        });
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(); // Update controls for mouse interaction
             renderer.render(scene, camera);
         }
         animate();
