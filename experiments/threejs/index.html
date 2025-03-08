@@ -20,7 +20,7 @@
         document.body.appendChild(renderer.domElement);
 
         // Camera position (side view to see triangular shape)
-        camera.position.set(0, 40, 100); // Adjusted for side view
+        camera.position.set(0, 0, 100); // Adjusted for side view
         camera.lookAt(0, 0, 0);
 
         // Lighting
@@ -56,7 +56,8 @@
         const initialPositions = {
             middle1: [],
             middle2: [],
-            middle3: []
+            middle3: [],
+            egress: []
         };
 
         // Create cube geometry and materials
@@ -116,6 +117,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.egress.push(createNode(x, y, z, egressMaterial));
+            initialPositions.egress.push(new THREE.Vector3(x, y, z));
         }
 
         // Draw edges (lines) between stages with grouped connections
@@ -228,6 +230,15 @@
                     const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
                     //rotatedPos.x += offsetX;
                     nodes.middle3[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+                }
+
+                // Egress: 1 group of 8
+                for (let i = 0; i < nodesPerLayer; i++) {
+                    const initialPos = initialPositions.egress[i].clone();
+                    const centerY = (initialPositions.egress[0].y + initialPositions.egress[7].y) / 2;
+                    const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                    const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                    nodes.egress[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
                 }
 
                 // Update line positions
