@@ -19,6 +19,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+
         // Camera position and controls
         camera.position.set(0, 40, 100); // Side view for triangular shape
         camera.lookAt(0, 0, 0);
@@ -190,6 +191,12 @@
                 previousMouseY = event.clientY;
             }
         });
+        renderer.domElement.addEventListener('touchstart', (event) => {
+            isDragging = true;
+            const touch = event.touches[0];
+            previousMouseX = touch.clientX;
+            previousMouseY = touch.clientY;
+        });
 
         renderer.domElement.addEventListener('mousemove', (event) => {
             if (isDragging) {
@@ -209,11 +216,34 @@
                 camera.lookAt(0, 0, 0);
             }
         });
+        renderer.domElement.addEventListener('touchmove', (event) => {
+            if (!isDragging) return;
+            event.preventDefault(); // Prevent scrolling
+            
+            const touch = event.touches[0];
+            const deltaX = touch.clientX - previousTouchX;
+            const deltaY = touch.clientY - previousTouchY;
+            
+            rotationY += deltaX * sensitivity;
+            rotationX += deltaY * sensitivity;
+            rotationX = Math.max(-maxTilt, Math.min(maxTilt, rotationX)); // Clamp vertical tilt
+            previousMouseX = event.clientX;
+            previousMouseY = event.clientY;
+
+            // Apply rotation to camera
+            camera.position.x = 100 * Math.sin(rotationY);
+            camera.position.z = 100 * Math.cos(rotationY);
+            camera.position.y = 40 + 40 * Math.sin(rotationX);
+            camera.lookAt(0, 0, 0);
+        });
 
         renderer.domElement.addEventListener('mouseup', (event) => {
             if (event.button === 0) { // Left-click release
                 isDragging = false;
             }
+        });
+        renderer.domElement.addEventListener('touchend', () => {
+            isDragging = false;
         });
 
         renderer.domElement.addEventListener('contextmenu', (event) => {
