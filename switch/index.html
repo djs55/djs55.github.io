@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CLOS Network switching</title>
+    <meta name="description" content="CLOS Network switching">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="twitter:title" content="CLOS Network switching">
+    <meta name="twitter:description" content="CLOS Network switching with Sandy Fraser">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+<body>
+
+    <body class="terminal">
+
+        <div class="container">
+          <div class="terminal-nav">
+            <header class="terminal-logo">
+              <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+            </header>
+          <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+              <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+            </ul>
+          </nav>
+        </div>
+    
+        <div class="container">
+            <p>
+            Network switches are devices that connect multiple computers together. They
+            receive data from one input &quot;port&quot; and forward it to the best
+            output &quot;port&quot;. Normally we don't give much thought to what happens
+            inside a switch (and this is mostly fine!) but it's interesting to think
+            about how to build one.
+            </p>
+            <center>
+                <img src="switch-black-box.png" alt="A network switch connecting lots of inputs to lots of outputs" style="width: 50%; height: auto;">
+            </center>
+            <p>
+            The networking pioneer
+            <a href="https://www.fraserresearch.org/remembering_alexander_fraser.html">
+                Sandy Fraser
+            </a> liked to describe switches being like
+            a tree of &quot;multiplexers&quot;, each squashing multiple inputs into a
+            single output, until everything is squashed together in the middle of 
+            the switch, and then a tree of &quot;demultiplexers&quot; which split the
+            data and direct the individual messages to the correct outputs.
+            </p>
+            <center>
+                <img src="switch-mux.png" alt="A network switch as a tree of multiplexers and demultiplexers" style="width: 50%; height: auto;">
+            </center>
+            <p>
+            This is a fun high-level way to think about it, but if the switch has a large
+            number of ports, and is running at a very high data rate, then the middle
+            multiplexer and demultiplexer have a lot of data to handle. Sandy was particularly
+            interested in designing switches for the &quot;access network&quot; (the part
+            of the network which connects homes to the Internet) and for that he needed a
+            really big switch with as many ports as possible, and therefore he needed a
+            really scalable switch design.
+            </p>
+            <p>
+            Earlier circuit-switched telephone networks used a design called a &quot;CLOS
+            network&quot; which is a way of composing together individual small switches into
+            a much larger switch with many stages. Formalised in 1952 by Charles Clos these
+            networks have lots of interesting properties, for example they can be
+            &quot;non-blocking&quot; meaning if an output port is free, a message can always
+            get through, no matter how many other messages are being sent (i.e. the switch
+            will not internally overload and have to drop messages).
+            </p>
+            <p>
+            Sandy used a CLOS network design for his switches, which looked something like this:
+            </p>
+            <center>
+                <img src="switch-clos.png" alt="A CLOS network switch design used by Sandy" style="width: 50%; height: auto;">
+            </center>
+            <p>
+            In the diagram above, the switch has 16 input ports and 16 output ports, and
+            is made up of a series of smaller 2x2 switches wired together in a complicated
+            pattern. The path taken by a single packet is shown the red arrows.
+            </p>
+            <p>
+            There is a pleasing correspondence between the CLOS network wiring diagram and the
+            tree of multiplexers and demultiplexers. We can &quot;twist&quot; the nodes to
+            make it obvious. The following animation shows only the input stages of the switch
+            for now, but imagine the output stages are a mirror image.
+            </p>
+            <div id="switch"></div>
+
+    <script type="module">
+        import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(900, 450);
+        // Use this with the alpha: true setting from above
+        renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
+        // Also add this CSS to your canvas element
+        renderer.domElement.style.background = 'transparent';
+        // find the switch element and append the renderer to it
+        document.getElementById('switch').appendChild(renderer.domElement);
+        //document.body.appendChild(renderer.domElement);
+
+        // Camera position and controls
+        camera.position.set(0, 0, 75); // Side view for triangular shape
+        camera.lookAt(10, 0, 0);
+
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        let rotationY = 0; // Horizontal rotation around Y-axis
+        let rotationX = 0; // Vertical tilt around X-axis
+        const maxTilt = Math.PI / 4; // Limit vertical tilt to ±45°
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(0, 1, 1);
+        scene.add(directionalLight);
+
+        // CLOS Network Parameters
+        const nodesPerLayer = 8;  // 8 nodes per stage
+        const inputsPerNode = 2;  // 2 inputs per node
+        const outputsPerNode = 2; // 2 outputs per node
+        const nodeSize = 2;       // Size of each cube
+        const spacing = 10;       // Vertical spacing between nodes
+        const stageSpacing = 20;  // Horizontal spacing between stages
+
+        // Grouping parameters
+        const middle1Groups = 4; // 4 groups of 2 in middle1
+        const middle2Groups = 2; // 2 groups of 4 in middle2
+        const middle3Groups = 1; // 1 group of 8 in middle3
+
+        // Store node objects with their initial positions
+        const nodes = {
+            ingress: [],
+            middle1: [],
+            middle2: [],
+            middle3: [],
+            egress: []
+        };
+
+        // Store initial positions for twisting
+        const initialPositions = {
+            middle1: [],
+            middle2: [],
+            middle3: [],
+            egress: []
+        };
+
+        // Create cube geometry and materials
+        const geometry = new THREE.BoxGeometry(nodeSize, nodeSize, nodeSize);
+        const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Purple
+        const middle1Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const middle2Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const middle3Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const egressMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });  // Purple
+
+        // Function to create a cube node
+        function createNode(x, y, z, material) {
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(x, y, z);
+            scene.add(cube);
+            return cube;
+        }
+
+        // Place ingress nodes (leftmost)
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const x = -stageSpacing * 2;
+            const y = (i - (nodesPerLayer - 1) / 2) * spacing;
+            const z = 0;
+            nodes.ingress.push(createNode(x, y, z, ingressMaterial));
+        }
+
+        // Place middle1 nodes (4 groups of 2) and store initial positions
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const x = -stageSpacing;
+            const y = (i - (nodesPerLayer - 1) / 2) * spacing;
+            const z = 0;
+            nodes.middle1.push(createNode(x, y, z, middle1Material));
+            initialPositions.middle1.push(new THREE.Vector3(x, y, z));
+        }
+
+        // Place middle2 nodes (2 groups of 4) and store initial positions
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const x = 0;
+            const y = (i - (nodesPerLayer - 1) / 2) * spacing;
+            const z = 0;
+            nodes.middle2.push(createNode(x, y, z, middle2Material));
+            initialPositions.middle2.push(new THREE.Vector3(x, y, z));
+        }
+
+        // Place middle3 nodes (1 group of 8) and store initial positions
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const x = stageSpacing;
+            const y = (i - (nodesPerLayer - 1) / 2) * spacing;
+            const z = 0;
+            nodes.middle3.push(createNode(x, y, z, middle3Material));
+            initialPositions.middle3.push(new THREE.Vector3(x, y, z));
+        }
+
+        // Place egress nodes (rightmost)
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const x = stageSpacing * 2;
+            const y = (i - (nodesPerLayer - 1) / 2) * spacing;
+            const z = 0;
+            nodes.egress.push(createNode(x, y, z, egressMaterial));
+            initialPositions.egress.push(new THREE.Vector3(x, y, z));
+        }
+
+        // Draw edges (lines) between stages with grouped connections
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const lines = []; // Store lines for updating positions
+
+        function createLine(startNode, endNode) {
+            const points = [startNode.position.clone(), endNode.position.clone()];
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            scene.add(line);
+            return line;
+        }
+
+        // Ingress to Middle1: 4 groups of 2 (nodes 0-1, 2-3, 4-5, 6-7)
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const ingress = nodes.ingress[i];
+            const groupIndex = Math.floor(i / 2); // Groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
+            const baseIndex = groupIndex * 2; // Start of the group in middle1
+            lines.push(createLine(ingress, nodes.middle1[baseIndex]));
+            lines.push(createLine(ingress, nodes.middle1[baseIndex + 1]));
+        }
+
+        // Middle1 to Middle2: 2 groups of 4 (nodes 0-3, 4-7)
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const middle1 = nodes.middle1[i];
+            const middle1Group = Math.floor(i / 2); // Middle1 groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
+            const middle2Group = Math.floor(middle1Group / 2); // Map to middle2 groups: 0-1 → group 0 (0-3), 2-3 → group 1 (4-7)
+            const baseIndex = middle2Group * 4; // Start of the group in middle2
+            const target1 = baseIndex + (i % 2); // Alternate within the group
+            const target2 = baseIndex + ((i % 2) + 2) % 4; // Second connection within the group
+            lines.push(createLine(middle1, nodes.middle2[target1]));
+            lines.push(createLine(middle1, nodes.middle2[target2]));
+        }
+
+        // Middle2 to Middle3: 1 group of 8
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const middle2 = nodes.middle2[i];
+            const target1 = i;
+            const target2 = (i + 4) % nodesPerLayer;
+            lines.push(createLine(middle2, nodes.middle3[target1]));
+            lines.push(createLine(middle2, nodes.middle3[target2]));
+        }
+
+        // Middle3 to Egress
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const middle3 = nodes.middle3[i];
+            const target1 = i;
+            const target2 = (i + 4) % nodesPerLayer;
+            lines.push(createLine(middle3, nodes.egress[target1]));
+            lines.push(createLine(middle3, nodes.egress[target2]));
+        }
+
+        // Automatic twist animation
+        let animationTime = 0;
+        const twistSpeed = 0.005; // Controls the speed of the twist cycle
+
+        renderer.domElement.addEventListener('contextmenu', (event) => {
+            event.preventDefault(); // Prevent right-click context menu
+        });
+
+        // Animation loop with automatic twist
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update twist angle with continuous oscillation
+            animationTime += twistSpeed;
+            const twistAngle = (Math.sin(animationTime) + 1) / 2 * (Math.PI / 2); // 0 to π/2 (0° to 90°)
+
+            // Calculate group centers and rotate nodes
+            // Middle1: 4 groups of 2
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const groupIndex = Math.floor(i / 2);
+                const isFirstInGroup = i % 2 === 0;
+                const initialPos = initialPositions.middle1[i].clone();
+                const centerY = (initialPositions.middle1[groupIndex * 2].y + initialPositions.middle1[groupIndex * 2 + 1].y) / 2;
+                const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                const offsetX = (isFirstInGroup ? -spacing / 2 : spacing / 2) * Math.sin(twistAngle); // Horizontal spread
+                nodes.middle1[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+            }
+
+            // Middle2: 2 groups of 4
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const groupIndex = Math.floor(i / 4);
+                const posInGroup = i % 4;
+                const initialPos = initialPositions.middle2[i].clone();
+                const centerY = (initialPositions.middle2[groupIndex * 4].y + initialPositions.middle2[groupIndex * 4 + 3].y) / 2;
+                const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                const offsetX = ((posInGroup - 1.5) * spacing) * Math.sin(twistAngle); // Wider horizontal spread
+                nodes.middle2[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+            }
+
+            // Middle3: 1 group of 8
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const initialPos = initialPositions.middle3[i].clone();
+                const centerY = (initialPositions.middle3[0].y + initialPositions.middle3[7].y) / 2;
+                const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
+                nodes.middle3[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+            }
+
+            // Egress: 1 group of 8
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const initialPos = initialPositions.egress[i].clone();
+                const centerY = (initialPositions.egress[0].y + initialPositions.egress[7].y) / 2;
+                const relativePos = initialPos.clone().sub(new THREE.Vector3(initialPos.x, centerY, initialPos.z));
+                const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
+                const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
+                nodes.egress[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+            }
+
+            // Update line positions
+            let lineIndex = 0;
+            // Ingress to Middle1
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const ingress = nodes.ingress[i];
+                const groupIndex = Math.floor(i / 2);
+                const baseIndex = groupIndex * 2;
+                const line1 = lines[lineIndex++];
+                const line2 = lines[lineIndex++];
+                line1.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex].position.x, nodes.middle1[baseIndex].position.y, nodes.middle1[baseIndex].position.z]);
+                line2.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex + 1].position.x, nodes.middle1[baseIndex + 1].position.y, nodes.middle1[baseIndex + 1].position.z]);
+                line1.geometry.attributes.position.needsUpdate = true;
+                line2.geometry.attributes.position.needsUpdate = true;
+            }
+            // Middle1 to Middle2
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const middle1 = nodes.middle1[i];
+                const middle1Group = Math.floor(i / 2);
+                const middle2Group = Math.floor(middle1Group / 2);
+                const baseIndex = middle2Group * 4;
+                const target1 = baseIndex + (i % 2);
+                const target2 = baseIndex + ((i % 2) + 2) % 4;
+                const line1 = lines[lineIndex++];
+                const line2 = lines[lineIndex++];
+                line1.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target1].position.x, nodes.middle2[target1].position.y, nodes.middle2[target1].position.z]);
+                line2.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target2].position.x, nodes.middle2[target2].position.y, nodes.middle2[target2].position.z]);
+                line1.geometry.attributes.position.needsUpdate = true;
+                line2.geometry.attributes.position.needsUpdate = true;
+            }
+            // Middle2 to Middle3
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const middle2 = nodes.middle2[i];
+                const target1 = i;
+                const target2 = (i + 4) % nodesPerLayer;
+                const line1 = lines[lineIndex++];
+                const line2 = lines[lineIndex++];
+                line1.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target1].position.x, nodes.middle3[target1].position.y, nodes.middle3[target1].position.z]);
+                line2.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target2].position.x, nodes.middle3[target2].position.y, nodes.middle3[target2].position.z]);
+                line1.geometry.attributes.position.needsUpdate = true;
+                line2.geometry.attributes.position.needsUpdate = true;
+            }
+            // Middle3 to Egress
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const middle3 = nodes.middle3[i];
+                const target1 = i;
+                const target2 = (i + 4) % nodesPerLayer;
+                const line1 = lines[lineIndex++];
+                const line2 = lines[lineIndex++];
+                line1.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target1].position.x, nodes.egress[target1].position.y, nodes.egress[target1].position.z]);
+                line2.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target2].position.x, nodes.egress[target2].position.y, nodes.egress[target2].position.z]);
+                line1.geometry.attributes.position.needsUpdate = true;
+                line2.geometry.attributes.position.needsUpdate = true;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+    <p>
+    There was of course a lot more to the design of Sandy's switches than this.
+    Back in the early 2000s I was lucky enough to work with him to help visualise
+    the working of the switch and simulate how well it performed under various
+    traffic load levels and traffic patterns. Fun times!
+    </div>
+</body>
+</html>
