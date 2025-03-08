@@ -12,16 +12,15 @@
 <body>
     <script type="module">
         import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
-
-// Scene setup
-const scene = new THREE.Scene();
+         // Scene setup
+         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Camera position (angled to better see the orbit)
-        camera.position.set(40, 40, 80);
+        // Camera position (angled to better see the orbit and connections)
+        camera.position.set(0, 20, 80);
         camera.lookAt(0, 0, 0);
 
         // Lighting
@@ -38,6 +37,11 @@ const scene = new THREE.Scene();
         const nodeSize = 2;       // Size of each cube
         const spacing = 10;       // Vertical spacing between nodes
         const stageSpacing = 20;  // Horizontal spacing between stages
+
+        // Grouping parameters
+        const middle1Groups = 4; // 4 groups of 2 in middle1
+        const middle2Groups = 2; // 2 groups of 4 in middle2
+        const middle3Groups = 1; // 1 group of 8 in middle3
 
         // Store node objects with their initial positions
         const nodes = {
@@ -57,11 +61,11 @@ const scene = new THREE.Scene();
 
         // Create cube geometry and materials
         const geometry = new THREE.BoxGeometry(nodeSize, nodeSize, nodeSize);
-        const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
-        const middle1Material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); // Green
-        const middle2Material = new THREE.MeshBasicMaterial({ color: 0xffff00 }); // Yellow
-        const middle3Material = new THREE.MeshBasicMaterial({ color: 0x00ffff }); // Cyan
-        const egressMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });  // Blue
+        const ingressMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff }); // Purple
+        const middle1Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const middle2Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const middle3Material = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+        const egressMaterial = new THREE.MeshBasicMaterial({ color: 0xff00ff });  // Purple
 
         // Function to create a cube node
         function createNode(x, y, z, material) {
@@ -79,7 +83,7 @@ const scene = new THREE.Scene();
             nodes.ingress.push(createNode(x, y, z, ingressMaterial));
         }
 
-        // Place middle1 nodes and store initial positions
+        // Place middle1 nodes (4 groups of 2) and store initial positions
         for (let i = 0; i < nodesPerLayer; i++) {
             const x = -stageSpacing;
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
@@ -88,7 +92,7 @@ const scene = new THREE.Scene();
             initialPositions.middle1.push(new THREE.Vector3(x, y, z));
         }
 
-        // Place middle2 nodes and store initial positions
+        // Place middle2 nodes (2 groups of 4) and store initial positions
         for (let i = 0; i < nodesPerLayer; i++) {
             const x = 0;
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
@@ -97,7 +101,7 @@ const scene = new THREE.Scene();
             initialPositions.middle2.push(new THREE.Vector3(x, y, z));
         }
 
-        // Place middle3 nodes and store initial positions
+        // Place middle3 nodes (1 group of 8) and store initial positions
         for (let i = 0; i < nodesPerLayer; i++) {
             const x = stageSpacing;
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
@@ -114,7 +118,7 @@ const scene = new THREE.Scene();
             nodes.egress.push(createNode(x, y, z, egressMaterial));
         }
 
-        // Draw edges (lines) between stages with 2 inputs and 2 outputs per node
+        // Draw edges (lines) between stages with grouped connections
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
         const lines = []; // Store lines for updating positions
 
@@ -126,45 +130,48 @@ const scene = new THREE.Scene();
             return line;
         }
 
-        // Connect stages with 2 inputs and 2 outputs per node
-        // Ingress to Middle1
+        // Ingress to Middle1: 4 groups of 2 (nodes 0-1, 2-3, 4-5, 6-7)
         for (let i = 0; i < nodesPerLayer; i++) {
             const ingress = nodes.ingress[i];
-            // Connect to 2 middle1 nodes (e.g., i and (i+1) % 8)
-            const middle1a = nodes.middle1[i];
-            const middle1b = nodes.middle1[(i + 1) % nodesPerLayer];
-            lines.push(createLine(ingress, middle1a));
-            lines.push(createLine(ingress, middle1b));
+            const groupIndex = Math.floor(i / 2); // Groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
+            const baseIndex = groupIndex * 2; // Start of the group in middle1
+            lines.push(createLine(ingress, nodes.middle1[baseIndex]));
+            lines.push(createLine(ingress, nodes.middle1[baseIndex + 1]));
         }
 
-        // Middle1 to Middle2
+        // Middle1 to Middle2: 2 groups of 4 (nodes 0-3, 4-7)
         for (let i = 0; i < nodesPerLayer; i++) {
             const middle1 = nodes.middle1[i];
-            // Connect to 2 middle2 nodes (e.g., i and (i+2) % 8)
-            const middle2a = nodes.middle2[i];
-            const middle2b = nodes.middle2[(i + 2) % nodesPerLayer];
-            lines.push(createLine(middle1, middle2a));
-            lines.push(createLine(middle1, middle2b));
+            const middle1Group = Math.floor(i / 2); // Middle1 groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
+            const middle2Group = Math.floor(middle1Group / 2); // Map to middle2 groups: 0-1 → group 0 (0-3), 2-3 → group 1 (4-7)
+            const baseIndex = middle2Group * 4; // Start of the group in middle2
+            // Connect to 2 nodes within the group (e.g., first 2 nodes of the group)
+            const target1 = baseIndex + (i % 2); // Alternate within the group
+            const target2 = baseIndex + ((i % 2) + 2) % 4; // Second connection within the group
+            lines.push(createLine(middle1, nodes.middle2[target1]));
+            lines.push(createLine(middle1, nodes.middle2[target2]));
         }
 
-        // Middle2 to Middle3
+        // Middle2 to Middle3: 1 group of 8
         for (let i = 0; i < nodesPerLayer; i++) {
             const middle2 = nodes.middle2[i];
-            // Connect to 2 middle3 nodes (e.g., i and (i+3) % 8)
-            const middle3a = nodes.middle3[i];
-            const middle3b = nodes.middle3[(i + 3) % nodesPerLayer];
-            lines.push(createLine(middle2, middle3a));
-            lines.push(createLine(middle2, middle3b));
+            const middle2Group = Math.floor(i / 4); // Middle2 groups: 0-3 (group 0), 4-7 (group 1)
+            // Since middle3 is one group, connect to 2 nodes in middle3
+            // Use a pattern to distribute connections: connect to nodes i and (i+4) % 8
+            const target1 = i;
+            const target2 = (i + 4) % nodesPerLayer;
+            lines.push(createLine(middle2, nodes.middle3[target1]));
+            lines.push(createLine(middle2, nodes.middle3[target2]));
         }
 
-        // Middle3 to Egress
+        // Middle3 to Egress: Distribute connections to ensure 2 inputs per egress node
         for (let i = 0; i < nodesPerLayer; i++) {
             const middle3 = nodes.middle3[i];
-            // Connect to 2 egress nodes (e.g., i and (i+4) % 8)
-            const egressA = nodes.egress[i];
-            const egressB = nodes.egress[(i + 4) % nodesPerLayer];
-            lines.push(createLine(middle3, egressA));
-            lines.push(createLine(middle3, egressB));
+            // Connect to 2 egress nodes: i and (i+4) % 8
+            const target1 = i;
+            const target2 = (i + 4) % nodesPerLayer;
+            lines.push(createLine(middle3, nodes.egress[target1]));
+            lines.push(createLine(middle3, nodes.egress[target2]));
         }
 
         // Mouse interaction for orbiting middle nodes around X-axis
@@ -210,47 +217,54 @@ const scene = new THREE.Scene();
 
                 // Update line positions
                 let lineIndex = 0;
+                // Ingress to Middle1
                 for (let i = 0; i < nodesPerLayer; i++) {
                     const ingress = nodes.ingress[i];
-                    const middle1a = nodes.middle1[i];
-                    const middle1b = nodes.middle1[(i + 1) % nodesPerLayer];
+                    const groupIndex = Math.floor(i / 2);
+                    const baseIndex = groupIndex * 2;
                     const line1 = lines[lineIndex++];
                     const line2 = lines[lineIndex++];
-                    line1.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, middle1a.position.x, middle1a.position.y, middle1a.position.z]);
-                    line2.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, middle1b.position.x, middle1b.position.y, middle1b.position.z]);
+                    line1.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex].position.x, nodes.middle1[baseIndex].position.y, nodes.middle1[baseIndex].position.z]);
+                    line2.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex + 1].position.x, nodes.middle1[baseIndex + 1].position.y, nodes.middle1[baseIndex + 1].position.z]);
                     line1.geometry.attributes.position.needsUpdate = true;
                     line2.geometry.attributes.position.needsUpdate = true;
                 }
+                // Middle1 to Middle2
                 for (let i = 0; i < nodesPerLayer; i++) {
                     const middle1 = nodes.middle1[i];
-                    const middle2a = nodes.middle2[i];
-                    const middle2b = nodes.middle2[(i + 2) % nodesPerLayer];
+                    const middle1Group = Math.floor(i / 2);
+                    const middle2Group = Math.floor(middle1Group / 2);
+                    const baseIndex = middle2Group * 4;
+                    const target1 = baseIndex + (i % 2);
+                    const target2 = baseIndex + ((i % 2) + 2) % 4;
                     const line1 = lines[lineIndex++];
                     const line2 = lines[lineIndex++];
-                    line1.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, middle2a.position.x, middle2a.position.y, middle2a.position.z]);
-                    line2.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, middle2b.position.x, middle2b.position.y, middle2b.position.z]);
+                    line1.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target1].position.x, nodes.middle2[target1].position.y, nodes.middle2[target1].position.z]);
+                    line2.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target2].position.x, nodes.middle2[target2].position.y, nodes.middle2[target2].position.z]);
                     line1.geometry.attributes.position.needsUpdate = true;
                     line2.geometry.attributes.position.needsUpdate = true;
                 }
+                // Middle2 to Middle3
                 for (let i = 0; i < nodesPerLayer; i++) {
                     const middle2 = nodes.middle2[i];
-                    const middle3a = nodes.middle3[i];
-                    const middle3b = nodes.middle3[(i + 3) % nodesPerLayer];
+                    const target1 = i;
+                    const target2 = (i + 4) % nodesPerLayer;
                     const line1 = lines[lineIndex++];
                     const line2 = lines[lineIndex++];
-                    line1.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, middle3a.position.x, middle3a.position.y, middle3a.position.z]);
-                    line2.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, middle3b.position.x, middle3b.position.y, middle3b.position.z]);
+                    line1.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target1].position.x, nodes.middle3[target1].position.y, nodes.middle3[target1].position.z]);
+                    line2.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target2].position.x, nodes.middle3[target2].position.y, nodes.middle3[target2].position.z]);
                     line1.geometry.attributes.position.needsUpdate = true;
                     line2.geometry.attributes.position.needsUpdate = true;
                 }
+                // Middle3 to Egress
                 for (let i = 0; i < nodesPerLayer; i++) {
                     const middle3 = nodes.middle3[i];
-                    const egressA = nodes.egress[i];
-                    const egressB = nodes.egress[(i + 4) % nodesPerLayer];
+                    const target1 = i;
+                    const target2 = (i + 4) % nodesPerLayer;
                     const line1 = lines[lineIndex++];
                     const line2 = lines[lineIndex++];
-                    line1.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, egressA.position.x, egressA.position.y, egressA.position.z]);
-                    line2.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, egressB.position.x, egressB.position.y, egressB.position.z]);
+                    line1.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target1].position.x, nodes.egress[target1].position.y, nodes.egress[target1].position.z]);
+                    line2.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target2].position.x, nodes.egress[target2].position.y, nodes.egress[target2].position.z]);
                     line1.geometry.attributes.position.needsUpdate = true;
                     line2.geometry.attributes.position.needsUpdate = true;
                 }
