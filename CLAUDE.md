@@ -1,23 +1,25 @@
 # CLAUDE.md - Guidelines for working with this codebase
 
 ## Build and Testing Commands
-- Run Jekyll blog locally: `cd blog && bundle exec jekyll serve`
-- Install Jekyll dependencies: `cd blog && bundle install`
-- Update gems: `cd blog && bundle update`
-- Preview site at: http://localhost:4000/
+- The site is fully static, no build commands are required
+- To preview the site locally, you can use any static file server:
+  - Python: `python -m http.server 8000`
+  - Node.js: `npx serve`
 
 ## Site Structure
 - Root directory: Main site (HTML/CSS)
-- `/blog`: Jekyll blog
+- `/blogs`: Blog posts as static HTML files
 - `/switch`, `/experiments`, `/cufp`, etc.: Project subfolders
 
 ## Code Style Guidelines
 - HTML: Simple semantic markup, use terminal.css for styling
-- Blog posts: Use Jekyll markdown with front matter
-- Code blocks: Use Jekyll highlight tags `{% highlight language %}`
-- File extensions: .html for HTML, .markdown for blog posts
+- Blog posts: Create HTML pages in the `/blogs` directory
+- Code blocks: Use `<pre><code>` tags with proper styling
+- File extensions: .html for all pages
 
 ## Content Guidelines
-- Jekyll blog posts format: `YYYY-MM-DD-title.markdown`
-- Blog post front matter includes title, layout, categories, etc.
+- Name blog posts with descriptive slugs: `topic-name.html`
+- Keep URLs consistent and descriptive
+- Link blog posts from blog.html
 - Keep site structure simple and minimalist
+- Add proper metadata (title, description, etc.) to all pages
