@@ -20,6 +20,51 @@
     <meta name="color-scheme" content="white">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <style>
+      /* Responsive table styles */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      @media screen and (max-width: 768px) {
+        table, tbody, tr, td {
+          display: block;
+          width: 100% !important;
+        }
+        
+        tr {
+          margin-bottom: 1.5rem;
+          border-bottom: 1px solid #ccc;
+          padding-bottom: 1rem;
+        }
+        
+        td {
+          padding: 0.5rem 0;
+        }
+        
+        td img {
+          max-width: 100%;
+          height: auto;
+        }
+        
+        /* Paper list specific styles */
+        .papers-list tr td:first-child {
+          font-weight: bold;
+          padding-bottom: 0;
+          border-bottom: none;
+        }
+        
+        .papers-list tr td:nth-child(2) {
+          padding-top: 0;
+        }
+        
+        .papers-list tr td:nth-child(3) {
+          border-top: none;
+          padding-top: 0;
+        }
+      }
+    </style>
   </head>
 
   <body class="terminal">
@@ -95,10 +140,10 @@ for support and funding respectively. I was also sponsored by the now defunct
 
 <p>Several of the papers we've written have won prizes:</p>
 
-<table>
+<table class="paper-entry">
 <tr>
-<td width="160"><a href="papers/final/2015-nsdi-jitsu.pdf"><img src="papers/final/2015-nsdi-jitsu.jpg"></a></td>
-<td><div align="top">
+<td><a href="papers/final/2015-nsdi-jitsu.pdf"><img src="papers/final/2015-nsdi-jitsu.jpg" alt="Jitsu paper"></a></td>
+<td>
     <p><b>Jitsu: Just-In-Time Summoning of Unikernels</b> -
       A. Madhavapeddy, T. Leonard, M. Skjegstad, T. Gazagnaire, D. Sheets,
          D.Scott, R. Mortier, A. Chaudhry, B. Singh, J. Ludlam, J. Crowcroft,
@@ -110,7 +155,7 @@ for support and funding respectively. I was also sponsored by the now defunct
     <a href="https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/madhavapeddy">
       12th USENIX symposium on Networked Systems Design and Implementation</a>
       (NSDI 2015)
-    </a></p>
+    </p>
     <p> We presented <a href="https://github.com/mirage/jitsu/">Jitsu</a>: a system
         optimised for spinning up tiny Unikernels in response to network traffic.
         For example when the first TCP/IP SYN packet arrives for a webserver, we
@@ -118,13 +163,12 @@ for support and funding respectively. I was also sponsored by the now defunct
         completes the handshake when it finishes booting in a few hundred milliseconds
         on an ARM A20.
     </p>
-    </div>
 </td>
 </tr>
 
 <tr>
-<td width="160"><a href="papers/final/asplos2013.pdf"><img src="papers/final/asplos2013.jpg"></a></td>
-<td><div align="top">
+<td><a href="papers/final/asplos2013.pdf"><img src="papers/final/asplos2013.jpg" alt="Unikernels paper"></a></td>
+<td>
     <p><b>Unikernels: Library Operating Systems for the Cloud</b> -
           A. Madhavapeddy, R. Mortier, C. Rotsos, D. Scott, B. Singh, T. Gazagnaire, S. Smith, S. Hand, J Crowcroft</p>
     <p>won a <a href="http://www.hipeac.net/award">HIPEAC 2013 award</a>
@@ -144,13 +188,12 @@ for support and funding respectively. I was also sponsored by the now defunct
         library operating systems impractical to deploy in the real-world. </p>
     <p> <i>This describes the awesomeness of the <a href="http://www.openmirage.org/">
         MirageOS</a> open-source library OS</i></p>
-    </div>
 </td>
 </tr>
 
 <tr>
-<td width="160"><a href="papers/final/eurosys2007.pdf"><img src="papers/final/eurosys2007.jpg"></a></td>
-<td><div align="top">
+<td><a href="papers/final/eurosys2007.pdf"><img src="papers/final/eurosys2007.jpg" alt="Melange paper"></a></td>
+<td>
     <p><b>Melange: creating a functional internet</b> -
           A. Madhavapeddy, A. Ho, T. Deegan, D. Scott, R. Sohan</p>
     <p><b>Best student paper</b> at <a
@@ -166,23 +209,23 @@ for support and funding respectively. I was also sponsored by the now defunct
     <p> <i>Quite a fun piece of work which shows how well you can do by
         throwing away the old designs and starting again, with benefit of
         hindsight. Seems to evoke a love/hate response in readers.</i> </p>
-    </div>
 </td>
 </tr>
 
 <tr>
-<td><a href="papers/final/fase2003.pdf"><img src="papers/final/fase2003.jpg" width="160"></a></td>
-<td><div align="top">
+<td><a href="papers/final/fase2003.pdf"><img src="papers/final/fase2003.jpg" alt="Spatial Security Policies paper"></a></td>
+<td>
     <p><b><a href="papers/final/fase2003.pdf">Spatial Security Policies for Mobile Agents in a Sentient Computing
     Environment</a></b> -
       D. Scott, A. Beresford, A. Mycroft</p>
     <p>
 Won the <a href="http://www.easst.net/">European Association of Software
 Science and Technology</a> (EASST) <b>Best Software Science Paper</b>
-award</a> at
+award at
 <a href="http://www.lta.disco.unimib.it/fase2003/">FASE 2003</a> (part of
 <a href="http://www.mimuw.edu.pl/etaps03/">ETAPS 2003</a>) in Warsaw,
 Poland.
+    </p>
     <p> A Sentient Computing environment is one in which the system is able
     to perceive the state of the physical world and use this information to
     customise its behaviour. Mobile agents are a promising new programming
@@ -194,14 +237,13 @@ Poland.
     using ambients to model mobility.</p>
     <p><i>A fun project which combined ceiling-mounted ultrasonic location
           sensors and a very small amount of theory</i></p>
-    </div>
 </td>
 </tr>
 
 
 <tr>
-<td><a href="papers/final/abstracting.pdf"><img src="papers/final/abstracting.jpg" width="160"></a></td>
-<td><div align="top">
+<td><a href="papers/final/abstracting.pdf"><img src="papers/final/abstracting.jpg" alt="Abstracting Web Security paper"></a></td>
+<td>
     <p><b><a href="papers/final/abstracting.pdf">Abstracting Application-Level Web Security</a></b>
        - D. Scott, R. Sharp</p>
     <p><b>Best Paper</b> at the 11th International World-Wide Web conference
@@ -220,7 +262,6 @@ Poland.
     </p>
     <p><i> I think people liked this paper because of its practical focus
            and good timing. It's worth reading if only for the jokes!</i></p>
-    </div>
 </td>
 </tr>
 
@@ -229,7 +270,7 @@ Poland.
 
 <h2>Refereed Reports</h2>
 
-<table>
+<table class="papers-list">
   <tbody>
 
     <tr>
@@ -576,7 +617,7 @@ Poland.
 
 <h2>Unrefereed Reports</h2>
 
-<table class="table table-striped" width="100%">
+<table class="papers-list">
   <tbody>
 
     <tr>
@@ -640,7 +681,7 @@ Poland.
 
 <h2>Videos</h2>
 
-<table class="table table-striped" width="100%">
+<table class="papers-list">
   <tbody>
     <tr>
       <td>2003</td>
