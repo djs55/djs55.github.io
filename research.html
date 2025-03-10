@@ -27,6 +27,18 @@
         border-collapse: collapse;
       }
       
+      /* Paper thumbnails */
+      .paper-entry td:first-child {
+        text-align: center;
+      }
+      
+      .paper-entry td img {
+        width: 200px;
+        height: auto;
+        border: 1px solid #ccc;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      }
+      
       @media screen and (max-width: 768px) {
         table, tbody, tr, td {
           display: block;
@@ -46,6 +58,13 @@
         td img {
           max-width: 100%;
           height: auto;
+          margin: 0.5rem 0;
+        }
+        
+        /* Increase thumbnail size on mobile */
+        .paper-entry td img {
+          width: 280px;
+          max-width: 90%;
         }
         
         /* Paper list specific styles */
