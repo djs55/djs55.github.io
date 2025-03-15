@@ -90,8 +90,7 @@
             <p>
             There is a pleasing correspondence between the CLOS network wiring diagram and the
             tree of multiplexers and demultiplexers. We can &quot;twist&quot; the nodes to
-            make it obvious. The following animation shows only the input stages of the switch
-            for now, but imagine the output stages are a mirror image.
+            make it obvious.
             </p>
             <div id="switch"></div>
 
@@ -99,9 +98,9 @@
         import * as THREE from "https://unpkg.com/three@0.112/build/three.module.js";
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(900, 450);
+        renderer.setSize(900, 400);
         // Use this with the alpha: true setting from above
         renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
         // Also add this CSS to your canvas element
@@ -111,8 +110,8 @@
         //document.body.appendChild(renderer.domElement);
 
         // Camera position and controls
-        camera.position.set(0, 0, 75); // Side view for triangular shape
-        camera.lookAt(10, 0, 0);
+        camera.position.set(50, 0, 150); // Side view for triangular shape
+        camera.lookAt(50, 0, 0);
 
         let isDragging = false;
         let previousMouseX = 0;
@@ -132,8 +131,8 @@
         const nodesPerLayer = 8;  // 8 nodes per stage
         const inputsPerNode = 2;  // 2 inputs per node
         const outputsPerNode = 2; // 2 outputs per node
-        const nodeSize = 2;       // Size of each cube
-        const spacing = 10;       // Vertical spacing between nodes
+        const nodeSize = 5;       // Size of each cube
+        const spacing = 20;       // Vertical spacing between nodes
         const stageSpacing = 20;  // Horizontal spacing between stages
 
         // Grouping parameters
@@ -150,8 +149,23 @@
             egress: []
         };
 
+        const mirroredNodes = {
+            ingress: [],
+            middle1: [],
+            middle2: [],
+            middle3: [],
+            egress: []
+        };
+
         // Store initial positions for twisting
         const initialPositions = {
+            middle1: [],
+            middle2: [],
+            middle3: [],
+            egress: []
+        };
+
+        const mirroredInitialPositions = {
             middle1: [],
             middle2: [],
             middle3: [],
@@ -174,12 +188,21 @@
             return cube;
         }
 
+        function createMirroredNode(x, y, z, material) {
+            // create a second cube mirrored in the x-axis and translated by 100
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(-x+100, y, z);
+            scene.add(cube);
+            return cube;
+        }
+
         // Place ingress nodes (leftmost)
         for (let i = 0; i < nodesPerLayer; i++) {
             const x = -stageSpacing * 2;
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.ingress.push(createNode(x, y, z, ingressMaterial));
+            mirroredNodes.ingress.push(createMirroredNode(x, y, z, ingressMaterial));
         }
 
         // Place middle1 nodes (4 groups of 2) and store initial positions
@@ -188,6 +211,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.middle1.push(createNode(x, y, z, middle1Material));
+            mirroredNodes.middle1.push(createMirroredNode(x, y, z, middle1Material));
             initialPositions.middle1.push(new THREE.Vector3(x, y, z));
         }
 
@@ -197,6 +221,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.middle2.push(createNode(x, y, z, middle2Material));
+            mirroredNodes.middle2.push(createMirroredNode(x, y, z, middle2Material));
             initialPositions.middle2.push(new THREE.Vector3(x, y, z));
         }
 
@@ -206,6 +231,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.middle3.push(createNode(x, y, z, middle3Material));
+            mirroredNodes.middle3.push(createMirroredNode(x, y, z, middle3Material));
             initialPositions.middle3.push(new THREE.Vector3(x, y, z));
         }
 
@@ -215,12 +241,14 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             nodes.egress.push(createNode(x, y, z, egressMaterial));
+            mirroredNodes.egress.push(createMirroredNode(x, y, z, egressMaterial));
             initialPositions.egress.push(new THREE.Vector3(x, y, z));
         }
 
         // Draw edges (lines) between stages with grouped connections
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
         const lines = []; // Store lines for updating positions
+        const mirroredLines = []; // Store lines for updating positions
 
         function createLine(startNode, endNode) {
             const points = [startNode.position.clone(), endNode.position.clone()];
@@ -236,7 +264,9 @@
             const groupIndex = Math.floor(i / 2); // Groups: 0-1 (group 0), 2-3 (group 1), 4-5 (group 2), 6-7 (group 3)
             const baseIndex = groupIndex * 2; // Start of the group in middle1
             lines.push(createLine(ingress, nodes.middle1[baseIndex]));
+            mirroredLines.push(createLine(mirroredNodes.ingress[i], mirroredNodes.middle1[baseIndex]));
             lines.push(createLine(ingress, nodes.middle1[baseIndex + 1]));
+            mirroredLines.push(createLine(mirroredNodes.ingress[i], mirroredNodes.middle1[baseIndex + 1]));
         }
 
         // Middle1 to Middle2: 2 groups of 4 (nodes 0-3, 4-7)
@@ -248,7 +278,9 @@
             const target1 = baseIndex + (i % 2); // Alternate within the group
             const target2 = baseIndex + ((i % 2) + 2) % 4; // Second connection within the group
             lines.push(createLine(middle1, nodes.middle2[target1]));
+            mirroredLines.push(createLine(mirroredNodes.middle1[i], mirroredNodes.middle2[target1]));
             lines.push(createLine(middle1, nodes.middle2[target2]));
+            mirroredLines.push(createLine(mirroredNodes.middle1[i], mirroredNodes.middle2[target2]));
         }
 
         // Middle2 to Middle3: 1 group of 8
@@ -257,7 +289,9 @@
             const target1 = i;
             const target2 = (i + 4) % nodesPerLayer;
             lines.push(createLine(middle2, nodes.middle3[target1]));
+            mirroredLines.push(createLine(mirroredNodes.middle2[i], mirroredNodes.middle3[target1]));
             lines.push(createLine(middle2, nodes.middle3[target2]));
+            mirroredLines.push(createLine(mirroredNodes.middle2[i], mirroredNodes.middle3[target2]));
         }
 
         // Middle3 to Egress
@@ -266,7 +300,16 @@
             const target1 = i;
             const target2 = (i + 4) % nodesPerLayer;
             lines.push(createLine(middle3, nodes.egress[target1]));
+            mirroredLines.push(createLine(mirroredNodes.middle3[i], mirroredNodes.egress[target1]));
             lines.push(createLine(middle3, nodes.egress[target2]));
+            mirroredLines.push(createLine(mirroredNodes.middle3[i], mirroredNodes.egress[target2]));
+        }
+
+        // From egress to mirrored egress
+        for (let i = 0; i < nodesPerLayer; i++) {
+            const egress = nodes.egress[i];
+            const mirroredEgress = mirroredNodes.egress[i];
+            lines.push(createLine(egress, mirroredEgress));
         }
 
         // Automatic twist animation
@@ -296,6 +339,7 @@
                 const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
                 const offsetX = (isFirstInGroup ? -spacing / 2 : spacing / 2) * Math.sin(twistAngle); // Horizontal spread
                 nodes.middle1[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+                mirroredNodes.middle1[i].position.copy(new THREE.Vector3(-initialPos.x+100, centerY, initialPos.z).add(rotatedPos));
             }
 
             // Middle2: 2 groups of 4
@@ -308,6 +352,7 @@
                 const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
                 const offsetX = ((posInGroup - 1.5) * spacing) * Math.sin(twistAngle); // Wider horizontal spread
                 nodes.middle2[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+                mirroredNodes.middle2[i].position.copy(new THREE.Vector3(-initialPos.x+100, centerY, initialPos.z).add(rotatedPos));
             }
 
             // Middle3: 1 group of 8
@@ -318,6 +363,7 @@
                 const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
                 const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
                 nodes.middle3[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+                mirroredNodes.middle3[i].position.copy(new THREE.Vector3(-initialPos.x+100, centerY, initialPos.z).add(rotatedPos));
             }
 
             // Egress: 1 group of 8
@@ -328,6 +374,7 @@
                 const rotatedPos = relativePos.applyAxisAngle(new THREE.Vector3(1, 0, 0), twistAngle);
                 const offsetX = ((i - 3.5) * spacing) * Math.sin(twistAngle); // Full horizontal spread
                 nodes.egress[i].position.copy(new THREE.Vector3(initialPos.x, centerY, initialPos.z).add(rotatedPos));
+                mirroredNodes.egress[i].position.copy(new THREE.Vector3(-initialPos.x+100, centerY, initialPos.z).add(rotatedPos));
             }
 
             // Update line positions
@@ -335,53 +382,90 @@
             // Ingress to Middle1
             for (let i = 0; i < nodesPerLayer; i++) {
                 const ingress = nodes.ingress[i];
+                const mirroredIngres = mirroredNodes.ingress[i];
                 const groupIndex = Math.floor(i / 2);
                 const baseIndex = groupIndex * 2;
-                const line1 = lines[lineIndex++];
-                const line2 = lines[lineIndex++];
+                const line1 = lines[lineIndex];
+                const mirroredLine1 = mirroredLines[lineIndex++];
+                const line2 = lines[lineIndex];
+                const mirroredLine2 = mirroredLines[lineIndex++];
                 line1.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex].position.x, nodes.middle1[baseIndex].position.y, nodes.middle1[baseIndex].position.z]);
+                mirroredLine1.geometry.attributes.position.array.set([mirroredIngres.position.x, mirroredIngres.position.y, mirroredIngres.position.z, mirroredNodes.middle1[baseIndex].position.x, mirroredNodes.middle1[baseIndex].position.y, mirroredNodes.middle1[baseIndex].position.z]);
                 line2.geometry.attributes.position.array.set([ingress.position.x, ingress.position.y, ingress.position.z, nodes.middle1[baseIndex + 1].position.x, nodes.middle1[baseIndex + 1].position.y, nodes.middle1[baseIndex + 1].position.z]);
+                mirroredLine2.geometry.attributes.position.array.set([mirroredIngres.position.x, mirroredIngres.position.y, mirroredIngres.position.z, mirroredNodes.middle1[baseIndex + 1].position.x, mirroredNodes.middle1[baseIndex + 1].position.y, mirroredNodes.middle1[baseIndex + 1].position.z]);
                 line1.geometry.attributes.position.needsUpdate = true;
+                mirroredLine1.geometry.attributes.position.needsUpdate = true;
                 line2.geometry.attributes.position.needsUpdate = true;
+                mirroredLine2.geometry.attributes.position.needsUpdate = true;
             }
             // Middle1 to Middle2
             for (let i = 0; i < nodesPerLayer; i++) {
                 const middle1 = nodes.middle1[i];
+                const mirroredMiddle1 = mirroredNodes.middle1[i];
                 const middle1Group = Math.floor(i / 2);
                 const middle2Group = Math.floor(middle1Group / 2);
                 const baseIndex = middle2Group * 4;
                 const target1 = baseIndex + (i % 2);
                 const target2 = baseIndex + ((i % 2) + 2) % 4;
-                const line1 = lines[lineIndex++];
-                const line2 = lines[lineIndex++];
+                const line1 = lines[lineIndex];
+                const mirroredLine1 = mirroredLines[lineIndex++];
+                const line2 = lines[lineIndex];
+                const mirroredLine2 = mirroredLines[lineIndex++];
                 line1.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target1].position.x, nodes.middle2[target1].position.y, nodes.middle2[target1].position.z]);
+                mirroredLine1.geometry.attributes.position.array.set([mirroredMiddle1.position.x, mirroredMiddle1.position.y, mirroredMiddle1.position.z, mirroredNodes.middle2[target1].position.x, mirroredNodes.middle2[target1].position.y, mirroredNodes.middle2[target1].position.z]);
                 line2.geometry.attributes.position.array.set([middle1.position.x, middle1.position.y, middle1.position.z, nodes.middle2[target2].position.x, nodes.middle2[target2].position.y, nodes.middle2[target2].position.z]);
+                mirroredLine2.geometry.attributes.position.array.set([mirroredMiddle1.position.x, mirroredMiddle1.position.y, mirroredMiddle1.position.z, mirroredNodes.middle2[target2].position.x, mirroredNodes.middle2[target2].position.y, mirroredNodes.middle2[target2].position.z]);
                 line1.geometry.attributes.position.needsUpdate = true;
+                mirroredLine1.geometry.attributes.position.needsUpdate = true;
                 line2.geometry.attributes.position.needsUpdate = true;
+                mirroredLine2.geometry.attributes.position.needsUpdate = true;
             }
             // Middle2 to Middle3
             for (let i = 0; i < nodesPerLayer; i++) {
                 const middle2 = nodes.middle2[i];
+                const mirroredMiddle2 = mirroredNodes.middle2[i];
                 const target1 = i;
                 const target2 = (i + 4) % nodesPerLayer;
-                const line1 = lines[lineIndex++];
-                const line2 = lines[lineIndex++];
+                const line1 = lines[lineIndex];
+                const mirroredLine1 = mirroredLines[lineIndex++];
+                const line2 = lines[lineIndex];
+                const mirroredLine2 = mirroredLines[lineIndex++];
                 line1.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target1].position.x, nodes.middle3[target1].position.y, nodes.middle3[target1].position.z]);
+                mirroredLine1.geometry.attributes.position.array.set([mirroredMiddle2.position.x, mirroredMiddle2.position.y, mirroredMiddle2.position.z, mirroredNodes.middle3[target1].position.x, mirroredNodes.middle3[target1].position.y, mirroredNodes.middle3[target1].position.z]);
                 line2.geometry.attributes.position.array.set([middle2.position.x, middle2.position.y, middle2.position.z, nodes.middle3[target2].position.x, nodes.middle3[target2].position.y, nodes.middle3[target2].position.z]);
+                mirroredLine2.geometry.attributes.position.array.set([mirroredMiddle2.position.x, mirroredMiddle2.position.y, mirroredMiddle2.position.z, mirroredNodes.middle3[target2].position.x, mirroredNodes.middle3[target2].position.y, mirroredNodes.middle3[target2].position.z]);
                 line1.geometry.attributes.position.needsUpdate = true;
+                mirroredLine1.geometry.attributes.position.needsUpdate = true;
                 line2.geometry.attributes.position.needsUpdate = true;
+                mirroredLine2.geometry.attributes.position.needsUpdate = true;
             }
             // Middle3 to Egress
             for (let i = 0; i < nodesPerLayer; i++) {
                 const middle3 = nodes.middle3[i];
+                const mirroredMiddle3 = mirroredNodes.middle3[i];
                 const target1 = i;
                 const target2 = (i + 4) % nodesPerLayer;
-                const line1 = lines[lineIndex++];
-                const line2 = lines[lineIndex++];
+                const line1 = lines[lineIndex];
+                const mirroredLine1 = mirroredLines[lineIndex++];
+                const line2 = lines[lineIndex];
+                const mirroredLine2 = mirroredLines[lineIndex++];
                 line1.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target1].position.x, nodes.egress[target1].position.y, nodes.egress[target1].position.z]);
+                mirroredLine1.geometry.attributes.position.array.set([mirroredMiddle3.position.x, mirroredMiddle3.position.y, mirroredMiddle3.position.z, mirroredNodes.egress[target1].position.x, mirroredNodes.egress[target1].position.y, mirroredNodes.egress[target1].position.z]);
                 line2.geometry.attributes.position.array.set([middle3.position.x, middle3.position.y, middle3.position.z, nodes.egress[target2].position.x, nodes.egress[target2].position.y, nodes.egress[target2].position.z]);
+                mirroredLine2.geometry.attributes.position.array.set([mirroredMiddle3.position.x, mirroredMiddle3.position.y, mirroredMiddle3.position.z, mirroredNodes.egress[target2].position.x, mirroredNodes.egress[target2].position.y, mirroredNodes.egress[target2].position.z]);
                 line1.geometry.attributes.position.needsUpdate = true;
+                mirroredLine1.geometry.attributes.position.needsUpdate = true;
                 line2.geometry.attributes.position.needsUpdate = true;
+                mirroredLine2.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Egress to mirrored egress
+            for (let i = 0; i < nodesPerLayer; i++) {
+                const egress = nodes.egress[i];
+                const mirroredEgress = mirroredNodes.egress[i];
+                const line = lines[lineIndex++];
+                line.geometry.attributes.position.array.set([egress.position.x, egress.position.y, egress.position.z, mirroredEgress.position.x, mirroredEgress.position.y, mirroredEgress.position.z]);
+                line.geometry.attributes.position.needsUpdate = true;
             }
 
             renderer.render(scene, camera);
