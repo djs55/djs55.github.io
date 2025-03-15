@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      gap: 20px;
+    }
+    #legend {
+      margin-top: 20px;
+    }
+    .color-box {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="sketch-holder"></div>
+  <div id="legend">
+    <p><span class="color-box" style="background-color: white; border: 1px solid black;"></span> Free</p>
+    <p><span class="color-box" style="background-color: red;"></span> Allocated</p>
+    <p><span class="color-box" style="background-color: yellow;"></span> Highest Written Block</p>
+  </div>
+
+  <script>
+    let grid = [];
+    let cols = 10;
+    let rows = 5;
+    let cellSize = 40;
+    let state = 'allocate'; // 'allocate', 'free', 'defrag'
+    let frameCounter = 0;
+    let highestWritten = -1;
+
+    function setup() {
+      let canvas = createCanvas(cols * cellSize, rows * cellSize);
+      canvas.parent('sketch-holder');
+      // Initialize grid with all free blocks (0 = free, 1 = allocated)
+      for (let y = 0; y < rows; y++) {
+        grid[y] = new Array(cols).fill(0);
+      }
+    }
+
+    function draw() {
+      background(220);
+      frameCounter++;
+
+      // Run state machine every 30 frames (~0.5 seconds at 60 FPS)
+      if (frameCounter % 30 === 0) {
+        updateState();
+      }
+
+      // Draw grid
+      drawGrid();
+
+      // Draw highest written block marker
+      if (highestWritten >= 0) {
+        stroke(255, 255, 0); // Yellow
+        strokeWeight(3);
+        let x = (highestWritten % cols) * cellSize;
+        let y = Math.floor(highestWritten / cols) * cellSize;
+        line(x + cellSize, y, x + cellSize, y + cellSize);
+      }
+    }
+
+    function drawGrid() {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (grid[y][x] === 0) {
+            fill(255); // White for free
+          } else {
+            fill(255, 0, 0); // Red for allocated
+          }
+          stroke(0);
+          strokeWeight(1);
+          rect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    function updateState() {
+      if (state === 'allocate') {
+        // Randomly allocate a block if free
+        let freeSpots = [];
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 0) freeSpots.push(y * cols + x);
+          }
+        }
+        if (freeSpots.length > 0 && random(1) > 0.3) { // 70% chance to allocate
+          let idx = freeSpots[Math.floor(random(freeSpots.length))];
+          let y = Math.floor(idx / cols);
+          let x = idx % cols;
+          grid[y][x] = 1;
+          highestWritten = Math.max(highestWritten, idx);
+        } else {
+          state = 'free'; // Move to freeing state if no allocation or grid is full
+        }
+      } else if (state === 'free') {
+        // Randomly free an allocated block
+        let allocatedSpots = [];
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) allocatedSpots.push(y * cols + x);
+          }
+        }
+        if (allocatedSpots.length > 0 && random(1) > 0.3) { // 70% chance to free
+          let idx = allocatedSpots[Math.floor(random(allocatedSpots.length))];
+          let y = Math.floor(idx / cols);
+          let x = idx % cols;
+          grid[y][x] = 0;
+          // Recalculate highest written block
+          highestWritten = -1;
+          for (let i = rows * cols - 1; i >= 0; i--) {
+            let y = Math.floor(i / cols);
+            let x = i % cols;
+            if (grid[y][x] === 1) {
+              highestWritten = i;
+              break;
+            }
+          }
+        } else {
+          state = 'defrag'; // Move to defrag state
+        }
+      } else if (state === 'defrag') {
+        // Simple defrag: move all allocated blocks leftward
+        let newGrid = [];
+        for (let y = 0; y < rows; y++) {
+          newGrid[y] = new Array(cols).fill(0);
+        }
+        let writeIdx = 0;
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) {
+              let newY = Math.floor(writeIdx / cols);
+              let newX = writeIdx % cols;
+              newGrid[newY][newX] = 1;
+              writeIdx++;
+            }
+          }
+        }
+        grid = newGrid;
+        highestWritten = writeIdx - 1; // Update highest written
+        state = 'allocate'; // Back to allocate
+      }
+    }
+  </script>
+</body>
+</html>
