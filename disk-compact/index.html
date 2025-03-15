@@ -35,7 +35,7 @@
     let cellSize = 40;
     let state = 'allocate'; // 'allocate', 'free', 'defrag'
     let frameCounter = 0;
-    let highestWritten = -1;
+    let highestWritten = -1; // -1 means no blocks allocated yet
 
     function setup() {
       let canvas = createCanvas(cols * cellSize, rows * cellSize);
@@ -85,21 +85,18 @@
 
     function updateState() {
       if (state === 'allocate') {
-        // Randomly allocate a block if free
-        let freeSpots = [];
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            if (grid[y][x] === 0) freeSpots.push(y * cols + x);
+        // Allocate from the highest written block + 1
+        let nextIdx = highestWritten + 1;
+        let totalBlocks = rows * cols;
+        if (nextIdx < totalBlocks) { // Check if there's space to allocate
+          let y = Math.floor(nextIdx / cols);
+          let x = nextIdx % cols;
+          if (grid[y][x] === 0) { // Only allocate if the block is free
+            grid[y][x] = 1;
+            highestWritten = nextIdx;
           }
-        }
-        if (freeSpots.length > 0 && random(1) > 0.3) { // 70% chance to allocate
-          let idx = freeSpots[Math.floor(random(freeSpots.length))];
-          let y = Math.floor(idx / cols);
-          let x = idx % cols;
-          grid[y][x] = 1;
-          highestWritten = Math.max(highestWritten, idx);
         } else {
-          state = 'free'; // Move to freeing state if no allocation or grid is full
+          state = 'free'; // Move to freeing state if grid is full
         }
       } else if (state === 'free') {
         // Randomly free an allocated block
