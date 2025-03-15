@@ -60,6 +60,7 @@
             egress: []
         };
 
+
         // Store initial positions for twisting
         const initialPositions = {
             middle1: [],
@@ -90,6 +91,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             leftNodes.ingress.push(createNode(x, y, z, ingressMaterial));
+            createNode(-x, y, z, ingressMaterial); // Create mirrored node on the right
         }
 
         // Place middle1 nodes (4 groups of 2) and store initial positions
@@ -98,6 +100,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             leftNodes.middle1.push(createNode(x, y, z, middle1Material));
+            createNode(-x, y, z, middle1Material); // Create mirrored node on the right
             initialPositions.middle1.push(new THREE.Vector3(x, y, z));
         }
 
@@ -107,6 +110,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             leftNodes.middle2.push(createNode(x, y, z, middle2Material));
+            createNode(-x, y, z, middle2Material); // Create mirrored node on the right
             initialPositions.middle2.push(new THREE.Vector3(x, y, z));
         }
 
@@ -116,6 +120,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             leftNodes.middle3.push(createNode(x, y, z, middle3Material));
+            createNode(-x, y, z, middle3Material); // Create mirrored node on the right
             initialPositions.middle3.push(new THREE.Vector3(x, y, z));
         }
 
@@ -125,6 +130,7 @@
             const y = (i - (nodesPerLayer - 1) / 2) * spacing;
             const z = 0;
             leftNodes.egress.push(createNode(x, y, z, egressMaterial));
+            createNode(-x, y, z, egressMaterial); // Create mirrored node on the right
             initialPositions.egress.push(new THREE.Vector3(x, y, z));
         }
 
