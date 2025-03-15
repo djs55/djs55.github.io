@@ -25,6 +25,7 @@
   <div id="legend">
     <p><span class="color-box" style="background-color: white; border: 1px solid black;"></span> Free</p>
     <p><span class="color-box" style="background-color: red;"></span> Allocated</p>
+    <p><span class="color-box" style="background-color: blue;"></span> Moving</p>
     <p><span class="color-box" style="background-color: yellow;"></span> Highest Written Block</p>
   </div>
 
@@ -35,32 +36,30 @@
     let cellSize = 40;
     let state = 'allocate'; // 'allocate', 'free', 'defrag'
     let frameCounter = 0;
-    let highestWritten = -1; // -1 means no blocks allocated yet
+    let highestWritten = -1;
+    let movingBlocks = []; // Array to track animating blocks: {startX, startY, endX, endY, t}
 
     function setup() {
       let canvas = createCanvas(cols * cellSize, rows * cellSize);
       canvas.parent('sketch-holder');
-      // Initialize grid with all free blocks (0 = free, 1 = allocated)
       for (let y = 0; y < rows; y++) {
         grid[y] = new Array(cols).fill(0);
       }
     }
 
     function draw() {
-      background(220); // Clear canvas to gray to show "really free" space
+      background(220);
       frameCounter++;
 
-      // Run state machine every 30 frames (~0.5 seconds at 60 FPS)
-      if (frameCounter % 30 === 0) {
+      if (frameCounter % 30 === 0 && movingBlocks.length === 0) {
         updateState();
       }
 
-      // Draw grid up to highest written block
       drawGrid();
+      drawMovingBlocks();
 
-      // Draw highest written block marker
       if (highestWritten >= 0) {
-        stroke(255, 255, 0); // Yellow
+        stroke(255, 255, 0);
         strokeWeight(3);
         let x = (highestWritten % cols) * cellSize;
         let y = Math.floor(highestWritten / cols) * cellSize;
@@ -69,17 +68,17 @@
     }
 
     function drawGrid() {
-      if (highestWritten < 0) return; // Nothing to draw if no blocks allocated
+      if (highestWritten < 0) return;
       let maxY = Math.floor(highestWritten / cols);
       let maxX = highestWritten % cols;
 
       for (let y = 0; y <= maxY; y++) {
-        let endX = (y < maxY) ? cols - 1 : maxX; // Draw full row unless it's the last
+        let endX = (y < maxY) ? cols - 1 : maxX;
         for (let x = 0; x <= endX; x++) {
           if (grid[y][x] === 0) {
-            fill(255); // White for free
-          } else {
-            fill(255, 0, 0); // Red for allocated
+            fill(255);
+          } else if (grid[y][x] === 1) {
+            fill(255, 0, 0);
           }
           stroke(0);
           strokeWeight(1);
@@ -88,35 +87,53 @@
       }
     }
 
+    function drawMovingBlocks() {
+      for (let i = movingBlocks.length - 1; i >= 0; i--) {
+        let block = movingBlocks[i];
+        let t = block.t;
+        let x = lerp(block.startX * cellSize, block.endX * cellSize, t);
+        let y = lerp(block.startY * cellSize, block.endY * cellSize, t);
+        let r = lerp(0, 255, t); // Fade from blue (0,0,255) to red (255,0,0)
+        let b = lerp(255, 0, t);
+        fill(r, 0, b);
+        stroke(0);
+        strokeWeight(1);
+        rect(x, y, cellSize, cellSize);
+
+        block.t += 0.05; // Animation speed (0.05 = ~20 frames to complete)
+        if (block.t >= 1) {
+          grid[block.endY][block.endX] = 1; // Place block at destination
+          movingBlocks.splice(i, 1); // Remove completed animation
+        }
+      }
+    }
+
     function updateState() {
       if (state === 'allocate') {
-        // Allocate from the highest written block + 1
         let nextIdx = highestWritten + 1;
         let totalBlocks = rows * cols;
-        if (nextIdx < totalBlocks) { // Check if there's space to allocate
+        if (nextIdx < totalBlocks) {
           let y = Math.floor(nextIdx / cols);
           let x = nextIdx % cols;
-          if (grid[y][x] === 0) { // Only allocate if the block is free
+          if (grid[y][x] === 0) {
             grid[y][x] = 1;
             highestWritten = nextIdx;
           }
         } else {
-          state = 'free'; // Move to freeing state if grid is full
+          state = 'free';
         }
       } else if (state === 'free') {
-        // Randomly free an allocated block
         let allocatedSpots = [];
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
             if (grid[y][x] === 1) allocatedSpots.push(y * cols + x);
           }
         }
-        if (allocatedSpots.length > 0 && random(1) > 0.3) { // 70% chance to free
+        if (allocatedSpots.length > 0 && random(1) > 0.3) {
           let idx = allocatedSpots[Math.floor(random(allocatedSpots.length))];
           let y = Math.floor(idx / cols);
           let x = idx % cols;
           grid[y][x] = 0;
-          // Recalculate highest written block
           highestWritten = -1;
           for (let i = rows * cols - 1; i >= 0; i--) {
             let y = Math.floor(i / cols);
@@ -127,10 +144,9 @@
             }
           }
         } else {
-          state = 'defrag'; // Move to defrag state
+          state = 'defrag';
         }
       } else if (state === 'defrag') {
-        // Simple defrag: move all allocated blocks leftward
         let newGrid = [];
         for (let y = 0; y < rows; y++) {
           newGrid[y] = new Array(cols).fill(0);
@@ -141,14 +157,25 @@
             if (grid[y][x] === 1) {
               let newY = Math.floor(writeIdx / cols);
               let newX = writeIdx % cols;
-              newGrid[newY][newX] = 1;
+              if (x !== newX || y !== newY) { // Only animate if block moves
+                movingBlocks.push({
+                  startX: x,
+                  startY: y,
+                  endX: newX,
+                  endY: newY,
+                  t: 0
+                });
+              } else {
+                newGrid[newY][newX] = 1; // No animation if staying in place
+              }
+              grid[y][x] = 0; // Clear original position
               writeIdx++;
             }
           }
         }
         grid = newGrid;
-        highestWritten = writeIdx - 1; // Update highest written
-        state = 'allocate'; // Back to allocate
+        highestWritten = writeIdx - 1;
+        if (movingBlocks.length === 0) state = 'allocate'; // Only switch if no animations
       }
     }
   </script>
