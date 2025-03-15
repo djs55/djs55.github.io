@@ -37,7 +37,7 @@
     let state = 'allocate'; // 'allocate', 'free', 'defrag'
     let frameCounter = 0;
     let highestWritten = -1;
-    let movingBlocks = []; // Array to track animating blocks: {startX, startY, endX, endY, t}
+    let movingBlocks = []; // {startX, startY, endX, endY, t}
 
     function setup() {
       let canvas = createCanvas(cols * cellSize, rows * cellSize);
@@ -93,17 +93,17 @@
         let t = block.t;
         let x = lerp(block.startX * cellSize, block.endX * cellSize, t);
         let y = lerp(block.startY * cellSize, block.endY * cellSize, t);
-        let r = lerp(0, 255, t); // Fade from blue (0,0,255) to red (255,0,0)
+        let r = lerp(0, 255, t);
         let b = lerp(255, 0, t);
         fill(r, 0, b);
         stroke(0);
         strokeWeight(1);
         rect(x, y, cellSize, cellSize);
 
-        block.t += 0.05; // Animation speed (0.05 = ~20 frames to complete)
+        block.t += 0.05;
         if (block.t >= 1) {
-          grid[block.endY][block.endX] = 1; // Place block at destination
-          movingBlocks.splice(i, 1); // Remove completed animation
+          grid[block.endY][block.endX] = 1;
+          movingBlocks.splice(i, 1);
         }
       }
     }
@@ -147,35 +147,43 @@
           state = 'defrag';
         }
       } else if (state === 'defrag') {
-        let newGrid = [];
-        for (let y = 0; y < rows; y++) {
-          newGrid[y] = new Array(cols).fill(0);
+        // Count gaps and allocated blocks up to highestWritten
+        let gaps = [];
+        let allocated = [];
+        for (let i = 0; i <= highestWritten; i++) {
+          let y = Math.floor(i / cols);
+          let x = i % cols;
+          if (grid[y][x] === 0) gaps.push({x, y});
+          else allocated.push({x, y});
         }
-        let writeIdx = 0;
-        for (let y = 0; y < rows; y++) {
-          for (let x = 0; x < cols; x++) {
-            if (grid[y][x] === 1) {
-              let newY = Math.floor(writeIdx / cols);
-              let newX = writeIdx % cols;
-              if (x !== newX || y !== newY) { // Only animate if block moves
-                movingBlocks.push({
-                  startX: x,
-                  startY: y,
-                  endX: newX,
-                  endY: newY,
-                  t: 0
-                });
-              } else {
-                newGrid[newY][newX] = 1; // No animation if staying in place
-              }
-              grid[y][x] = 0; // Clear original position
-              writeIdx++;
-            }
+
+        // Only move blocks from the end to fill gaps
+        while (gaps.length > 0 && allocated.length > gaps.length) {
+          let gap = gaps.shift(); // Take earliest gap
+          let block = allocated.pop(); // Take latest block
+          if (block.x !== gap.x || block.y !== gap.y) {
+            movingBlocks.push({
+              startX: block.x,
+              startY: block.y,
+              endX: gap.x,
+              endY: gap.y,
+              t: 0
+            });
+            grid[block.y][block.x] = 0; // Clear source
           }
         }
-        grid = newGrid;
-        highestWritten = writeIdx - 1;
-        if (movingBlocks.length === 0) state = 'allocate'; // Only switch if no animations
+
+        // Recalculate highestWritten after moves
+        highestWritten = -1;
+        for (let i = rows * cols - 1; i >= 0; i--) {
+          let y = Math.floor(i / cols);
+          let x = i % cols;
+          if (grid[y][x] === 1) {
+            highestWritten = i;
+            break;
+          }
+        }
+        if (movingBlocks.length === 0) state = 'allocate';
       }
     }
   </script>
