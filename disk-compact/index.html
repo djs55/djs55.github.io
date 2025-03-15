@@ -1,26 +1,89 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      gap: 20px;
-    }
-    #legend {
-      margin-top: 20px;
-    }
-    .color-box {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      vertical-align: middle;
-      margin-right: 5px;
-    }
-  </style>
-</head>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CLOS Network switching</title>
+    <meta name="description" content="CLOS Network switching">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="twitter:title" content="CLOS Network switching">
+    <meta name="twitter:description" content="CLOS Network switching with Sandy Fraser">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <style>
+      #legend {
+        margin-top: 20px;
+      }
+      .color-box {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
 <body>
+
+    <body class="terminal">
+
+        <div class="container">
+          <div class="terminal-nav">
+            <header class="terminal-logo">
+              <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+            </header>
+          <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+              <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+            </ul>
+          </nav>
+        </div>
+
+        <div class="container">
+
+<p>
+In 2016 when we released Docker for Mac (now Docker Desktop), we had a problem. Docker for Mac uses a virtual machine
+to run Linux Docker containers, and the virtual machine needs a disk to store the container filesystems. On the Mac
+the disk is a file, and that file grew and grew (up to a maximum of 64GB) even if containers were deleted. To
+understand why this happened and how we fixed it, first consider how a virtualized disk works.
+</p>
+<center>
+<img src="qcow2.png" alt="qcow2 disk image"  style="width: 80%; height: auto;">
+</center>
+<p>
+When a developer types <code>touch /foo</code> inside a container, Linux writes to the disk. Since Linux is running
+as a virtual machine, the disk is also virtual. This means that, rather than asking a real disk controller to write
+to a real physical disk, instead the write request is sent to the Mac which then has to decide how to deal with it.
+Where does the Mac store the data?
+</p>
+<p>
+The simplest way to store a virtual disk is as a raw file. However virtual disks are large; Docker used 64G by default.
+Today this is not a problem, because modern filesystems like APFS support &quot;sparse files&quot;
+(or &quot;thin-provisioning&quot;) which only allocate real storage when it is needed.
+However, back in 2016 the most common filesystem on the Mac was HFS+, which lacks this feature. If we had used a raw
+file on HFS+ then Docker would always consume 64GB on the host nomatter how much data was actually stored in the containers!
+Obviously we didn't do that, but what did we do?
+</p>
+<p>
+To simulate sparse files on HFS+, we used a disk format called qcow2, from the <a href="qemu.org">QEMU project</a>.
+We used an <a href="https://github.com/mirage/ocaml-qcow/">OCaml qcow2 implementation</a> (from the
+<a href="https://mirage.io/">Mirage unikernel project</a>) and linked it directly to
+<a href="https://github.com/moby/hyperkit">hyperkit</a>, the virtual machine manager used by Docker for Mac.
+Now when Docker for Mac started up, a tiny empty qcow2 file was created (and not a 64G monster!). Much better!
+However as time went on, the file slowly grew. The file on the Mac never shrank, even if containers were deleted.
+We had only delayed the problem, not solved it.
+</p>
+
+</p>
   <div id="sketch-holder"></div>
   <div id="legend">
     <p><span class="color-box" style="background-color: white; border: 1px solid black;"></span> Free</p>
@@ -34,7 +97,7 @@
     let cols = 10;
     let rows = 5;
     let cellSize = 40;
-    let state = 'allocate'; // 'allocate', 'free', 'defrag'
+    let state = 'running'; // 'running', 'defrag'
     let frameCounter = 0;
     let highestWritten = -1;
     let movingBlocks = []; // {startX, startY, endX, endY, t}
@@ -109,27 +172,27 @@
     }
 
     function updateState() {
-      if (state === 'allocate') {
-        let nextIdx = highestWritten + 1;
+      if (state === 'running') {
         let totalBlocks = rows * cols;
-        if (nextIdx < totalBlocks) {
-          let y = Math.floor(nextIdx / cols);
-          let x = nextIdx % cols;
-          if (grid[y][x] === 0) {
-            grid[y][x] = 1;
-            highestWritten = nextIdx;
-          }
-        } else {
-          state = 'free';
-        }
-      } else if (state === 'free') {
         let allocatedSpots = [];
         for (let y = 0; y < rows; y++) {
           for (let x = 0; x < cols; x++) {
             if (grid[y][x] === 1) allocatedSpots.push(y * cols + x);
           }
         }
-        if (allocatedSpots.length > 0 && random(1) > 0.3) {
+
+        // Randomly decide to allocate or free (50% chance each)
+        if (random(1) < 0.5 && highestWritten + 1 < totalBlocks) {
+          // Allocate
+          let nextIdx = highestWritten + 1;
+          let y = Math.floor(nextIdx / cols);
+          let x = nextIdx % cols;
+          if (grid[y][x] === 0) {
+            grid[y][x] = 1;
+            highestWritten = nextIdx;
+          }
+        } else if (allocatedSpots.length > 0) {
+          // Free
           let idx = allocatedSpots[Math.floor(random(allocatedSpots.length))];
           let y = Math.floor(idx / cols);
           let x = idx % cols;
@@ -143,11 +206,11 @@
               break;
             }
           }
-        } else {
-          state = 'defrag';
         }
+
+        // Switch to defrag after some activity (e.g., every 10 steps)
+        if (frameCounter % 300 === 0) state = 'defrag'; // ~5 seconds at 30 frames/step
       } else if (state === 'defrag') {
-        // Count gaps and allocated blocks up to highestWritten
         let gaps = [];
         let allocated = [];
         for (let i = 0; i <= highestWritten; i++) {
@@ -157,10 +220,9 @@
           else allocated.push({x, y});
         }
 
-        // Only move blocks from the end to fill gaps
         while (gaps.length > 0 && allocated.length > gaps.length) {
-          let gap = gaps.shift(); // Take earliest gap
-          let block = allocated.pop(); // Take latest block
+          let gap = gaps.shift();
+          let block = allocated.pop();
           if (block.x !== gap.x || block.y !== gap.y) {
             movingBlocks.push({
               startX: block.x,
@@ -169,11 +231,10 @@
               endY: gap.y,
               t: 0
             });
-            grid[block.y][block.x] = 0; // Clear source
+            grid[block.y][block.x] = 0;
           }
         }
 
-        // Recalculate highestWritten after moves
         highestWritten = -1;
         for (let i = rows * cols - 1; i >= 0; i--) {
           let y = Math.floor(i / cols);
@@ -183,9 +244,11 @@
             break;
           }
         }
-        if (movingBlocks.length === 0) state = 'allocate';
+        if (movingBlocks.length === 0) state = 'running';
       }
     }
   </script>
+  </div>
+</div>
 </body>
 </html>
