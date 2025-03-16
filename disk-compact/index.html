@@ -51,39 +51,136 @@
         <div class="container">
 
 <p>
-In 2016 when we released Docker for Mac (now Docker Desktop), we had a problem. Docker for Mac uses a virtual machine
-to run Linux Docker containers, and the virtual machine needs a disk to store the container filesystems. On the Mac
-the disk is a file, and that file grew and grew (up to a maximum of 64GB) even if containers were deleted. To
-understand why this happened and how we fixed it, first consider how a virtualized disk works.
+In 2016 when we released Docker for Mac (now Docker Desktop), we had a problem.
+The disk space used by Docker for Mac grew and grew, up to around 64GiB. At the time
+this was a huge amount of disk space, especially given the limited disk space on typical Mac laptops.
+Worse still, the disk space used never shrank. No matter how many containers and images were deleted
+the disk space used increased relentlessly. Why was this and how did we fix it?
 </p>
+<h1>First, some background</h1>
+<p>
+Docker for Mac runs Linux containers on a Mac machine. However <em>Linux</em> containers need the <em>Linux</em> syscall interface,
+not the macOS syscall interface. Therefore Docker for Mac runs Linux containers inside
+a hidden Linux virtual machine. The Linux kernel provides the syscall interface for containers, while Docker for Mac
+provides the virtual disk, virtual network, and other services to support the virtual machine.
+<p>
 <center>
-<img src="qcow2.png" alt="qcow2 disk image"  style="width: 80%; height: auto;">
+  <img src="syscall.png" alt="Docker for Mac runs a Linux VM on macOS"  style="width: 40%; height: auto;">
 </center>
+<h1>How does this affect disk space?</h1>
 <p>
-When a developer types <code>touch /foo</code> inside a container, Linux writes to the disk. Since Linux is running
-as a virtual machine, the disk is also virtual. This means that, rather than asking a real disk controller to write
-to a real physical disk, instead the write request is sent to the Mac which then has to decide how to deal with it.
-Where does the Mac store the data?
+Let's investigate what happens when the developer modifies the filesystem inside a container. The following
+command creates a container, creates a file inside it, and then removes the whole container (using <code>--rm</code>):
+</p>
+<p>% docker run --rm alpine touch /foo</p>
+<p>
+To understand what happens, first we must ask:
+which filesystem is the file created in?
+We can look closer with a shell inside a container:
+</p>
+<p>% docker run --rm -it alpine sh</p>
+<p>
+<pre>
+/ # mount
+overlay on / type overlay (rw,relatime,lowerdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/112/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/1/fs,upperdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs,workdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/work)
+...
+</pre>
+<p>
+The root filesystem of the container is an <code>overlay</code> filesystem.
+An overlay allows filesystems to be layered, so that writes go to the &quot;upperdir&quot;, while reads fall through
+to the &quot;lowerdir&quot;.
+<code>overlay</code> is great for containers because a base image (in this case alpine) can be shared -- read only -- as
+the &quot;lowerdir&quot;, while each container gets to make its own changes via the writable layer on top. Without <code>overlay</code>,
+every container start would have to physically copy the base image, which would be slow and consume a lot of disk space
+unnecessarily.
 </p>
 <p>
-The simplest way to store a virtual disk is as a raw file. However virtual disks are large; Docker used 64G by default.
-Today this is not a problem, because modern filesystems like APFS support &quot;sparse files&quot;
+In this example, the container's writes go to the &quot;upperdir&quot;, which is
+<code>/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs</code>.
+What type of filesystem is that? To find the answer we need to break into the layer beneath the container,
+and see what the Docker engine itself sees. If we run
+</p>
+<p>% docker run --rm --privileged --pid=host -it justincormack/nsenter1</p>
+<p>
+This command will use the &quot;host&quot; pid namespace
+(so it can see all processes, not only the processes inside the container) and use <code>nsenter</code> to enter
+all the namepaces of pid 1, the root process in the VM. Now we can dig further:
+<pre>
+sh-5.2# df /var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs
+Filesystem      1K-blocks     Used Available Use% Mounted on
+/dev/sdd       1055762868 10479984 991579412   2% /var/lib
+sh-5.2# mount | grep "/var/lib "
+/dev/vda /var/lib type ext4 (rw,relatime)
+</pre>
+We can see that the container's writes are written to an <code>ext4</code> filesystem on a disk called <code>/dev/vda</code>,
+where <code>/dev/vda</code> is a virtual disk provided by Docker Desktop.
+</p>
+<p>Now we are getting close to seeing the problem: when a user creates and then removes a file it results in a
+series of virtual disk reads and writes in Docker Desktop. The Mac doesn't see the Linux filesystem,
+only these disk reads and writes. How are they implemented on the Mac?
+</p>
+<p>
+The simplest way to implement a virtual disk of size 64GiB is to create a 64GiB file on the Mac.
+Today this is actually sensible, because modern filesystems like APFS support &quot;sparse files&quot;
 (or &quot;thin-provisioning&quot;) which only allocate real storage when it is needed.
 However, back in 2016 the most common filesystem on the Mac was HFS+, which lacks this feature. If we had used a raw
 file on HFS+ then Docker would always consume 64GB on the host nomatter how much data was actually stored in the containers!
 Obviously we didn't do that, but what did we do?
 </p>
+
+<center>
+<img src="qcow2.png" alt="qcow2 disk image"  style="width: 80%; height: auto;">
+</center>
 <p>
 To simulate sparse files on HFS+, we used a disk format called qcow2, from the <a href="qemu.org">QEMU project</a>.
-We used an <a href="https://github.com/mirage/ocaml-qcow/">OCaml qcow2 implementation</a> (from the
-<a href="https://mirage.io/">Mirage unikernel project</a>) and linked it directly to
+Docker for Mac used lots of libraries from the <a href="https://mirage.io/">Mirage unikernel project</a>,
+so we used their <a href="https://github.com/mirage/ocaml-qcow/">OCaml qcow2 implementation</a> and linked it directly to
 <a href="https://github.com/moby/hyperkit">hyperkit</a>, the virtual machine manager used by Docker for Mac.
 Now when Docker for Mac started up, a tiny empty qcow2 file was created (and not a 64G monster!). Much better!
 However as time went on, the file slowly grew. The file on the Mac never shrank, even if containers were deleted.
+Docker for Mac was only seeing reads and writes, but not &quot;file deletes&quot;
 We had only delayed the problem, not solved it.
 </p>
 
+<h1>The fix: enabling TRIM and writing an online disk defrag in OCaml</h1>
+
+<p> It turns out that modern SSD disks also have a similar problem. Inside SSDs there are blocks of flash memory,
+  much larger than a typical filesystem block. When a filesystem writes to a block which already contains data, the SSD must 
+  read the current block, apply the update, and write the whole block back. If the OS doesn't actually care about
+  the other data in the block then the SSD has to do a lot of extra work for nothing.
+  The TRIM command is a way for the OS to tell the SSD that a portion of the data is no longer needed. When a file is deleted,
+  the OS will TRIM the disk region where the data was stored. The SSD can then mark these areas as free, and
+  know that it can ignore or reuse them in the future.
+  </p>
+
+<p>
+  We added <a href="https://github.com/moby/hyperkit/pull/81">TRIM support to hyperkit</a> but we still needed to
+  do something when the TRIM requests were received.
 </p>
+<p>
+  The qcow2 format makes it fairly easy to mark a block as free, but this doesn't fix the bug by itself, since the file
+  on the Mac is still large. To shrink the file we needed to move blocks from the end of the file into the holes
+  created by the TRIM. Our initial implementation was a simple defrag which ran at startup, but this meant that
+  the file would only shrink when Docker Desktop was restarted. We needed an online defrag which could run while
+  Docker Desktop was running.
+</p>
+<p>
+  
+  The <a href="https://github.com/mirage/ocaml-qcow/pull/63">online defrag</a> ran continuously in the background,
+  keeping track of which regions of the file were free and
+  opportunistically copied blocks from later in the file to fill the holes. After moving the last block in the file it
+  could <code>ftruncate</code> the file to the new size. However correctness is hard to achieve. For example
+   it had to be careful to abandon any copies
+  should the originals be modified. Furthermore the defrag had to be safe even if the host crashed during the move;
+  consider what would happen if a block was copied and then a pointer updated to reference it; and then the writes
+  permuted but the copy was lost in the crash. The defrag was careful to use primitives
+  like <a href="https://github.com/mirage/mirage-block-unix/blob/130d7ff27d0f79c5508e954a4f5bd7738622faa3/lib/flush_stubs.c#L61">
+    F_FULLSYNC</a> to ensure that the writes were durable.
+</p>
+<p>
+  The result looked somewhat like this:
+</p>
+
   <div id="sketch-holder"></div>
   <div id="legend">
     <p><span class="color-box" style="background-color: white; border: 1px solid black;"></span> Free</p>
@@ -94,8 +191,8 @@ We had only delayed the problem, not solved it.
 
   <script>
     let grid = [];
-    let cols = 10;
-    let rows = 5;
+    let cols = 20;
+    let rows = 10;
     let cellSize = 40;
     let state = 'running'; // 'running', 'defrag'
     let frameCounter = 0;
@@ -105,7 +202,11 @@ We had only delayed the problem, not solved it.
     function setup() {
       let canvas = createCanvas(cols * cellSize, rows * cellSize);
       canvas.parent('sketch-holder');
-      for (let y = 0; y < rows; y++) {
+      // fill half way
+      for (let y = 0; y < rows/2; y++) {
+        grid[y] = new Array(cols).fill(1);
+      }
+      for (let y = rows/2; y < rows; y++) {
         grid[y] = new Array(cols).fill(0);
       }
     }
