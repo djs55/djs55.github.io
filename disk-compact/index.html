@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Online qcow2 defragmentation in OCaml in Docker for Mac</title>
+    <meta name="description" content="Online qcow2 defragmentation in OCaml in Docker for Mac">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="twitter:title" content="Online qcow2 defragmentation in OCaml in Docker for Mac">
+    <meta name="twitter:description" content="Ensuring that disk space used by Docker for Mac doesn't grow without bound">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <style>
+      #legend {
+        margin-top: 20px;
+      }
+      .color-box {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+<body>
+
+    <body class="terminal">
+
+        <div class="container">
+          <div class="terminal-nav">
+            <header class="terminal-logo">
+              <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+            </header>
+          <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+              <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+            </ul>
+          </nav>
+        </div>
+
+        <div class="container">
+
+<p>
+In 2016 when we released Docker for Mac (now Docker Desktop), we had a problem.
+The disk space used by Docker for Mac grew and grew, up to around 64GiB. At the time
+this was a huge amount of disk space, especially given the limited disk space on typical Mac laptops.
+Worse still, the disk space used never shrank. No matter how many containers and images were deleted
+the disk space used increased relentlessly. Why was this and how did we fix it?
+</p>
+<h1>First, some background</h1>
+<p>
+Docker for Mac runs Linux containers on a Mac machine. However <em>Linux</em> containers need the <em>Linux</em> syscall interface,
+not the macOS syscall interface. Therefore Docker for Mac runs Linux containers inside
+a hidden Linux virtual machine. The Linux kernel provides the syscall interface for containers, while Docker for Mac
+provides the virtual disk, virtual network, and other services to support the virtual machine.
+<p>
+<center>
+  <img src="syscall.png" alt="Docker for Mac runs a Linux VM on macOS"  style="width: 40%; height: auto;">
+</center>
+<h1>How does this affect disk space?</h1>
+<p>
+Let's investigate what happens when the developer modifies the filesystem inside a container. The following
+command creates a container, creates a file inside it, and then removes the whole container (using <code>--rm</code>):
+</p>
+<p>% docker run --rm alpine touch /foo</p>
+<p>
+To understand what happens, first we must ask:
+which filesystem is the file created in?
+We can look closer with a shell inside a container:
+</p>
+<p>% docker run --rm -it alpine sh</p>
+<p>
+<pre>
+/ # mount
+overlay on / type overlay (rw,relatime,lowerdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/112/fs:/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/1/fs,upperdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs,workdir=/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/work)
+...
+</pre>
+<p>
+The root filesystem of the container is an <code>overlay</code> filesystem.
+An overlay allows filesystems to be layered, so that writes go to the &quot;upperdir&quot;, while reads fall through
+to the &quot;lowerdir&quot;.
+<code>overlay</code> is great for containers because a base image (in this case alpine) can be shared -- read only -- as
+the &quot;lowerdir&quot;, while each container gets to make its own changes via the writable layer on top. Without <code>overlay</code>,
+every container start would have to physically copy the base image, which would be slow and consume a lot of disk space
+unnecessarily.
+</p>
+<p>
+In this example, the container's writes go to the &quot;upperdir&quot;, which is
+<code>/var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs</code>.
+What type of filesystem is that? To find the answer we need to break into the layer beneath the container,
+and see what the Docker engine itself sees. If we run
+</p>
+<p>% docker run --rm --privileged --pid=host -it justincormack/nsenter1</p>
+<p>
+This command will use the &quot;host&quot; pid namespace
+(so it can see all processes, not only the processes inside the container) and use <code>nsenter</code> to enter
+all the namepaces of pid 1, the root process in the VM. Now we can dig further:
+<pre>
+sh-5.2# df /var/lib/desktop-containerd/daemon/io.containerd.snapshotter.v1.overlayfs/snapshots/113/fs
+Filesystem      1K-blocks     Used Available Use% Mounted on
+/dev/sdd       1055762868 10479984 991579412   2% /var/lib
+sh-5.2# mount | grep "/var/lib "
+/dev/vda /var/lib type ext4 (rw,relatime)
+</pre>
+We can see that the container's writes are written to an <code>ext4</code> filesystem on a disk called <code>/dev/vda</code>,
+where <code>/dev/vda</code> is a virtual disk provided by Docker Desktop.
+</p>
+<p>Now we are getting close to seeing the problem: when a user creates and then removes a file it results in a
+series of virtual disk reads and writes in Docker Desktop. The Mac doesn't see the Linux filesystem,
+only these disk reads and writes. How are they implemented on the Mac?
+</p>
+<p>
+The simplest way to implement a virtual disk of size 64GiB is to create a 64GiB file on the Mac.
+Today this is actually sensible, because modern filesystems like APFS support &quot;sparse files&quot;
+(or &quot;thin-provisioning&quot;) which only allocate real storage when it is needed.
+However, back in 2016 the most common filesystem on the Mac was HFS+, which lacks this feature. If we had used a raw
+file on HFS+ then Docker would always consume 64GB on the host nomatter how much data was actually stored in the containers!
+Obviously we didn't do that, but what did we do?
+</p>
+
+<center>
+<img src="qcow2.png" alt="qcow2 disk image"  style="width: 80%; height: auto;">
+</center>
+<p>
+To simulate sparse files on HFS+, we used a disk format called qcow2, from the <a href="qemu.org">QEMU project</a>.
+Docker for Mac used lots of libraries from the <a href="https://mirage.io/">Mirage unikernel project</a>,
+so we used their <a href="https://github.com/mirage/ocaml-qcow/">OCaml qcow2 implementation</a> and linked it directly to
+<a href="https://github.com/moby/hyperkit">hyperkit</a>, the virtual machine manager used by Docker for Mac.
+Now when Docker for Mac started up, a tiny empty qcow2 file was created (and not a 64G monster!). Much better!
+However as time went on, the file slowly grew. The file on the Mac never shrank, even if containers were deleted.
+Docker for Mac was only seeing reads and writes, but not &quot;file deletes&quot;
+We had only delayed the problem, not solved it.
+</p>
+
+<h1>The fix: enabling TRIM and writing an online disk defrag in OCaml</h1>
+
+<p> It turns out that modern SSD disks also have a similar problem. Inside SSDs there are blocks of flash memory,
+  much larger than a typical filesystem block. When a filesystem writes to a block which already contains data, the SSD must 
+  read the current block, apply the update, and write the whole block back. If the OS doesn't actually care about
+  the other data in the block then the SSD has to do a lot of extra work for nothing.
+  The TRIM command is a way for the OS to tell the SSD that a portion of the data is no longer needed. When a file is deleted,
+  the OS will TRIM the disk region where the data was stored. The SSD can then mark these areas as free, and
+  know that it can ignore or reuse them in the future.
+  </p>
+
+<p>
+  We added <a href="https://github.com/moby/hyperkit/pull/81">TRIM support to hyperkit</a> but we still needed to
+  do something when the TRIM requests were received.
+</p>
+<p>
+  The qcow2 format makes it fairly easy to mark a block as free, but this doesn't fix the bug by itself, since the file
+  on the Mac is still large. To shrink the file we needed to move blocks from the end of the file into the holes
+  created by the TRIM. Our initial implementation was a simple defrag which ran at startup, but this meant that
+  the file would only shrink when Docker Desktop was restarted. We needed an online defrag which could run while
+  Docker Desktop was running.
+</p>
+<p>
+  
+  The <a href="https://github.com/mirage/ocaml-qcow/pull/63">online defrag</a> ran continuously in the background,
+  keeping track of which regions of the file were free and
+  opportunistically copied blocks from later in the file to fill the holes. After moving the last block in the file it
+  could <code>ftruncate</code> the file to the new size. However correctness is hard to achieve. For example
+   it had to be careful to abandon any copies
+  should the originals be modified. Furthermore the defrag had to be safe even if the host crashed during the move;
+  consider what would happen if a block was copied and then a pointer updated to reference it; and then the writes
+  permuted but the copy was lost in the crash. The defrag was careful to use primitives
+  like <a href="https://github.com/mirage/mirage-block-unix/blob/130d7ff27d0f79c5508e954a4f5bd7738622faa3/lib/flush_stubs.c#L61">
+    F_FULLSYNC</a> to ensure that the writes were durable.
+</p>
+<p>
+  The result looked somewhat like this:
+</p>
+
+  <div id="sketch-holder"></div>
+  <div id="legend">
+    <p><span class="color-box" style="background-color: white; border: 1px solid black;"></span> Free</p>
+    <p><span class="color-box" style="background-color: red;"></span> Allocated</p>
+    <p><span class="color-box" style="background-color: blue;"></span> Moving</p>
+    <p><span class="color-box" style="background-color: yellow;"></span> Highest Written Block</p>
+  </div>
+
+  <script>
+    let grid = [];
+    let cols = 20;
+    let rows = 10;
+    let cellSize = 40;
+    let state = 'running'; // 'running', 'defrag'
+    let frameCounter = 0;
+    let highestWritten = -1;
+    let movingBlocks = []; // {startX, startY, endX, endY, t}
+
+    function setup() {
+      let canvas = createCanvas(cols * cellSize, rows * cellSize);
+      canvas.parent('sketch-holder');
+      // fill half way
+      for (let y = 0; y < rows/2; y++) {
+        grid[y] = new Array(cols).fill(1);
+      }
+      for (let y = rows/2; y < rows; y++) {
+        grid[y] = new Array(cols).fill(0);
+      }
+    }
+
+    function draw() {
+      background(220);
+      frameCounter++;
+
+      if (frameCounter % 30 === 0 && movingBlocks.length === 0) {
+        updateState();
+      }
+
+      drawGrid();
+      drawMovingBlocks();
+
+      if (highestWritten >= 0) {
+        stroke(255, 255, 0);
+        strokeWeight(3);
+        let x = (highestWritten % cols) * cellSize;
+        let y = Math.floor(highestWritten / cols) * cellSize;
+        line(x + cellSize, y, x + cellSize, y + cellSize);
+      }
+    }
+
+    function drawGrid() {
+      if (highestWritten < 0) return;
+      let maxY = Math.floor(highestWritten / cols);
+      let maxX = highestWritten % cols;
+
+      for (let y = 0; y <= maxY; y++) {
+        let endX = (y < maxY) ? cols - 1 : maxX;
+        for (let x = 0; x <= endX; x++) {
+          if (grid[y][x] === 0) {
+            fill(255);
+          } else if (grid[y][x] === 1) {
+            fill(255, 0, 0);
+          }
+          stroke(0);
+          strokeWeight(1);
+          rect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    function drawMovingBlocks() {
+      for (let i = movingBlocks.length - 1; i >= 0; i--) {
+        let block = movingBlocks[i];
+        let t = block.t;
+        let x = lerp(block.startX * cellSize, block.endX * cellSize, t);
+        let y = lerp(block.startY * cellSize, block.endY * cellSize, t);
+        let r = lerp(0, 255, t);
+        let b = lerp(255, 0, t);
+        fill(r, 0, b);
+        stroke(0);
+        strokeWeight(1);
+        rect(x, y, cellSize, cellSize);
+
+        block.t += 0.05;
+        if (block.t >= 1) {
+          grid[block.endY][block.endX] = 1;
+          movingBlocks.splice(i, 1);
+        }
+      }
+    }
+
+    function updateState() {
+      if (state === 'running') {
+        let totalBlocks = rows * cols;
+        let allocatedSpots = [];
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[y][x] === 1) allocatedSpots.push(y * cols + x);
+          }
+        }
+
+        // Randomly decide to allocate or free (50% chance each)
+        if (random(1) < 0.5 && highestWritten + 1 < totalBlocks) {
+          // Allocate
+          let nextIdx = highestWritten + 1;
+          let y = Math.floor(nextIdx / cols);
+          let x = nextIdx % cols;
+          if (grid[y][x] === 0) {
+            grid[y][x] = 1;
+            highestWritten = nextIdx;
+          }
+        } else if (allocatedSpots.length > 0) {
+          // Free
+          let idx = allocatedSpots[Math.floor(random(allocatedSpots.length))];
+          let y = Math.floor(idx / cols);
+          let x = idx % cols;
+          grid[y][x] = 0;
+          highestWritten = -1;
+          for (let i = rows * cols - 1; i >= 0; i--) {
+            let y = Math.floor(i / cols);
+            let x = i % cols;
+            if (grid[y][x] === 1) {
+              highestWritten = i;
+              break;
+            }
+          }
+        }
+
+        // Switch to defrag after some activity (e.g., every 10 steps)
+        if (frameCounter % 300 === 0) state = 'defrag'; // ~5 seconds at 30 frames/step
+      } else if (state === 'defrag') {
+        let gaps = [];
+        let allocated = [];
+        for (let i = 0; i <= highestWritten; i++) {
+          let y = Math.floor(i / cols);
+          let x = i % cols;
+          if (grid[y][x] === 0) gaps.push({x, y});
+          else allocated.push({x, y});
+        }
+
+        while (gaps.length > 0 && allocated.length > gaps.length) {
+          let gap = gaps.shift();
+          let block = allocated.pop();
+          if (block.x !== gap.x || block.y !== gap.y) {
+            movingBlocks.push({
+              startX: block.x,
+              startY: block.y,
+              endX: gap.x,
+              endY: gap.y,
+              t: 0
+            });
+            grid[block.y][block.x] = 0;
+          }
+        }
+
+        highestWritten = -1;
+        for (let i = rows * cols - 1; i >= 0; i--) {
+          let y = Math.floor(i / cols);
+          let x = i % cols;
+          if (grid[y][x] === 1) {
+            highestWritten = i;
+            break;
+          }
+        }
+        if (movingBlocks.length === 0) state = 'running';
+      }
+    }
+  </script>
+  </div>
+</div>
+</body>
+</html>
