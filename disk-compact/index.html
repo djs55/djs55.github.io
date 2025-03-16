@@ -172,10 +172,12 @@ We had only delayed the problem, not solved it.
   could <code>ftruncate</code> the file to the new size. However correctness is hard to achieve. For example
    it had to be careful to abandon any copies
   should the originals be modified. Furthermore the defrag had to be safe even if the host crashed during the move;
-  consider what would happen if a block was copied and then a pointer updated to reference it; and then the writes
-  permuted but the copy was lost in the crash. The defrag was careful to use primitives
+  consider what would happen if a block was copied and then a pointer updated to reference it; there would be
+  two requests in the hardware disk controller's queue. For performance reasons these writes could be permuted.
+  If the power failed at a bad moment we could discover that the pointer change was committed but the block copy was lost,
+  leaving the pointer to point to garbage.The defrag was careful to use primitives
   like <a href="https://github.com/mirage/mirage-block-unix/blob/130d7ff27d0f79c5508e954a4f5bd7738622faa3/lib/flush_stubs.c#L61">
-    F_FULLSYNC</a> to ensure that the writes were durable.
+    F_FULLSYNC</a> to ensure that the writes were durable, but without unacceptably reducing performance.
 </p>
 <p>
   The result looked somewhat like this:
