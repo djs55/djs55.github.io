@@ -55,28 +55,28 @@ In 2016 when we released Docker for Mac (now Docker Desktop), we had a problem.
 The disk space used by Docker for Mac grew and grew, up to around 64GiB. At the time
 this was a huge amount of disk space, especially given the limited disk space on typical Mac laptops.
 Worse still, the disk space used never shrank. No matter how many containers and images were deleted
-the disk space used increased relentlessly. Why was this and how did we fix it?
+the disk space used increased relentlessly.
+Read on to understand how we got here and how we fixed it!
 </p>
 <h1>First, some background</h1>
 <p>
-Docker for Mac runs Linux containers on a Mac machine. However <em>Linux</em> containers need the <em>Linux</em> syscall interface,
-not the macOS syscall interface. Therefore Docker for Mac runs Linux containers inside
-a hidden Linux virtual machine. The Linux kernel provides the syscall interface for containers, while Docker for Mac
-provides the virtual disk, virtual network, and other services to support the virtual machine.
+Docker for Mac runs Linux containers on Mac. However <em>Linux</em> containers need the <em>Linux</em> syscall interface,
+not the macOS syscall interface. Therefore Docker for Mac includes a small, hidden Linux virtual machine.
+The virtualized Linux kernel provides the syscall interface for containers, while Docker for Mac
+provides the virtual disk, virtual network, and other services underneath Linux:
 <p>
 <center>
   <img src="syscall.png" alt="Docker for Mac runs a Linux VM on macOS"  style="width: 40%; height: auto;">
 </center>
 <h1>How does this affect disk space?</h1>
 <p>
-Let's investigate what happens when the developer modifies the filesystem inside a container. The following
+First let's investigate what happens when the developer modifies files inside a container. The following
 command creates a container, creates a file inside it, and then removes the whole container (using <code>--rm</code>):
 </p>
 <p>% docker run --rm alpine touch /foo</p>
 <p>
-To understand what happens, first we must ask:
-which filesystem is the file created in?
-We can look closer with a shell inside a container:
+To discover more about where the files are created,
+we can start another container with an interative shell:
 </p>
 <p>% docker run --rm -it alpine sh</p>
 <p>
@@ -86,11 +86,11 @@ overlay on / type overlay (rw,relatime,lowerdir=/var/lib/desktop-containerd/daem
 ...
 </pre>
 <p>
-The root filesystem of the container is an <code>overlay</code> filesystem.
+According to <code>mount</code>, the root filesystem of the container is an <code>overlay</code> filesystem.
 An overlay allows filesystems to be layered, so that writes go to the &quot;upperdir&quot;, while reads fall through
 to the &quot;lowerdir&quot;.
 <code>overlay</code> is great for containers because a base image (in this case alpine) can be shared -- read only -- as
-the &quot;lowerdir&quot;, while each container gets to make its own changes via the writable layer on top. Without <code>overlay</code>,
+the &quot;lowerdir&quot;, while each container gets to make its own changes via a custom writable layer on top. Without <code>overlay</code>,
 every container start would have to physically copy the base image, which would be slow and consume a lot of disk space
 unnecessarily.
 </p>
@@ -116,16 +116,17 @@ We can see that the container's writes are written to an <code>ext4</code> files
 where <code>/dev/vda</code> is a virtual disk provided by Docker Desktop.
 </p>
 <p>Now we are getting close to seeing the problem: when a user creates and then removes a file it results in a
-series of virtual disk reads and writes in Docker Desktop. The Mac doesn't see the Linux filesystem,
-only these disk reads and writes. How are they implemented on the Mac?
+series of virtual disk reads and writes in Docker Desktop. The Mac doesn't see the Linux file creations or deletions,
+instead the Mac sees reads and writes of disk blocks. How are these reads and writes implemented?
 </p>
 <p>
-The simplest way to implement a virtual disk of size 64GiB is to create a 64GiB file on the Mac.
+The simplest way to implement a virtual disk of size 64GiB (the Docker for Mac default) is to create a single
+64GiB file on the Mac, where each block is stored sequentially.
 Today this is actually sensible, because modern filesystems like APFS support &quot;sparse files&quot;
 (or &quot;thin-provisioning&quot;) which only allocate real storage when it is needed.
-However, back in 2016 the most common filesystem on the Mac was HFS+, which lacks this feature. If we had used a raw
+However back in 2016 the most common filesystem on the Mac was HFS+, which lacks this feature. If we had used a raw
 file on HFS+ then Docker would always consume 64GB on the host nomatter how much data was actually stored in the containers!
-Obviously we didn't do that, but what did we do?
+Obviously we didn't do that, but what did we do instead?
 </p>
 
 <center>
@@ -135,16 +136,15 @@ Obviously we didn't do that, but what did we do?
 To simulate sparse files on HFS+, we used a disk format called qcow2, from the <a href="qemu.org">QEMU project</a>.
 Docker for Mac used lots of libraries from the <a href="https://mirage.io/">Mirage unikernel project</a>,
 so we used their <a href="https://github.com/mirage/ocaml-qcow/">OCaml qcow2 implementation</a> and linked it directly to
-<a href="https://github.com/moby/hyperkit">hyperkit</a>, the virtual machine manager used by Docker for Mac.
+<a href="https://github.com/moby/hyperkit">hyperkit</a>, the code which implements the virtual disk and network devices.
 Now when Docker for Mac started up, a tiny empty qcow2 file was created (and not a 64G monster!). Much better!
 However as time went on, the file slowly grew. The file on the Mac never shrank, even if containers were deleted.
-Docker for Mac was only seeing reads and writes, but not &quot;file deletes&quot;
-We had only delayed the problem, not solved it.
+Docker for Mac was only seeing reads and writes, but it could not see &quot;file deletes&quot;.
 </p>
 
 <h1>The fix: enabling TRIM and writing an online disk defrag in OCaml</h1>
 
-<p> It turns out that modern SSD disks also have a similar problem. Inside SSDs there are blocks of flash memory,
+<p> It turns out that modern SSD disks have a similar problem. Inside SSDs there are blocks of flash memory,
   much larger than a typical filesystem block. When a filesystem writes to a block which already contains data, the SSD must 
   read the current block, apply the update, and write the whole block back. If the OS doesn't actually care about
   the other data in the block then the SSD has to do a lot of extra work for nothing.
@@ -155,27 +155,29 @@ We had only delayed the problem, not solved it.
 
 <p>
   We added <a href="https://github.com/moby/hyperkit/pull/81">TRIM support to hyperkit</a> but we still needed to
-  do something when the TRIM requests were received.
+  actually do something when the TRIM requests were received.
 </p>
 <p>
   The qcow2 format makes it fairly easy to mark a block as free, but this doesn't fix the bug by itself, since the file
-  on the Mac is still large. To shrink the file we needed to move blocks from the end of the file into the holes
+  on the Mac is still large; HFS+ cannot use the free space.
+  To shrink the file we needed to move blocks from the end of the file into the holes
   created by the TRIM. Our initial implementation was a simple defrag which ran at startup, but this meant that
-  the file would only shrink when Docker Desktop was restarted. We needed an online defrag which could run while
+  the file would only shrink when Docker Desktop was restarted.
+  To fully fix the bug we needed an online defrag which could run while
   Docker Desktop was running.
 </p>
 <p>
   
-  The <a href="https://github.com/mirage/ocaml-qcow/pull/63">online defrag</a> ran continuously in the background,
+  We implemented an <a href="https://github.com/mirage/ocaml-qcow/pull/63">online defrag</a> which ran continuously in the background,
   keeping track of which regions of the file were free and
   opportunistically copied blocks from later in the file to fill the holes. After moving the last block in the file it
   could <code>ftruncate</code> the file to the new size. However correctness is hard to achieve. For example
    it had to be careful to abandon any copies
-  should the originals be modified. Furthermore the defrag had to be safe even if the host crashed during the move;
-  consider what would happen if a block was copied and then a pointer updated to reference it; there would be
-  two requests in the hardware disk controller's queue. For performance reasons these writes could be permuted.
-  If the power failed at a bad moment we could discover that the pointer change was committed but the block copy was lost,
-  leaving the pointer to point to garbage.The defrag was careful to use primitives
+  should the originals be modified concurrently. Furthermore the defrag had to be safe even if the host crashed during the move;
+  consider what would happen if a block was copied and then a pointer updated to reference it. At one point there would be
+  two requests in the hardware disk controller's queue. For performance reasons these writes could be permuted. In the
+  worst case scenario where the power failed between the two writes we could discover that the pointer change was committed but the block copy was lost,
+  leaving the pointer to point to garbage. The defrag was careful to use primitives
   like <a href="https://github.com/mirage/mirage-block-unix/blob/130d7ff27d0f79c5508e954a4f5bd7738622faa3/lib/flush_stubs.c#L61">
     F_FULLSYNC</a> to ensure that the writes were durable, but without unacceptably reducing performance.
 </p>
