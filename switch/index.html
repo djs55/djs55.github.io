@@ -93,6 +93,14 @@
             make it obvious.
             </p>
             <div id="switch" style="text-align: center;"></div>
+            <div style="text-align: center; margin-top: 15px; margin-bottom: 20px; width: 100%;">
+                <input type="range" id="twistSlider" min="0" max="100" value="50" 
+                       style="width: 80%; max-width: 600px; accent-color: #0c6; height: 15px; cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; width: 80%; max-width: 600px; margin: 5px auto 0;">
+                    <span style="font-size: 0.9em; color: #333;">Switch</span>
+                    <span style="font-size: 0.9em; color: #333;">Multiplexer</span>
+                </div>
+            </div>
 
     <script type="module">
         import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
@@ -315,21 +323,52 @@
             lines.push(createLine(egress, mirroredEgress));
         }
 
-        // Automatic twist animation
-        let animationTime = 0;
-        const twistSpeed = 0.005; // Controls the speed of the twist cycle
-
+        // Slider control for twist
+        const twistSlider = document.getElementById('twistSlider');
+        
+        // Initial twist angle based on slider
+        let twistAngle = (parseInt(twistSlider.value) / 100) * (Math.PI / 2); // 0 to π/2
+        
+        // Listen for slider changes
+        twistSlider.addEventListener('input', function() {
+            twistAngle = (parseInt(this.value) / 100) * (Math.PI / 2); // 0 to π/2
+        });
+        
+        // Support touch events for mobile
+        twistSlider.addEventListener('touchstart', function(e) {
+            e.preventDefault(); // Prevent scrolling while touching slider
+        }, { passive: false });
+        
+        // Additional touch handlers to improve mobile experience
+        twistSlider.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            
+            // Calculate slider value from touch position
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const sliderRect = this.getBoundingClientRect();
+                const sliderWidth = sliderRect.width;
+                const touchX = touch.clientX - sliderRect.left;
+                
+                // Calculate percentage (0-100)
+                let percentage = (touchX / sliderWidth) * 100;
+                percentage = Math.max(0, Math.min(100, percentage)); // Clamp between 0-100
+                
+                // Update slider value
+                this.value = percentage;
+                
+                // Update twist angle
+                twistAngle = (percentage / 100) * (Math.PI / 2);
+            }
+        }, { passive: false });
+        
         renderer.domElement.addEventListener('contextmenu', (event) => {
             event.preventDefault(); // Prevent right-click context menu
         });
 
-        // Animation loop with automatic twist
+        // Animation loop using slider value
         function animate() {
             requestAnimationFrame(animate);
-
-            // Update twist angle with continuous oscillation
-            animationTime += twistSpeed;
-            const twistAngle = (Math.sin(animationTime) + 1) / 2 * (Math.PI / 2); // 0 to π/2 (0° to 90°)
 
             // Calculate group centers and rotate nodes
             // Middle1: 4 groups of 2
@@ -476,14 +515,26 @@
         animate();
 
         // Handle window resize
-        window.addEventListener('resize', () => {
+        function handleResize() {
             // Keep fixed aspect ratio to avoid distortion
             const containerWidth = Math.min(900, window.innerWidth - 40);
             const containerHeight = containerWidth * (400/900); // Maintain original aspect ratio
             
             // Don't change camera aspect ratio on resize
             renderer.setSize(containerWidth, containerHeight);
-        });
+            
+            // Update slider width to match container width
+            const sliderContainer = document.getElementById('twistSlider').parentElement;
+            const labelContainer = sliderContainer.querySelector('div');
+            sliderContainer.style.width = `${containerWidth}px`;
+            labelContainer.style.width = `${containerWidth * 0.8}px`;
+        }
+        
+        // Call once on load to set initial sizes
+        handleResize();
+        
+        // Add event listener for window resize
+        window.addEventListener('resize', handleResize);
     </script>
     <p>
     There was of course a lot more to the design of Sandy's switches than this.
