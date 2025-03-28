@@ -93,10 +93,10 @@
             make it obvious.
             </p>
             <div id="switch" style="text-align: center;"></div>
-            <div style="text-align: center; margin-top: 15px; margin-bottom: 20px; width: 100%;">
+            <div style="text-align: center; margin: 15px auto 20px; width: 90%;">
                 <input type="range" id="twistSlider" min="0" max="100" value="50" 
-                       style="width: 80%; max-width: 600px; accent-color: #0c6; height: 15px; cursor: pointer;">
-                <div style="display: flex; justify-content: space-between; width: 80%; max-width: 600px; margin: 5px auto 0;">
+                       style="width: 100%; accent-color: #0c6; height: 15px; cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; width: 100%; margin: 5px auto 0;">
                     <span style="font-size: 0.9em; color: #333;">Switch</span>
                     <span style="font-size: 0.9em; color: #333;">Multiplexer</span>
                 </div>
@@ -106,10 +106,15 @@
         import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
         // Scene setup
         const scene = new THREE.Scene();
+        // Get container size for responsive sizing
+        const container = document.getElementById('switch');
+        const containerWidth = container.clientWidth * 0.9; // 90% of container width
+        const containerHeight = containerWidth * (400/900); // Maintain aspect ratio
+        
         // Fixed aspect ratio for consistent view
-        const camera = new THREE.PerspectiveCamera(75, 900/400, 0.1, 10000);
+        const camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(900, 400);
+        renderer.setSize(containerWidth, containerHeight);
         // Use this with the alpha: true setting from above
         renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
         // Also add this CSS to your canvas element
@@ -516,12 +521,20 @@
 
         // Handle window resize
         function handleResize() {
-            // Keep fixed aspect ratio to avoid distortion
-            const containerWidth = Math.min(900, window.innerWidth - 40);
+            // Get the container's width (which should be the width of the text column)
+            const switchContainer = document.getElementById('switch');
+            const textColumnWidth = switchContainer.parentElement.clientWidth;
+            
+            // Use 90% of the text column width
+            const containerWidth = textColumnWidth * 0.9;
             const containerHeight = containerWidth * (400/900); // Maintain original aspect ratio
             
-            // Don't change camera aspect ratio on resize
+            // Update renderer size
             renderer.setSize(containerWidth, containerHeight);
+            
+            // Update camera aspect ratio
+            camera.aspect = containerWidth / containerHeight;
+            camera.updateProjectionMatrix();
             
             // Update slider width to match container width
             const sliderContainer = document.getElementById('twistSlider').parentElement;
