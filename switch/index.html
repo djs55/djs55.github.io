@@ -93,15 +93,28 @@
             make it obvious.
             </p>
             <div id="switch" style="text-align: center;"></div>
+            <div style="text-align: center; margin: 15px auto 20px; width: 90%;">
+                <input type="range" id="twistSlider" min="0" max="100" value="50" 
+                       style="width: 100%; accent-color: #0c6; height: 15px; cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; width: 100%; margin: 5px auto 0;">
+                    <span style="font-size: 0.9em; color: #333;">Switch</span>
+                    <span style="font-size: 0.9em; color: #333;">Multiplexer</span>
+                </div>
+            </div>
 
     <script type="module">
         import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
         // Scene setup
         const scene = new THREE.Scene();
+        // Get container size for responsive sizing
+        const container = document.getElementById('switch');
+        const containerWidth = container.clientWidth * 0.9; // 90% of container width
+        const containerHeight = containerWidth * (400/900); // Maintain aspect ratio
+        
         // Fixed aspect ratio for consistent view
-        const camera = new THREE.PerspectiveCamera(75, 900/400, 0.1, 10000);
+        const camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(900, 400);
+        renderer.setSize(containerWidth, containerHeight);
         // Use this with the alpha: true setting from above
         renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
         // Also add this CSS to your canvas element
@@ -315,21 +328,52 @@
             lines.push(createLine(egress, mirroredEgress));
         }
 
-        // Automatic twist animation
-        let animationTime = 0;
-        const twistSpeed = 0.005; // Controls the speed of the twist cycle
-
+        // Slider control for twist
+        const twistSlider = document.getElementById('twistSlider');
+        
+        // Initial twist angle based on slider
+        let twistAngle = (parseInt(twistSlider.value) / 100) * (Math.PI / 2); // 0 to π/2
+        
+        // Listen for slider changes
+        twistSlider.addEventListener('input', function() {
+            twistAngle = (parseInt(this.value) / 100) * (Math.PI / 2); // 0 to π/2
+        });
+        
+        // Support touch events for mobile
+        twistSlider.addEventListener('touchstart', function(e) {
+            e.preventDefault(); // Prevent scrolling while touching slider
+        }, { passive: false });
+        
+        // Additional touch handlers to improve mobile experience
+        twistSlider.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            
+            // Calculate slider value from touch position
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const sliderRect = this.getBoundingClientRect();
+                const sliderWidth = sliderRect.width;
+                const touchX = touch.clientX - sliderRect.left;
+                
+                // Calculate percentage (0-100)
+                let percentage = (touchX / sliderWidth) * 100;
+                percentage = Math.max(0, Math.min(100, percentage)); // Clamp between 0-100
+                
+                // Update slider value
+                this.value = percentage;
+                
+                // Update twist angle
+                twistAngle = (percentage / 100) * (Math.PI / 2);
+            }
+        }, { passive: false });
+        
         renderer.domElement.addEventListener('contextmenu', (event) => {
             event.preventDefault(); // Prevent right-click context menu
         });
 
-        // Animation loop with automatic twist
+        // Animation loop using slider value
         function animate() {
             requestAnimationFrame(animate);
-
-            // Update twist angle with continuous oscillation
-            animationTime += twistSpeed;
-            const twistAngle = (Math.sin(animationTime) + 1) / 2 * (Math.PI / 2); // 0 to π/2 (0° to 90°)
 
             // Calculate group centers and rotate nodes
             // Middle1: 4 groups of 2
@@ -476,14 +520,34 @@
         animate();
 
         // Handle window resize
-        window.addEventListener('resize', () => {
-            // Keep fixed aspect ratio to avoid distortion
-            const containerWidth = Math.min(900, window.innerWidth - 40);
+        function handleResize() {
+            // Get the container's width (which should be the width of the text column)
+            const switchContainer = document.getElementById('switch');
+            const textColumnWidth = switchContainer.parentElement.clientWidth;
+            
+            // Use 90% of the text column width
+            const containerWidth = textColumnWidth * 0.9;
             const containerHeight = containerWidth * (400/900); // Maintain original aspect ratio
             
-            // Don't change camera aspect ratio on resize
+            // Update renderer size
             renderer.setSize(containerWidth, containerHeight);
-        });
+            
+            // Update camera aspect ratio
+            camera.aspect = containerWidth / containerHeight;
+            camera.updateProjectionMatrix();
+            
+            // Update slider width to match container width
+            const sliderContainer = document.getElementById('twistSlider').parentElement;
+            const labelContainer = sliderContainer.querySelector('div');
+            sliderContainer.style.width = `${containerWidth}px`;
+            labelContainer.style.width = `${containerWidth * 0.8}px`;
+        }
+        
+        // Call once on load to set initial sizes
+        handleResize();
+        
+        // Add event listener for window resize
+        window.addEventListener('resize', handleResize);
     </script>
     <p>
     There was of course a lot more to the design of Sandy's switches than this.
