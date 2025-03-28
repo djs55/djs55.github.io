@@ -92,19 +92,22 @@
             tree of multiplexers and demultiplexers. We can &quot;twist&quot; the nodes to
             make it obvious.
             </p>
-            <div id="switch"></div>
+            <div id="switch" style="text-align: center;"></div>
 
     <script type="module">
         import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        // Fixed aspect ratio for consistent view
+        const camera = new THREE.PerspectiveCamera(75, 900/400, 0.1, 10000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(900, 400);
         // Use this with the alpha: true setting from above
         renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
         // Also add this CSS to your canvas element
         renderer.domElement.style.background = 'transparent';
+        renderer.domElement.style.margin = '0 auto';
+        renderer.domElement.style.display = 'block';
         // find the switch element and append the renderer to it
         document.getElementById('switch').appendChild(renderer.domElement);
         //document.body.appendChild(renderer.domElement);
@@ -474,9 +477,12 @@
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            // Keep fixed aspect ratio to avoid distortion
+            const containerWidth = Math.min(900, window.innerWidth - 40);
+            const containerHeight = containerWidth * (400/900); // Maintain original aspect ratio
+            
+            // Don't change camera aspect ratio on resize
+            renderer.setSize(containerWidth, containerHeight);
         });
     </script>
     <p>
