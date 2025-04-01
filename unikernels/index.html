@@ -38,74 +38,31 @@
             <p>
                 Unikernels are single-purpose appliances where an application is linked with everything
                 that it needs, including kernel drivers, into a single binary which can be run in the cloud.
-                Our <a href="https://dave.recoil.org/papers/final/asplos2013.pdf">2013 paper on Unikernels</a>
-                was ...
-                It made me think: why did I enjoy working on unikernels?
-            </p>
-            <h1>Why do I like Unikernels?</h1>
+                Our <a href="https://dave.recoil.org/papers/final/asplos2013.pdf">2013 paper</a>
+                won one of the
+                <a href="https://www.asplos-conference.org/asplos2025/awards/">Influential Paper Awards</a>
+                at the 2025 ASPLOS conference.
+              </p>
+            <h1>Why I like Unikernels</h1>
             <p>
-                Software naturally accumulates layers, like sedimentary rocks accumulate strata.
-                When I was a university student, we were all given a shell account on a shared Unix system
-                to compile and test our code.
-                We could use `ps` to see each-other's processes, but the Unix kernel
-                prevented us from messing with each other (`kill -9 &lt;other-user process&gt;` would return `EPERM`
-                i.e. Permission denied). This was probably for the best.
-            </p>
+                Unikernels allow us to explore new ideas: to rethink old OS interfaces and to remove unnecessary
+                layers of code accumulated over the last several decades.
+                Modern general-purpose operating systems are fantastic, but they're so huge it's hard to
+                experiment with totally different designs.
+                Before the cloud, a research prototype OS would probably only be able to support one or two types of hardware.
+                Now that we have common interfaces like `virtio-blk` and `blkback`/`blkfront` it's feasible
+                to write a new OS that can run on any cloud provider, using the hypervisor as a common substrate.
+              </p>
             <p>
-                Today if I run a Linux web server in a VM, all that mechanism is still there, but
-                is almost entirely unused because there is now only one &quot;user&quot;: the web server.
-                The multi-user part of Unix is still present, as a software layer, but it's now the hypervisor
-                that provides isolation in the cloud.
-            </p>
-            <p>
-                Maintaining unnecessary layers is a burden. It makes the system more complex, and
-                harder to understand and even harder to change and experiment with.
-            </p>
-            <h1>Can we remove unnecessary layers from the OS?</h1>
-            <p>
-                A traditional Unix kernel is not designed to have core features removed.
-                Existing apps would also object if concepts like userids and groupids suddenly
-                disappeared from the kernel APIs.
-            </p>
-            <h1>Could we just write a new (more-modular) general purpose OS?</h1>
-            <p>In his talk <a href="http://herpolhode.com/rob/utah2000.pdf">Systems Software Research is Irrelevant</a>
-                Rob Pike presented this graph of the number of new operating systems presented at SOSP.
-            </p>
-            <center>
-                <img src="rob-pike-a-field-in-decline.png" alt="Rob Pike's graph of new Operating Systems presented at SOSP" width="600">
-            </center>
-            <p>
-                It turns out to be very hard to write a new general-purpose OS (modular or not). Physical hardware is
-                very diverse, so any realistic OS has to have a large collection of disk and network drivers.
-                In practice only Windows and Linux and a few BSDs have been able to achieve this.
-                I was always deeply impressed by projects that valiantly
-                attempted to solve this problem anyway, like the
-                <a href="https://bford.info/pub/os/oskit-hotos6.pdf">Flux OS Kit</a> from the University of Utah.
-            </p>
-            <h1> Enter the Unikernel: the library OS for the cloud</h1>
-            <p>
-                Rather than attempting the impossible task of writing a new general purpose OS, we simplify
-                the problem by only targetting the cloud. Unlike physical hardware, cloud &quot;virtual hardware&quot;
-                is not at all diverse. We only need a small number of virtual disk and network drivers and some
-                hypervisor APIs to make something boot.
-            </p>
-            <p>
-                Rather than attempting to port all existing applications, instead we focused on providing
-                composable OCaml libraries
-                (<a href="https://github.com/mirage/mirage-block-xen">disk</a>,
-                <a href="https://github.com/mirage/mirage-net-xen">network</a>)
-                that could be linked together to form a single binary.
-                This allowed us to experiment with everything. For example: many applications don't need
-                the full power of a traditional filesystem; instead they can store data in a simple
-                <a href="https://github.com/mirage/mirage-kv">key=value store</a> instead.
-                We were not constrained by existing OS APIs, so would easily try things like
-                accepting a TCP connection on one machine and then transferring the TCP
-                connection state to a
-                <a href="/papers/final/2015-nsdi-jitsu.pdf">unikernel booted on demand</a>.
-            </p>
-            <h1>Write a library once, use it lots of times</h1>
-            <p>
-                Our OCaml libraries were not just for unikernels. They can be used anywhere.
+              Unikernels are &quot;library OSes&quot;. We based our experiments on <a href="https://mirage.io">Mirage OS</a>,
+              which has many nice libraries in OCaml including
+                <ul>
+                  <li><a href="https://github.com/mirage/mirage-tcpip">an OCaml TCP/IP stack</a></li>
+                  <li><a href="https://github.com/mirage/ocaml-dns">an OCaml DNS client and server</a></li>
+                  <li><a href="https://github.com/mirage/mirage-block-xen">an OCaml Xen disk driver</li>
+                  <li><a href="https://github.com/mirage/mirage-net-xen">an OCaml Xen network driver</li>
+                </ul>
+                Since these are libraries, they can be used in other contexts too.
                 For example the TCP/IP stack can just as easily run in userspace on a traditional
                 OS as it can in a unikernel.
                 Working at Docker, I was able to use the unikernel TCP/IP stack to solve
@@ -113,6 +70,8 @@
                 <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">
                     networking problems in Docker Desktop
                 </a>.
+                The <a href="https://github.com/moby/vpnkit">vpnkit</a> tool (based on the Mirage OS libraries) can also be used to provide network
+                connectivity to containers running in <a href="https://docs.docker.com/engine/security/rootless/">rootless mode</a>.
             </p>
     </div>
 </body>
