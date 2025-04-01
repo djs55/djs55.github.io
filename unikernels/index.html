@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Reflections on Unikernels</title>
+    <meta name="description" content="Reflections on Unikernels">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dave.recoil.org/unikernels/">
+    <meta property="og:title" content="Reflections on Unikernels">
+    <meta property="og:description" content="Thoughts on Unikernels after 10 years">
+    <meta property="og:image" content="https://dave.recoil.org/djs55.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dave.recoil.org/unikernels/">
+    <meta name="twitter:title" content="Reflections on Unikernels">
+    <meta name="twitter:description" content="Thoughts on Unikernels after 10 years">
+    <meta name="twitter:image" content="https://dave.recoil.org/djs55.png">
+    
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+<body>
+
+    <body class="terminal">
+
+        <div class="container">
+          <div class="terminal-nav">
+            <header class="terminal-logo">
+              <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+            </header>
+          <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+              <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+            </ul>
+          </nav>
+        </div>
+    
+        <div class="container">
+            <p>
+                Unikernels are single-purpose appliances where an application is linked with everything
+                that it needs, including kernel drivers, into a single binary which can be run in the cloud.
+                Our <a href="https://dave.recoil.org/papers/final/asplos2013.pdf">2013 paper (&quot;Unikernels: Library Operating Systems for the Cloud&quot;)</a>
+                won one of the
+                <a href="https://www.asplos-conference.org/asplos2025/awards/">Influential Paper Awards</a>
+                at the 2025 ASPLOS conference.
+              </p>
+            <h1>Why I like Unikernels</h1>
+            <p>
+                Unikernels allow us to explore new ideas: to rethink old OS interfaces and to remove unnecessary
+                layers of code accumulated over the last several decades.
+                Modern general-purpose operating systems are fantastic, but they're so huge it's hard to
+                experiment with totally different designs.
+                Before the cloud, a research prototype OS would probably only be able to support one or two types of hardware.
+                Now that we have common interfaces like `virtio-blk` and `blkback`/`blkfront` it's feasible
+                to write a new OS that can run on any cloud provider, using the hypervisor as a common substrate.
+              </p>
+            <p>
+              Unikernels are &quot;library OSes&quot;. We based our experiments on <a href="https://mirage.io">Mirage OS</a>,
+              which has many nice libraries in OCaml including
+                <ul>
+                  <li><a href="https://github.com/mirage/mirage-tcpip">an OCaml TCP/IP stack</a></li>
+                  <li><a href="https://github.com/mirage/ocaml-dns">an OCaml DNS client and server</a></li>
+                  <li><a href="https://github.com/mirage/mirage-block-xen">an OCaml Xen disk driver</a></li>
+                  <li><a href="https://github.com/mirage/mirage-net-xen">an OCaml Xen network driver</a></li>
+                </ul>
+                Since these are libraries, they can be used in other contexts too.
+                For example the TCP/IP stack can just as easily run in userspace on a traditional
+                OS as it can in a unikernel.
+                Working at Docker, I was able to use the unikernel TCP/IP stack to solve
+                some tricky
+                <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">
+                    networking problems in Docker Desktop
+                </a>.
+                The same <a href="https://github.com/moby/vpnkit">vpnkit</a> tool (based on the Mirage OS libraries) can also be used to provide network
+                connectivity to containers running in <a href="https://docs.docker.com/engine/security/rootless/">rootless mode</a>.
+            </p>
+    </div>
+</body>
+</html>
