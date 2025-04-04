@@ -130,13 +130,21 @@
               last line of defence between the user applications and the hostile Internet.
             </p>
             <p>
-              Another interesting Unikernel project is
-              <a href="https://github.com/unikraft/unikraft">UniKraft</a>, a Linux Foundation / Xen Project Incubator Project.
+              Since we worked on MirageOS, several other interesting unikernel projects have appeared.
+              <a href="https://github.com/unikraft/unikraft">UniKraft</a>
+              is a &quot;unikernel development kit&quot; that supports running existing applications
+              (not just OCaml) as unikernels.
               I really appreciate their Docker-inspired UX:
               <pre>$ kraft run unikraft.org/helloworld:latest</pre> 
             Also worth checking out is
             <a href="https://github.com/nanovms/nanos">Nanos</a>, which I notice also has
             <a href="https://github.com/nanovms/ops-examples/tree/master/ocaml/01-hello-world">OCaml support</a>.
+            Nanos has several interesting additional features, including a
+            <a href="https://nanovms.com/dev/tutorials/applying-sandbox-security-node-js-unikernels-openbsd-pledge-unveil">OpenBSD-style pledge and unveil</a>
+            and <a href="https://nanovms.com/dev/tutorials/confidential-computing-with-amd-sev-enabled-unikernels">support for confidential computing via AMD SEV</a>.
+            </p>
+            <p>
+            It's great to see all the unikernel innovation!
             </P>
     </div>
 </body>
