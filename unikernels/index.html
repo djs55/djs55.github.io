@@ -83,7 +83,51 @@
                     networking problems in Docker Desktop
                 </a>.
                 The same <a href="https://github.com/moby/vpnkit">vpnkit</a> tool (based on the Mirage OS libraries) can also be used to provide network
-                connectivity to containers running in <a href="https://docs.docker.com/engine/security/rootless/">rootless mode</a>.
+                connectivity to containers running in <a href="https://docs.docker.com/engine/security/rootless/">docker's rootless mode</a>.
+            </p>
+            <h1>Unikernels are a good choice for high-assurance applications</h1>
+            <p>
+              Due to only linking code that is actually needed, unikernels have a naturally reduced attack
+              surface compared to traditional applications.
+              Consider the example of the &quot;xenstore&quot; service of the Xen hypervisor.
+              The Xen hypervisors focuses on isolating untrusted VMs from each other, but does not perform any
+              I/O directly. I/O is delegated to special privileged VMs called &quot;driver domains&quot;.
+              The connections between the driver domains and the untrusted VMs are created via a control
+              service called &quot;xenstore&quot;.
+              The xenstore service is a critical part of a Xen host, so we must be confident that it's
+              rock solid. Normally the xenstore service runs as a regular Linux process in a &quot;domain zero&quot;,
+              a trusted VM. Running as a regular process means that it's open to interference from
+              other processes, perhaps via signals or shared files or shared memory.
+              Luckily for us there was already a fast, memory-safe implementation of xenstore written in OCaml, which we
+              could then 
+              <a href="https://mirage.io/blog/xenstore-stub-domain">port to run as an isolated unikernel VM</a>
+              using MirageOS,
+              increasing our confidence in the overall security of the system.
+            </p>
+            <p>
+              Thanks to the library-based design, we could also increase the fault-tolerance of xenstore by
+              using the
+              <a href="https://irmin.org">OCaml Irmin (git-like) database</a> library
+              <a href="https://mirage.io/blog/introducing-irmin-in-xenstore">to store the xenstore state</a>.
+              This means that if the xenstore VM crashes, it can recover from a snapshot of its state.
+              Here's our prototype &quot;Xenstore The Next Generation&quot; showing a simulation of booting lots of VMs concurrently:
+            </p>
+            <P>
+            <center>
+              <iframe width="560" height="315" src="https://www.youtube.com/embed/DSzvFwIVm5s?si=e23BuCMliqcAe7E4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </center>
+            </P>
+            <p>
+              Driver domains on a Xen host could in theory be compromised by buggy drivers.
+              For example, a network driver domain could be compromised by a remote attacker over the Internet.
+              <a href="https://roscidus.com/">Thomas Leonard</a> was able to use MirageOS to improve the security of
+              <a href="https://www.qubes-os.org">QubesOS</a>, a famously hardened operating system
+              (although they modestly describe themselves only as &quot;a reasonably secure&quot; operating system!).
+              Thomas used a
+              <a href="https://roscidus.com/blog/blog/2016/01/01/a-unikernel-firewall-for-qubesos/">MirageOS unikernel
+              for the trusted firewall component</a>, which sits between the untrusted network driver VMs
+              and the user application VMs. The firewall VM is the
+              last line of defence between the user applications and the hostile Internet.
             </p>
             <p>
               Another interesting Unikernel project is
