@@ -140,15 +140,17 @@
             </center>
             </P>
             <p>
-              Driver domains on a Xen host could in theory be compromised by buggy drivers.
-              For example, a network driver domain could be compromised by a remote attacker over the Internet.
-              <a href="https://roscidus.com/">Thomas Leonard</a> was able to use a MirageOS unikernel to improve the security of
-              <a href="https://www.qubes-os.org">QubesOS</a>
-              (modestly self-described as &quot;<em>a reasonably secure</em>&quot; operating system!).
-              Thomas used a
+              Unikernels have been used to increase the security of other OSes too.
+              For example,
+              <a href="https://www.qubes-os.org">QubesOS</a> which describes itself as a
+              &quot;<em>a reasonably secure</em>&quot; operating system (!) uses Xen to isolate apps running
+              in separate VMs from each other and from driver domains (running complex and therefore potentially buggy drivers).
+              Network driver domains are particularly vulnerable to attack, since they
+              are exposed to the hostile Internet.
+              <a href="https://roscidus.com/">Thomas Leonard</a> used a
               <a href="https://roscidus.com/blog/blog/2016/01/01/a-unikernel-firewall-for-qubesos/">MirageOS unikernel
               for the trusted firewall component</a>, which sits between the untrusted network driver VMs
-              and the user application VMs.The firewall VM is the
+              and the user application VMs. The MirageOS firewall VM is the
               last line of defence between the user applications and the hostile Internet.
             </p>
             <h1>Unikernels allow experimentation</h1>
@@ -162,6 +164,7 @@
               connection state (sequence numbers etc) over shared memory to the unikernel. This was easy to do because
               the TCP/IP stack was a library which we could easily customize.
             </p>
+            <h1>Lots of different styles of Unikernels exist</h1>
             <p>
               Since we worked on MirageOS, several other interesting unikernel projects have appeared.
               <a href="https://github.com/unikraft/unikraft">UniKraft</a>
