@@ -55,6 +55,14 @@
                 <a href="https://www.asplos-conference.org/asplos2025/awards/">Influential Paper Awards</a>
                 at the 2025 ASPLOS conference.
               </p>
+              <p>
+                <center>
+                  <img src="unikernel.png" alt="Unikernel architecture" width="600px">
+                  <br>
+                  A typical MirageOS unikernel
+                  <br>
+                </center>
+              </p>
             <h1>Why I like Unikernels</h1>
             <p>
                 Unikernels allow us to explore new ideas: to rethink old OS interfaces and to remove unnecessary
@@ -62,11 +70,14 @@
                 Modern general-purpose operating systems are fantastic, but they're so huge it's hard to
                 experiment with totally different designs.
                 Before the cloud, a research prototype OS would probably only be able to support one or two types of hardware.
-                Now that we have common interfaces like `virtio-blk` and `blkback`/`blkfront` it's feasible
+                Now that we have common interfaces like Xen `netfront` and `blkfront` and `virtio-net` and `virtio-blk` it's feasible
                 to write a new OS that can run on any cloud provider, using the hypervisor as a common substrate.
               </p>
+            <h1>Unikernels are library OSes</h1>
             <p>
-              Unikernels are &quot;library OSes&quot;. We based our experiments on <a href="https://mirage.io">Mirage OS</a>,
+              Unikernels are also &quot;library OSes&quot; where network stacks and device drivers are libraries
+              which are linked directly with the custom application logic into a single binary.
+              We based our experiments on <a href="https://mirage.io">Mirage OS</a>,
               which has many nice libraries in OCaml including
                 <ul>
                   <li><a href="https://github.com/mirage/mirage-tcpip">an OCaml TCP/IP stack</a></li>
@@ -74,10 +85,11 @@
                   <li><a href="https://github.com/mirage/mirage-block-xen">an OCaml Xen disk driver</a></li>
                   <li><a href="https://github.com/mirage/mirage-net-xen">an OCaml Xen network driver</a></li>
                 </ul>
-                Since these are libraries, they can be used in other contexts too.
+                Note that
+                since these are libraries, they can be used in other contexts too (not just unikernels).
                 For example the TCP/IP stack can just as easily run in userspace on a traditional
-                OS as it can in a unikernel.
-                Working at Docker, I was able to use the unikernel TCP/IP stack to solve
+                OS.
+                Working at Docker, we were able to use the unikernel TCP/IP stack to solve
                 some tricky
                 <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">
                     networking problems in Docker Desktop
@@ -89,11 +101,21 @@
             <p>
               Due to only linking code that is actually needed, unikernels have a naturally reduced attack
               surface compared to traditional applications.
-              Consider the example of the &quot;xenstore&quot; service of the Xen hypervisor.
-              The Xen hypervisors focuses on isolating untrusted VMs from each other, but does not perform any
+              My favourite example is the &quot;xenstore&quot; service of the Xen hypervisor.
+              In Xen, the hypervisor focuses on isolating untrusted VMs from each other, but does not perform any
               I/O directly. I/O is delegated to special privileged VMs called &quot;driver domains&quot;.
-              The connections between the driver domains and the untrusted VMs are created via a control
+              The connections between the driver domains and the user VMs are configured via a control
               service called &quot;xenstore&quot;.
+            </p>
+            <p>
+              <center>
+                <img src="xen.png" alt="Xen architecture" width="600px">
+                <br>
+                The xenstore service in Xen configures connections between driver domains and user VMs
+                <br>
+              </center>
+            </p>
+            <p>
               The xenstore service is a critical part of a Xen host, so we must be confident that it's
               rock solid. Normally the xenstore service runs as a regular Linux process in a &quot;domain zero&quot;,
               a trusted VM. Running as a regular process means that it's open to interference from
@@ -110,7 +132,7 @@
               <a href="https://irmin.org">OCaml Irmin (git-like) database</a> library
               <a href="https://mirage.io/blog/introducing-irmin-in-xenstore">to store the xenstore state</a>.
               This means that if the xenstore VM crashes, it can recover from a snapshot of its state.
-              Here's our prototype &quot;Xenstore The Next Generation&quot; showing a simulation of booting lots of VMs concurrently:
+              Here's our prototype &quot;Xenstore TNG&quot; showing a simulation of booting lots of VMs concurrently:
             </p>
             <P>
             <center>
@@ -118,34 +140,48 @@
             </center>
             </P>
             <p>
-              Driver domains on a Xen host could in theory be compromised by buggy drivers.
-              For example, a network driver domain could be compromised by a remote attacker over the Internet.
-              <a href="https://roscidus.com/">Thomas Leonard</a> was able to use MirageOS to improve the security of
-              <a href="https://www.qubes-os.org">QubesOS</a>, a famously hardened operating system
-              (although they modestly describe themselves only as &quot;a reasonably secure&quot; operating system!).
-              Thomas used a
+              Unikernels have been used to increase the security of other OSes too.
+              For example,
+              <a href="https://www.qubes-os.org">QubesOS</a> which describes itself as a
+              &quot;<em>a reasonably secure</em>&quot; operating system (!) uses Xen to isolate apps running
+              in separate VMs from each other and from driver domains (running complex and therefore potentially buggy drivers).
+              Network driver domains are particularly vulnerable to attack, since they
+              are exposed to the hostile Internet.
+              <a href="https://roscidus.com/">Thomas Leonard</a> used a
               <a href="https://roscidus.com/blog/blog/2016/01/01/a-unikernel-firewall-for-qubesos/">MirageOS unikernel
               for the trusted firewall component</a>, which sits between the untrusted network driver VMs
-              and the user application VMs. The firewall VM is the
+              and the user application VMs. The MirageOS firewall VM is the
               last line of defence between the user applications and the hostile Internet.
             </p>
+            <h1>Unikernels allow experimentation</h1>
+            <p>
+              Traditional OSes have mature but relatively fixed interfaces between kernel and user code. Since unikernels run
+              everything linked together in the same binary, we can experiment with new interfaces more easily.
+              We did a fun experiment where
+              <a href="/papers/final/2015-nsdi-jitsu.pdf">we spawned unikernels in response to network requests</a>,
+              and were able to hide the VM startup latency by accepting the TCP connection in a separate
+              &quot;inetd-like&quot; process, and then when the unikernel was ready, we transmitted the TCP
+              connection state (sequence numbers etc) over shared memory to the unikernel. This was easy to do because
+              the TCP/IP stack was a library which we could easily customize.
+            </p>
+            <h1>Lots of different styles of Unikernels exist</h1>
             <p>
               Since we worked on MirageOS, several other interesting unikernel projects have appeared.
               <a href="https://github.com/unikraft/unikraft">UniKraft</a>
               is a &quot;unikernel development kit&quot; that supports running existing applications
               (not just OCaml) as unikernels.
               I really appreciate their Docker-inspired UX:
-              <pre>$ kraft run unikraft.org/helloworld:latest</pre> 
+              <pre>$ kraft run unikraft.org/helloworld:latest</pre>
             Also worth checking out is
             <a href="https://github.com/nanovms/nanos">Nanos</a>, which I notice also has
             <a href="https://github.com/nanovms/ops-examples/tree/master/ocaml/01-hello-world">OCaml support</a>.
             Nanos has several interesting additional features, including a
             <a href="https://nanovms.com/dev/tutorials/applying-sandbox-security-node-js-unikernels-openbsd-pledge-unveil">OpenBSD-style pledge and unveil</a>
             and <a href="https://nanovms.com/dev/tutorials/confidential-computing-with-amd-sev-enabled-unikernels">support for confidential computing via AMD SEV</a>.
-            </p>
-            <p>
-            It's great to see all the unikernel innovation!
-            </P>
+            I'm also excited to see upstream Linux embrace Unikernel-style approaches with
+            <a href="https://dl.acm.org/doi/10.1145/3552326.3587458">Unikernel Linux (UKL)</a> which treats Linux itself as a library
+            which can be linked directly against a single process.
+          </p>
     </div>
 </body>
 </html>
