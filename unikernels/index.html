@@ -89,7 +89,14 @@
                 since these are libraries, they can be used in other contexts too (not just unikernels).
                 For example the TCP/IP stack can just as easily run in userspace on a traditional
                 OS.
-                Working at Docker, we were able to use the unikernel TCP/IP stack to solve
+                Working at Docker,
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>
+                <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>
+                <a href="https://roscidus.com/blog/">Thomas Leonard</a>
+                <a href="https://github.com/yomimono">Mindy Preston</a>
+                <a href="http://www.skjegstad.com/">Magnus Skjegstad</a>
+                and I
+                were able to use the unikernel TCP/IP stack to solve
                 some tricky
                 <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">
                     networking problems in Docker Desktop
@@ -120,7 +127,13 @@
               rock solid. Normally the xenstore service runs as a regular Linux process in a &quot;domain zero&quot;,
               a trusted VM. Running as a regular process means that it's open to interference from
               other processes, perhaps via signals or shared files or shared memory.
-              Luckily for us there was already a fast, memory-safe implementation of xenstore written in OCaml, which we
+              Luckily for us
+              <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>
+              and
+              <a href="https://vincenthz.github.io/">Vincent Hanquez</a>
+              had already written
+              a fast, memory-safe implementation of
+              <a href="https://github.com/mirage/ocaml-xenstore">xenstore written in OCaml</a>, which we
               could then 
               <a href="https://mirage.io/blog/xenstore-stub-domain">port to run as an isolated unikernel VM</a>
               using MirageOS,
