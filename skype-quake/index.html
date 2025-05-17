@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Improving the UI of the network</title>
+    <meta name="description" content="Improving the UI of the network">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dave.recoil.org/skype-quake/">
+    <meta property="og:title" content="Improving the UI of the network">
+    <meta property="og:description" content="Building upon Skype to improve the UI of the network (and play quake)">
+    <meta property="og:image" content="https://dave.recoil.org/djs55.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dave.recoil.org/skype-quake/">
+    <meta name="twitter:title" content="Improving the UI of the network">
+    <meta name="twitter:description" content="Building upon Skype to improve the UI of the network (and play quake)">
+    <meta name="twitter:image" content="https://dave.recoil.org/djs55.png">
+    
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+<body>
+
+    <body class="terminal">
+
+        <div class="container">
+          <div class="terminal-nav">
+            <header class="terminal-logo">
+              <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+            </header>
+          <nav class="terminal-menu">
+            <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+              <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+              <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+            </ul>
+          </nav>
+        </div>
+    
+        <div class="container">
+            <p>Microsoft <a href="https://support.microsoft.com/en-us/skype/skype-is-retiring-in-may-2025-what-you-need-to-know-2a7d2501-427f-485e-8be0-2068a9f90472">retiring Skype</a> and merging it with Teams
+            brought back many memories, including of a research project at <a href="https://www.fraserresearch.org/">Fraser Research</a>
+            with <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>.
+            In the early days of the Internet things were fairly simple (although low-level): your computer had a (at least one) public
+            IP address, usually with a friendly DNS name associated.
+            You could run a &quot;server&quot; on your machine and anyone could
+            connect to it by the IP or by name. Sadly this simplicity didn't last: the scarcity of IPv4 addresses led
+            to IP address sharing via Network Address Translation (NAT), and firewalls proliferated,
+            blocking incoming connections. It just became too inconvenient to run a server locally.
+            What could be done?
+            </p>
+            <p>One of the reasons Skype was magical was that it &quot;just worked&quot;. You could
+            connect a video call to a friend with one-click, as if the NAT boxes and firewalls simply
+            didn't exist. Behind the scenes it used techniques like
+            <a href="https://www.rfc-editor.org/rfc/rfc5389">STUN</a> and relays
+            to traverse NATs.
+            In theory any application can implement
+            <a href="https://www.rfc-editor.org/rfc/rfc5389">STUN</a>/
+            <a href="https://datatracker.ietf.org/doc/html/rfc5766">TURN</a>/
+            <a href="https://datatracker.ietf.org/doc/html/rfc8445">ICE/
+            <a href="https://datatracker.ietf.org/doc/html/rfc8835">WebRTC</a>
+            and connect via some kind
+            of coordination server.
+            However that's a lot of work, and most applications even today just want 
+            to &quot;bind&quot; on a port:
+            </p>
+            <pre>docker run -p 80:80 nginx</pre>
+            <h1>Could the network be more like Skype?</h1>
+            <p> Skype &quot;just worked&quot; and had an ultra-simple single-click UI.
+              Could the network experience be more like Skype?
+              </p>
+            <p>Luckily for us, Skype had a API which would allow plugins to list contacts, initiate calls and send/receive
+              messages.
+              We built a prototype which queried your Skype contacts and listed them with
+              a big "Connect" button next to each. When clicked, the app would first
+              send a connection request to the contact, and if accepted, the app
+              would discover both public IP addresses and ports and share the
+              required connection details. Since these were the days before
+              <a href="https://www.wireguard.com/">Wireguard</a>
+              we used
+              <a href="https://openvpn.net/client/">OpenVPN</a>
+              to create a secure tunnel. We used a random available
+              <a href="https://www.rfc-editor.org/rfc/rfc1918">RFC1918</a>
+              IP address range for the tunnel,
+              so also ran a local DNS server to map the contact's name to the internal IP address.
+              Since this was a research project we tested the network in the traditional way:
+              by playing Quake 3. We had a lot of fun, and well, it demonstrated the priciple. 
+            </p>
+            <center>
+              <img src="quake.png" alt="Quake 3 running over a VPN connection coordinated by Skype" width="600">
+              <p>(from memory) roughly how it worked</p>
+            </center>
+            <p>
+              One limitation of the initial prototype was that it was &quot;all or nothing&quot;:
+              once a VPN was established between two machines, all ports (and therefore all
+              applications) were available. We needed to make it easy for a user to grant access
+              to an application and not to others. 
+              Later this led to a fun project
+              where we experimented with
+              <a href="https://www.kernel.org/doc/html/latest/filesystems/fuse.html">FUSE</a>
+              on macOS to create a Plan 9-inspired filesystem-like interface to the network.
+            </p>
+            <h1>Back to the present: Enter containers</h1>
+            <p>
+              This work pre-dated containerisation, but if I was doing it again I would
+              use Docker to run the applications in containers. Docker already virtualizes
+              the network, controls how ports are exposed, and uses similar techniques such
+              as
+              <a href="https://docs.docker.com/compose/how-tos/networking/">a local DNS server</a>
+              to map friendly container names to internal IP addresses.
+              It seems a small step to grant access to a quake server running in a
+              Docker network to friend using a protocol like
+              <a href="https://matrix.org/">Matrix</a> rather than Skype.
+            </p>
+            </div>
+</body>
+</html>
