@@ -20,6 +20,117 @@
     <meta name="color-scheme" content="white">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <style>
+      .carousel-container {
+        max-width: 1000px;
+        margin: 20px auto;
+        position: relative;
+        border: 2px solid #000;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+      }
+      
+      .carousel-track {
+        display: flex;
+        transition: transform 0.3s ease;
+        touch-action: pan-y pinch-zoom;
+      }
+      
+      .carousel-slide {
+        min-width: 100%;
+        position: relative;
+      }
+      
+      .carousel-slide a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        height: 100%;
+      }
+      
+      .carousel-slide a:hover .carousel-caption {
+        background: rgba(255, 255, 255, 1);
+      }
+      
+      .carousel-slide img {
+        width: 100%;
+        height: 500px;
+        object-fit: contain;
+        background: #fff;
+        display: block;
+      }
+      
+      .carousel-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.9);
+        color: #0085d1;
+        padding: 10px;
+        font-size: 14px;
+        text-align: center;
+        border-top: 1px solid #000;
+      }
+      
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 133, 209, 0.9);
+        color: #fff;
+        border: 1px solid #000;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 4px;
+        z-index: 10;
+      }
+      
+      .carousel-nav:hover {
+        background: #0085d1;
+      }
+      
+      .carousel-prev {
+        left: 10px;
+      }
+      
+      .carousel-next {
+        right: 10px;
+      }
+      
+      .carousel-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px;
+        background: #fff;
+        border-top: 1px solid #000;
+      }
+      
+      .carousel-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        border: 1px solid #000;
+        transition: all 0.3s ease;
+      }
+      
+      .carousel-indicator.active {
+        background: #0085d1;
+      }
+      
+      @media (max-width: 768px) {
+        .carousel-nav {
+          display: none;
+        }
+      }
+    </style>
   </head>
 
   <body class="terminal">
@@ -54,12 +165,57 @@ improving application performance and security using type-safe languages and vir
 <a href="https://www.usenix.org/system/files/conference/nsdi15/nsdi15-paper-madhavapeddy.pdf">USENIX</a>).
 
 </p>
-
 <p>
 For maximum impact I enjoy working on open-source projects and commercial software together;
 for example
 <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a> is based on <a href="https://mirage.io/">Mirage OS</a> and
 <a href="https://www.xenserver.com/">XenServer</a> is based on <a href="https://xenproject.org/">Xen</a>.
+</div>
+
+<div class="container">
+<h2>Highlighted publications</h2>
+<div class="carousel-container">
+  <div class="carousel-track" id="carouselTrack">
+    <div class="carousel-slide">
+      <a href="/papers/2025-icfp-docker.pdf">
+        <img src="carousel/2025-icfp-docker.png" alt="ICFP 2025 - Docker">
+        <div class="carousel-caption">ICFP 2025: Bringing Functional Programming to Container Technology</div>
+      </a>
+    </div>
+    <div class="carousel-slide">
+      <a href="https://dl.acm.org/doi/pdf/10.1145/2541883.2541895">
+        <img src="carousel/2014-cacm.png" alt="CACM 2014">
+        <div class="carousel-caption">CACM 2014: Unikernels - Library Operating Systems for the Cloud</div>
+      </a>
+    </div>
+    <div class="carousel-slide">
+      <a href="/papers/2005-ieee-smartphones.pdf">
+        <img src="carousel/2005-ieee-smartphones.png" alt="IEEE 2005 - Smartphones">
+        <div class="carousel-caption">IEEE 2005: Early Smartphone Research and Mobile Computing</div>
+      </a>
+    </div>
+    <div class="carousel-slide">
+      <a href="/papers/2005-ieee-audio.pdf">
+        <img src="carousel/2005-ieee-audio.png" alt="IEEE 2005 - Audio">
+        <div class="carousel-caption">IEEE 2005: Audio Processing and Digital Signal Processing</div>
+      </a>
+    </div>
+  </div>
+  
+  <button class="carousel-nav carousel-prev" onclick="previousSlide()">‹</button>
+  <button class="carousel-nav carousel-next" onclick="nextSlide()">›</button>
+  
+  <div class="carousel-indicators">
+    <div class="carousel-indicator active" onclick="currentSlide(1)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(2)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(3)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(4)"></div>
+  </div>
+</div>
+</div>
+
+      <div class="container">
+<p>
 I co-founded <strong>High Energy Magic</strong> and shipped mobile apps
 which &quot;connected Paper and Online Worlds&quot;
 (<a href="https://www.nytimes.com/2004/10/07/technology/circuits/connecting-paper-and-online-worlds-by-cellphone-camera.html">New York Times</a>,
@@ -78,13 +234,8 @@ working on
 
 </div>
 
+
 <div class="container">
-<h2>Timeline</h2>
-<p>
-<img src="timeline.png"/>
-</p>
-
-
 <h2>Contact</h2>
   <p>
   <address>
@@ -100,6 +251,164 @@ working on
 </p>
 
 </div>
+
+  <script>
+    let slideIndex = 1;
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+    
+    const track = document.getElementById('carouselTrack');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    const totalSlides = document.querySelectorAll('.carousel-slide').length;
+    
+    function showSlide(n) {
+      if (n > totalSlides) slideIndex = 1;
+      if (n < 1) slideIndex = totalSlides;
+      
+      const offset = (slideIndex - 1) * -100;
+      track.style.transform = `translateX(${offset}%)`;
+      
+      // Update indicators
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === slideIndex - 1);
+      });
+    }
+    
+    function nextSlide() {
+      slideIndex++;
+      showSlide(slideIndex);
+    }
+    
+    function previousSlide() {
+      slideIndex--;
+      showSlide(slideIndex);
+    }
+    
+    function currentSlide(n) {
+      slideIndex = n;
+      showSlide(slideIndex);
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        previousSlide();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextSlide();
+      }
+    });
+    
+    // Touch/swipe functionality
+    let hasSwiped = false;
+    
+    track.addEventListener('touchstart', function(e) {
+      // Don't start swipe if touching a link
+      if (e.target.closest('a')) {
+        return;
+      }
+      
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      hasSwiped = false;
+    }, { passive: true });
+    
+    track.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+      
+      // Track if user has swiped significantly
+      if (Math.abs(startX - currentX) > 10) {
+        hasSwiped = true;
+      }
+    }, { passive: true });
+    
+    track.addEventListener('touchend', function(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      // Only trigger slide change if user actually swiped
+      if (hasSwiped) {
+        const diffX = startX - currentX;
+        const threshold = 50; // minimum swipe distance
+        
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) {
+            // Swiped left, go to next slide
+            nextSlide();
+          } else {
+            // Swiped right, go to previous slide
+            previousSlide();
+          }
+        }
+      }
+      
+      hasSwiped = false;
+    }, { passive: true });
+    
+    // Mouse drag for desktop (optional)
+    let isMouseDown = false;
+    let hasMoved = false;
+    
+    track.addEventListener('mousedown', function(e) {
+      // Don't start drag if clicking on a link
+      if (e.target.closest('a')) {
+        return;
+      }
+      
+      startX = e.clientX;
+      isMouseDown = true;
+      hasMoved = false;
+      track.style.cursor = 'grabbing';
+      e.preventDefault(); // Prevent text selection
+    });
+    
+    track.addEventListener('mousemove', function(e) {
+      if (!isMouseDown) return;
+      currentX = e.clientX;
+      
+      // Track if mouse has moved significantly
+      if (Math.abs(startX - currentX) > 5) {
+        hasMoved = true;
+      }
+    });
+    
+    track.addEventListener('mouseup', function(e) {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      track.style.cursor = 'grab';
+      
+      // Only trigger slide change if mouse actually moved
+      if (hasMoved) {
+        const diffX = startX - currentX;
+        const threshold = 50;
+        
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) {
+            nextSlide();
+          } else {
+            previousSlide();
+          }
+        }
+      }
+      
+      hasMoved = false;
+    });
+    
+    track.addEventListener('mouseleave', function() {
+      isMouseDown = false;
+      hasMoved = false;
+      track.style.cursor = 'grab';
+    });
+    
+    // Initialize cursor style
+    track.style.cursor = 'grab';
+    
+    // Initialize the carousel
+    showSlide(slideIndex);
+  </script>
 
   </body>
 </html>
