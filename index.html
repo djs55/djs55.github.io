@@ -20,6 +20,103 @@
     <meta name="color-scheme" content="white">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <style>
+      .carousel-container {
+        max-width: 600px;
+        margin: 20px auto;
+        position: relative;
+        border: 2px solid #00ff41;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #000;
+      }
+      
+      .carousel-track {
+        display: flex;
+        transition: transform 0.3s ease;
+        touch-action: pan-y pinch-zoom;
+      }
+      
+      .carousel-slide {
+        min-width: 100%;
+        position: relative;
+      }
+      
+      .carousel-slide img {
+        width: 100%;
+        height: 300px;
+        object-fit: contain;
+        background: #000;
+        display: block;
+      }
+      
+      .carousel-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.8);
+        color: #00ff41;
+        padding: 10px;
+        font-size: 14px;
+        text-align: center;
+      }
+      
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 255, 65, 0.8);
+        color: #000;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 4px;
+        z-index: 10;
+      }
+      
+      .carousel-nav:hover {
+        background: #00ff41;
+      }
+      
+      .carousel-prev {
+        left: 10px;
+      }
+      
+      .carousel-next {
+        right: 10px;
+      }
+      
+      .carousel-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        padding: 15px;
+        background: #000;
+      }
+      
+      .carousel-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #333;
+        cursor: pointer;
+        border: 1px solid #00ff41;
+        transition: all 0.3s ease;
+      }
+      
+      .carousel-indicator.active {
+        background: #00ff41;
+      }
+      
+      @media (max-width: 768px) {
+        .carousel-nav {
+          display: none;
+        }
+      }
+    </style>
   </head>
 
   <body class="terminal">
@@ -79,6 +176,40 @@ working on
 </div>
 
 <div class="container">
+<h2>Recent Work</h2>
+<div class="carousel-container">
+  <div class="carousel-track" id="carouselTrack">
+    <div class="carousel-slide">
+      <img src="carousel/2025-icfp-docker.png" alt="ICFP 2025 - Docker">
+      <div class="carousel-caption">ICFP 2025: Bringing Functional Programming to Container Technology</div>
+    </div>
+    <div class="carousel-slide">
+      <img src="carousel/2014-cacm.png" alt="CACM 2014">
+      <div class="carousel-caption">CACM 2014: Unikernels - Library Operating Systems for the Cloud</div>
+    </div>
+    <div class="carousel-slide">
+      <img src="carousel/2005-ieee-smartphones.png" alt="IEEE 2005 - Smartphones">
+      <div class="carousel-caption">IEEE 2005: Early Smartphone Research and Mobile Computing</div>
+    </div>
+    <div class="carousel-slide">
+      <img src="carousel/2005-ieee-audio.png" alt="IEEE 2005 - Audio">
+      <div class="carousel-caption">IEEE 2005: Audio Processing and Digital Signal Processing</div>
+    </div>
+  </div>
+  
+  <button class="carousel-nav carousel-prev" onclick="previousSlide()">‹</button>
+  <button class="carousel-nav carousel-next" onclick="nextSlide()">›</button>
+  
+  <div class="carousel-indicators">
+    <div class="carousel-indicator active" onclick="currentSlide(1)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(2)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(3)"></div>
+    <div class="carousel-indicator" onclick="currentSlide(4)"></div>
+  </div>
+</div>
+</div>
+
+<div class="container">
 <h2>Timeline</h2>
 <p>
 <img src="timeline.png"/>
@@ -100,6 +231,127 @@ working on
 </p>
 
 </div>
+
+  <script>
+    let slideIndex = 1;
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+    
+    const track = document.getElementById('carouselTrack');
+    const indicators = document.querySelectorAll('.carousel-indicator');
+    const totalSlides = document.querySelectorAll('.carousel-slide').length;
+    
+    function showSlide(n) {
+      if (n > totalSlides) slideIndex = 1;
+      if (n < 1) slideIndex = totalSlides;
+      
+      const offset = (slideIndex - 1) * -100;
+      track.style.transform = `translateX(${offset}%)`;
+      
+      // Update indicators
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === slideIndex - 1);
+      });
+    }
+    
+    function nextSlide() {
+      slideIndex++;
+      showSlide(slideIndex);
+    }
+    
+    function previousSlide() {
+      slideIndex--;
+      showSlide(slideIndex);
+    }
+    
+    function currentSlide(n) {
+      slideIndex = n;
+      showSlide(slideIndex);
+    }
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        previousSlide();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextSlide();
+      }
+    });
+    
+    // Touch/swipe functionality
+    track.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }, { passive: true });
+    
+    track.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    track.addEventListener('touchend', function(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      const diffX = startX - currentX;
+      const threshold = 50; // minimum swipe distance
+      
+      if (Math.abs(diffX) > threshold) {
+        if (diffX > 0) {
+          // Swiped left, go to next slide
+          nextSlide();
+        } else {
+          // Swiped right, go to previous slide
+          previousSlide();
+        }
+      }
+    }, { passive: true });
+    
+    // Mouse drag for desktop (optional)
+    let isMouseDown = false;
+    
+    track.addEventListener('mousedown', function(e) {
+      startX = e.clientX;
+      isMouseDown = true;
+      track.style.cursor = 'grabbing';
+    });
+    
+    track.addEventListener('mousemove', function(e) {
+      if (!isMouseDown) return;
+      currentX = e.clientX;
+    });
+    
+    track.addEventListener('mouseup', function(e) {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      track.style.cursor = 'grab';
+      
+      const diffX = startX - currentX;
+      const threshold = 50;
+      
+      if (Math.abs(diffX) > threshold) {
+        if (diffX > 0) {
+          nextSlide();
+        } else {
+          previousSlide();
+        }
+      }
+    });
+    
+    track.addEventListener('mouseleave', function() {
+      isMouseDown = false;
+      track.style.cursor = 'grab';
+    });
+    
+    // Initialize cursor style
+    track.style.cursor = 'grab';
+    
+    // Initialize the carousel
+    showSlide(slideIndex);
+  </script>
 
   </body>
 </html>
