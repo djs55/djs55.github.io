@@ -302,46 +302,77 @@ working on
     });
     
     // Touch/swipe functionality
+    let hasSwiped = false;
+    
     track.addEventListener('touchstart', function(e) {
+      // Don't start swipe if touching a link
+      if (e.target.closest('a')) {
+        return;
+      }
+      
       startX = e.touches[0].clientX;
       isDragging = true;
+      hasSwiped = false;
     }, { passive: true });
     
     track.addEventListener('touchmove', function(e) {
       if (!isDragging) return;
       currentX = e.touches[0].clientX;
+      
+      // Track if user has swiped significantly
+      if (Math.abs(startX - currentX) > 10) {
+        hasSwiped = true;
+      }
     }, { passive: true });
     
     track.addEventListener('touchend', function(e) {
       if (!isDragging) return;
       isDragging = false;
       
-      const diffX = startX - currentX;
-      const threshold = 50; // minimum swipe distance
-      
-      if (Math.abs(diffX) > threshold) {
-        if (diffX > 0) {
-          // Swiped left, go to next slide
-          nextSlide();
-        } else {
-          // Swiped right, go to previous slide
-          previousSlide();
+      // Only trigger slide change if user actually swiped
+      if (hasSwiped) {
+        const diffX = startX - currentX;
+        const threshold = 50; // minimum swipe distance
+        
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) {
+            // Swiped left, go to next slide
+            nextSlide();
+          } else {
+            // Swiped right, go to previous slide
+            previousSlide();
+          }
         }
       }
+      
+      hasSwiped = false;
     }, { passive: true });
     
     // Mouse drag for desktop (optional)
     let isMouseDown = false;
+    let hasMoved = false;
     
     track.addEventListener('mousedown', function(e) {
+      // Don't start drag if clicking on a link
+      if (e.target.closest('a')) {
+        return;
+      }
+      
       startX = e.clientX;
       isMouseDown = true;
+      hasMoved = false;
       track.style.cursor = 'grabbing';
+      e.preventDefault(); // Prevent text selection
     });
     
     track.addEventListener('mousemove', function(e) {
       if (!isMouseDown) return;
       currentX = e.clientX;
+      
+      // Track if mouse has moved significantly
+      if (Math.abs(startX - currentX) > 5) {
+        hasMoved = true;
+      }
     });
     
     track.addEventListener('mouseup', function(e) {
@@ -349,20 +380,26 @@ working on
       isMouseDown = false;
       track.style.cursor = 'grab';
       
-      const diffX = startX - currentX;
-      const threshold = 50;
-      
-      if (Math.abs(diffX) > threshold) {
-        if (diffX > 0) {
-          nextSlide();
-        } else {
-          previousSlide();
+      // Only trigger slide change if mouse actually moved
+      if (hasMoved) {
+        const diffX = startX - currentX;
+        const threshold = 50;
+        
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) {
+            nextSlide();
+          } else {
+            previousSlide();
+          }
         }
       }
+      
+      hasMoved = false;
     });
     
     track.addEventListener('mouseleave', function() {
       isMouseDown = false;
+      hasMoved = false;
       track.style.cursor = 'grab';
     });
     
