@@ -42,6 +42,18 @@
         position: relative;
       }
       
+      .carousel-slide a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        height: 100%;
+      }
+      
+      .carousel-slide a:hover .carousel-caption {
+        background: rgba(255, 255, 255, 1);
+      }
+      
       .carousel-slide img {
         width: 100%;
         height: 500px;
@@ -182,20 +194,28 @@ working on
 <div class="carousel-container">
   <div class="carousel-track" id="carouselTrack">
     <div class="carousel-slide">
-      <img src="carousel/2025-icfp-docker.png" alt="ICFP 2025 - Docker">
-      <div class="carousel-caption">ICFP 2025: Bringing Functional Programming to Container Technology</div>
+      <a href="/papers/2025-icfp-docker.pdf">
+        <img src="carousel/2025-icfp-docker.png" alt="ICFP 2025 - Docker">
+        <div class="carousel-caption">ICFP 2025: Bringing Functional Programming to Container Technology</div>
+      </a>
     </div>
     <div class="carousel-slide">
-      <img src="carousel/2014-cacm.png" alt="CACM 2014">
-      <div class="carousel-caption">CACM 2014: Unikernels - Library Operating Systems for the Cloud</div>
+      <a href="/papers/2014-cacm.pdf">
+        <img src="carousel/2014-cacm.png" alt="CACM 2014">
+        <div class="carousel-caption">CACM 2014: Unikernels - Library Operating Systems for the Cloud</div>
+      </a>
     </div>
     <div class="carousel-slide">
-      <img src="carousel/2005-ieee-smartphones.png" alt="IEEE 2005 - Smartphones">
-      <div class="carousel-caption">IEEE 2005: Early Smartphone Research and Mobile Computing</div>
+      <a href="/papers/2005-ieee-smartphones.pdf">
+        <img src="carousel/2005-ieee-smartphones.png" alt="IEEE 2005 - Smartphones">
+        <div class="carousel-caption">IEEE 2005: Early Smartphone Research and Mobile Computing</div>
+      </a>
     </div>
     <div class="carousel-slide">
-      <img src="carousel/2005-ieee-audio.png" alt="IEEE 2005 - Audio">
-      <div class="carousel-caption">IEEE 2005: Audio Processing and Digital Signal Processing</div>
+      <a href="/papers/2005-ieee-audio.pdf">
+        <img src="carousel/2005-ieee-audio.png" alt="IEEE 2005 - Audio">
+        <div class="carousel-caption">IEEE 2005: Audio Processing and Digital Signal Processing</div>
+      </a>
     </div>
   </div>
   
