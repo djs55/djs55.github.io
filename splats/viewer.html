@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point clouds from Gaussian splats from ml-sharp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, 'Lucida Console', Monaco, monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 50;
+        }
+
+        .spinner {
+            border: 3px solid #333;
+            border-top: 3px solid #4a9eff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 0.95rem;
+            color: #aaa;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="canvas"></canvas>
+
+        <div id="controls">
+            <button id="resetCamera" style="width: 100%; padding: 10px; background: #4a9eff; border: none; border-radius: 6px; color: white; font-size: 0.9rem; cursor: pointer;">
+                Reset Camera
+            </button>
+        </div>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <div id="loading-text">Loading splat...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const loading = document.getElementById('loading');
+
+        let scene, camera, renderer, controls;
+        let splatMesh = null;
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let rotation = { x: 0, y: 0 };
+        let baseRotation = new THREE.Quaternion();
+        let initialCameraPosition = new THREE.Vector3();
+        let initialBaseRotation = new THREE.Quaternion();
+        let zoom = 5;
+        let keys = {};
+
+        function createAxes(scene) {
+            const axisLength = 1;
+            const axisRadius = 0.01;
+            const arrowLength = 0.1;
+            const arrowRadius = 0.03;
+
+            // Helper function to create text sprite
+            function makeTextSprite(message, color) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 256;
+                context.font = 'Bold 120px Arial';
+                context.fillStyle = color;
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(message, 128, 128);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.scale.set(0.3, 0.3, 1);
+                return sprite;
+            }
+
+            // Helper function to create an axis with arrow and label
+            function createAxis(color, direction, label) {
+                const group = new THREE.Group();
+
+                // Cylinder for axis
+                const cylinderGeometry = new THREE.CylinderGeometry(axisRadius, axisRadius, axisLength, 8);
+                const cylinderMaterial = new THREE.MeshBasicMaterial({ color: color });
+                const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+
+                // Arrow head (cone)
+                const coneGeometry = new THREE.ConeGeometry(arrowRadius, arrowLength, 8);
+                const coneMaterial = new THREE.MeshBasicMaterial({ color: color });
+                const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+                cone.position.y = axisLength / 2 + arrowLength / 2;
+
+                // Text label
+                const textSprite = makeTextSprite(label, color);
+                textSprite.position.y = axisLength / 2 + arrowLength + 0.2;
+
+                group.add(cylinder);
+                group.add(cone);
+                group.add(textSprite);
+
+                // Rotate group based on direction
+                if (direction === 'x') {
+                    group.rotation.z = -Math.PI / 2;
+                } else if (direction === 'z') {
+                    group.rotation.x = Math.PI / 2;
+                }
+                // Y axis is already pointing up, no rotation needed
+
+                return group;
+            }
+
+            // Create X, Y, Z axes
+            const xAxis = createAxis('#ff0000', 'x', 'X');
+            const yAxis = createAxis('#00ff00', 'y', 'Y');
+            const zAxis = createAxis('#0000ff', 'z', 'Z');
+
+            scene.add(xAxis);
+            scene.add(yAxis);
+            scene.add(zAxis);
+        }
+
+        function init() {
+            // Setup Three.js scene
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            // Position camera far back to see the scene and axes
+            camera.position.set(200, 100, 300);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            // Add some basic lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+            scene.add(ambientLight);
+
+            // Add custom XYZ axes with cylinders, arrow heads, and labels
+            createAxes(scene);
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Setup basic orbit controls manually
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+
+                    // Invert the deltas for natural rotation (drag left = look left, drag up = look up)
+                    rotation.y -= deltaX * 0.005;
+                    rotation.x -= deltaY * 0.005;
+
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                zoom += e.deltaY * 0.01;
+                zoom = Math.max(1, Math.min(zoom, 20));
+                camera.position.z = zoom;
+            });
+
+            // Keyboard controls (WASD + QE)
+            window.addEventListener('keydown', (e) => {
+                keys[e.key.toLowerCase()] = true;
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.key.toLowerCase()] = false;
+            });
+
+            // Touch controls for mobile
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartDistance = 0;
+
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    // Single touch - look around
+                    isDragging = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    previousMousePosition = { x: touchStartX, y: touchStartY };
+                } else if (e.touches.length === 2) {
+                    // Two fingers - pinch to zoom
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    touchStartDistance = Math.sqrt(dx * dx + dy * dy);
+                }
+                e.preventDefault();
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1 && isDragging) {
+                    // Single touch - look around
+                    const deltaX = e.touches[0].clientX - previousMousePosition.x;
+                    const deltaY = e.touches[0].clientY - previousMousePosition.y;
+
+                    rotation.y -= deltaX * 0.005;
+                    rotation.x -= deltaY * 0.005;
+
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                } else if (e.touches.length === 2) {
+                    // Two fingers - pinch to zoom
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    const delta = touchStartDistance - distance;
+                    // Move camera along its view direction (negative = forward, positive = backward)
+                    camera.translateZ(delta * 0.01);
+
+                    touchStartDistance = distance;
+                }
+                e.preventDefault();
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                isDragging = false;
+                e.preventDefault();
+            });
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                // Handle WASD camera movement (FPS-style)
+                const moveSpeed = 0.1;
+
+                if (keys['w']) {
+                    // Move forward in the direction camera is facing
+                    camera.translateZ(-moveSpeed);
+                }
+                if (keys['s']) {
+                    // Move backward
+                    camera.translateZ(moveSpeed);
+                }
+                if (keys['a']) {
+                    // Strafe left
+                    camera.translateX(-moveSpeed);
+                }
+                if (keys['d']) {
+                    // Strafe right
+                    camera.translateX(moveSpeed);
+                }
+                if (keys['q'] || keys['shift']) {
+                    // Move down
+                    camera.translateY(-moveSpeed);
+                }
+                if (keys['e'] || keys[' ']) {
+                    // Move up
+                    camera.translateY(moveSpeed);
+                }
+
+                // Apply mouse rotation to camera (Quake-style mouselook)
+                // Combine base rotation from PLY file with user's mouse rotation
+                const euler = new THREE.Euler(rotation.x, rotation.y, 0, 'YXZ');
+                const mouseRotation = new THREE.Quaternion();
+                mouseRotation.setFromEuler(euler);
+                camera.quaternion.copy(baseRotation).multiply(mouseRotation);
+
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        async function loadSplat(filename) {
+            if (!filename) return;
+
+            loading.classList.remove('hidden');
+
+            try {
+                // Remove existing mesh
+                if (splatMesh) {
+                    scene.remove(splatMesh);
+                    splatMesh.geometry.dispose();
+                    splatMesh.material.dispose();
+                }
+
+                // Fetch and parse PLY file
+                const response = await fetch(`${filename}`);
+                const buffer = await response.arrayBuffer();
+                const uint8Array = new Uint8Array(buffer);
+
+                // Find the end of the header
+                let headerEnd = 0;
+                const headerText = new TextDecoder().decode(uint8Array.slice(0, 2000));
+                const endHeaderMatch = headerText.match(/end_header\n/);
+                if (endHeaderMatch) {
+                    headerEnd = headerText.indexOf('end_header\n') + 11; // +11 for "end_header\n"
+                } else {
+                    throw new Error('Could not find end_header in PLY file');
+                }
+
+                // Parse vertex count from header
+                const vertexMatch = headerText.match(/element vertex (\d+)/);
+                if (!vertexMatch) {
+                    throw new Error('Could not find vertex count in PLY header');
+                }
+                const vertexCount = parseInt(vertexMatch[1]);
+
+                // Each vertex has 14 float properties (x, y, z, f_dc_0-2, opacity, scale_0-2, rot_0-3)
+                const stride = 14 * 4; // 14 floats × 4 bytes each = 56 bytes per vertex
+                const vertexDataSize = vertexCount * stride;
+
+                // Make sure we have enough data
+                if (headerEnd + vertexDataSize > buffer.byteLength) {
+                    throw new Error(`Not enough data: need ${headerEnd + vertexDataSize} bytes, have ${buffer.byteLength}`);
+                }
+
+                // Create DataView starting at the vertex data
+                const vertexData = new DataView(buffer, headerEnd, vertexDataSize);
+
+                const positions = new Float32Array(vertexCount * 3);
+                const colors = new Float32Array(vertexCount * 3);
+
+                // Read all vertices
+                for (let i = 0; i < vertexCount; i++) {
+                    const offset = i * stride;
+
+                    // Position (x, y, z) - first 3 floats
+                    positions[i * 3] = vertexData.getFloat32(offset, true);
+                    positions[i * 3 + 1] = vertexData.getFloat32(offset + 4, true);
+                    positions[i * 3 + 2] = vertexData.getFloat32(offset + 8, true);
+
+                    // Color (f_dc_0, f_dc_1, f_dc_2) - spherical harmonics DC component
+                    const SH_C0 = 0.28209479177387814;
+                    colors[i * 3] = Math.max(0, Math.min(1, 0.5 + SH_C0 * vertexData.getFloat32(offset + 12, true)));
+                    colors[i * 3 + 1] = Math.max(0, Math.min(1, 0.5 + SH_C0 * vertexData.getFloat32(offset + 16, true)));
+                    colors[i * 3 + 2] = Math.max(0, Math.min(1, 0.5 + SH_C0 * vertexData.getFloat32(offset + 20, true)));
+
+                    // Show progress every 100k vertices
+                    if (i % 100000 === 0) {
+                        document.getElementById('loading-text').textContent =
+                            `Loading splat... ${Math.round((i / vertexCount) * 100)}%`;
+                    }
+                }
+
+                // Read camera extrinsic data (16 floats after vertex data)
+                const extrinsicOffset = headerEnd + vertexDataSize;
+                const extrinsicData = new DataView(buffer, extrinsicOffset, 16 * 4);
+                const extrinsic = new Float32Array(16);
+                for (let i = 0; i < 16; i++) {
+                    extrinsic[i] = extrinsicData.getFloat32(i * 4, true);
+                }
+
+                // Create 4x4 matrix from extrinsic data
+                const cameraMatrix = new THREE.Matrix4();
+                cameraMatrix.fromArray(extrinsic);
+
+                // Invert the matrix (extrinsic is often world-to-camera, we need camera-to-world)
+                const cameraToWorld = new THREE.Matrix4();
+                cameraToWorld.copy(cameraMatrix).invert();
+
+                // Extract camera position and orientation
+                const cameraPosition = new THREE.Vector3();
+                const cameraQuaternion = new THREE.Quaternion();
+                const cameraScale = new THREE.Vector3();
+                cameraToWorld.decompose(cameraPosition, cameraQuaternion, cameraScale);
+
+                // Set camera to the original photo perspective
+                camera.position.copy(cameraPosition);
+                camera.quaternion.copy(cameraQuaternion);
+
+                // Apply rotation corrections AFTER setting position/quaternion
+                // First rotate around Y to face the right direction
+                camera.rotateY(Math.PI);
+                // Then rotate around Z to flip right-side-up
+                camera.rotateZ(Math.PI);
+
+                // Add offset to emphasize 3D perspective
+                // Move camera back and up slightly from the original position
+                camera.translateZ(2);   // Move back along camera's view direction
+                camera.translateY(1);   // Move up
+                camera.translateX(1);   // Move right
+
+                // Save the corrected camera rotation as the base rotation
+                baseRotation.copy(camera.quaternion);
+
+                // Save initial camera state for reset button
+                initialCameraPosition.copy(camera.position);
+                initialBaseRotation.copy(baseRotation);
+
+                // Reset mouse rotation for controls
+                rotation = { x: 0, y: 0 };
+
+                // Create point cloud
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.015,
+                    vertexColors: true,
+                    sizeAttenuation: true
+                });
+
+                splatMesh = new THREE.Points(geometry, material);
+                scene.add(splatMesh);
+
+                document.getElementById('loading-text').textContent = 'Loaded!';
+
+            } catch (error) {
+                console.error('Error loading splat:', error);
+                alert('Error loading splat file: ' + error.message);
+            } finally {
+                setTimeout(() => {
+                    loading.classList.add('hidden');
+                }, 500);
+            }
+        }
+
+        // Reset camera function
+        function resetCamera() {
+            camera.position.copy(initialCameraPosition);
+            baseRotation.copy(initialBaseRotation);
+            rotation = { x: 0, y: 0 };
+        }
+
+        // Handle reset button
+        document.getElementById('resetCamera').addEventListener('click', resetCamera);
+
+        // Initialize
+        init();
+
+        // Auto-load IMG_6340 file on startup
+        loadSplat('IMG_6340.ply');
+    </script>
+</body>
+</html>
