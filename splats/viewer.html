@@ -156,11 +156,11 @@
                 loadingText.textContent = 'Initializing viewer...';
 
                 // Create viewer with custom FPS-style controls
-                // Camera positioned at positive Z, looking forward with Y-down orientation
+                // Camera positioned elevated and back, looking down at scene with Y-down orientation
                 viewer = new GaussianSplats3D.Viewer({
                     cameraUp: [0, -1, 0],
-                    initialCameraPosition: [0, 0, -20],
-                    initialCameraLookAt: [0, 0, 0],
+                    initialCameraPosition: [0, -20, -20],
+                    initialCameraLookAt: [0, -10, 0],
                     useBuiltInControls: false,
                     selfDrivenMode: false,
                     dynamicScene: true,
