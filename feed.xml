@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dave Scott's Blog</title>
+    <link>https://dave.recoil.org/blog.html</link>
+    <description>Dave Scott works on Docker, bringing the benefits of containers to developers everywhere.</description>
+    <language>en</language>
+    <atom:link href="https://dave.recoil.org/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Hello World with Gaussian Splats</title>
+      <link>https://dave.recoil.org/splats/</link>
+      <guid>https://dave.recoil.org/splats/</guid>
+      <pubDate>Wed, 01 Jan 2026 00:00:00 +0000</pubDate>
+      <description>An interactive 3D Gaussian splat viewer showing a scene reconstructed from a photo using Apple's ml-sharp library.</description>
+    </item>
+
+    <item>
+      <title>Thoughts on Unikernels</title>
+      <link>https://dave.recoil.org/unikernels/</link>
+      <guid>https://dave.recoil.org/unikernels/</guid>
+      <pubDate>Wed, 01 Apr 2025 00:00:00 +0000</pubDate>
+      <description>Thoughts on Unikernels, after our 2013 paper ("Unikernels: Library Operating Systems for the Cloud") won one of the Influential Paper Awards at the 2025 ASPLOS conference.</description>
+    </item>
+
+    <item>
+      <title>Docker containers, space usage and OCaml qcow2 disk defragmentation</title>
+      <link>https://dave.recoil.org/disk-compact/</link>
+      <guid>https://dave.recoil.org/disk-compact/</guid>
+      <pubDate>Sun, 16 Mar 2025 00:00:00 +0000</pubDate>
+      <description>A deep dive into where data is stored in Docker containers, and how we could reclaim space using an OCaml qcow2 disk defragmentor</description>
+    </item>
+
+    <item>
+      <title>Understanding CLOS Network Switches</title>
+      <link>https://dave.recoil.org/switch/</link>
+      <guid>https://dave.recoil.org/switch/</guid>
+      <pubDate>Sun, 09 Mar 2025 00:00:00 +0000</pubDate>
+      <description>A deep dive into the architecture of network switches, featuring an interactive 3D visualization of CLOS networks, inspired by Sandy Fraser's approach to designing large-scale switches.</description>
+    </item>
+
+    <item>
+      <title>Summary of performance improvements in Docker Desktop 4.22</title>
+      <link>https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/</link>
+      <guid>https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/</guid>
+      <pubDate>Thu, 17 Aug 2023 00:00:00 +0000</pubDate>
+      <description>Improved networking performance, faster builds, lower memory usage and a "Resource Saver" mode.</description>
+    </item>
+
+    <item>
+      <title>Summary of improvements in Docker Desktop 4.21</title>
+      <link>https://www.docker.com/blog/docker-desktop-4-21/</link>
+      <guid>https://www.docker.com/blog/docker-desktop-4-21/</guid>
+      <pubDate>Thu, 06 Jul 2023 00:00:00 +0000</pubDate>
+      <description>Support for Wasm, better support for Rust, startup is much faster and there's a new UI to show builds.</description>
+    </item>
+
+    <item>
+      <title>Dockershim not needed: Docker Desktop with Kubernetes 1.24+</title>
+      <link>https://www.docker.com/blog/dockershim-not-needed-docker-desktop-with-kubernetes-1-24/</link>
+      <guid>https://www.docker.com/blog/dockershim-not-needed-docker-desktop-with-kubernetes-1-24/</guid>
+      <pubDate>Mon, 18 Apr 2022 00:00:00 +0000</pubDate>
+      <description>Lots of people have been asking us about the removal of a component called "dockershim" from upstream Kubernetes and how this will affect Docker Desktop. It won't affect anyone at all.</description>
+    </item>
+
+    <item>
+      <title>How Docker Desktop Networking works under the hood</title>
+      <link>https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/</link>
+      <guid>https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/</guid>
+      <pubDate>Tue, 25 Jan 2022 00:00:00 +0000</pubDate>
+      <description>All about the Unikernel-inspired userspace networking stack that connects containers to the outside world in Docker Desktop.</description>
+    </item>
+
+    <item>
+      <title>Early Docker build demonstrates incoming Apple Silicon support</title>
+      <link>https://appleinsider.com/articles/20/11/29/early-docker-build-demonstrates-incoming-apple-silicon-support</link>
+      <guid>https://appleinsider.com/articles/20/11/29/early-docker-build-demonstrates-incoming-apple-silicon-support</guid>
+      <pubDate>Sun, 29 Nov 2020 00:00:00 +0000</pubDate>
+      <description>An appleinsider post by Malcolm Owen based on my screenshot of an early Docker Desktop build running on Apple Silicon.</description>
+    </item>
+
+    <item>
+      <title>Capturing logs in Docker Desktop</title>
+      <link>https://www.docker.com/blog/capturing-logs-in-docker-desktop/</link>
+      <guid>https://www.docker.com/blog/capturing-logs-in-docker-desktop/</guid>
+      <pubDate>Fri, 17 Jan 2020 00:00:00 +0000</pubDate>
+      <description>A deep-dive into how the logging system works, joint work with Magnus Skjegstad</description>
+    </item>
+
+    <item>
+      <title>New Filesharing Implementation in Docker Desktop Windows</title>
+      <link>https://www.docker.com/blog/new-filesharing-implementation-in-docker-desktop-windows/</link>
+      <guid>https://www.docker.com/blog/new-filesharing-implementation-in-docker-desktop-windows/</guid>
+      <pubDate>Thu, 12 Dec 2019 00:00:00 +0000</pubDate>
+      <description>We replaced a complex SMB/CIFS based implementation with a FUSE+VSOCK-based one, to increase reliability and performance.</description>
+    </item>
+
+    <item>
+      <title>Addressing Time Drift in Docker for Mac</title>
+      <link>https://www.docker.com/blog/addressing-time-drift-in-docker-desktop-for-mac/</link>
+      <guid>https://www.docker.com/blog/addressing-time-drift-in-docker-desktop-for-mac/</guid>
+      <pubDate>Mon, 25 Feb 2019 00:00:00 +0000</pubDate>
+      <description>Discusses time sync between the LinuxKit VM and the host.</description>
+    </item>
+
+    <item>
+      <title>Docker for Mac: reducing disk space</title>
+      <link>https://dave.recoil.org/blogs/docker-for-mac-disk-space.html</link>
+      <guid>https://dave.recoil.org/blogs/docker-for-mac-disk-space.html</guid>
+      <pubDate>Tue, 28 Nov 2017 00:00:00 +0000</pubDate>
+      <description>Tips for reducing disk space usage in Docker for Mac by understanding and using TRIM.</description>
+    </item>
+
+    <item>
+      <title>macOS Sierra 10.12 release notes</title>
+      <link>https://support.apple.com/en-us/103424</link>
+      <guid>https://support.apple.com/en-us/103424</guid>
+      <pubDate>Tue, 20 Sep 2016 00:00:00 +0000</pubDate>
+      <description>Apple's release notes for macOS Sierra 10.12, which includes a fix for CVE-2016-4739 affecting mDNSResponder, joint work with Magnus Skjegstad and Anil Madhavapeddy.</description>
+    </item>
+
+    <item>
+      <title>Why we use OPAM for XenServer development</title>
+      <link>https://opam.ocaml.org/blog/opam-in-xenserver/</link>
+      <guid>https://opam.ocaml.org/blog/opam-in-xenserver/</guid>
+      <pubDate>Wed, 18 Feb 2015 00:00:00 +0000</pubDate>
+      <description>Describing how XenServer development benefits from the new OCaml package manager, OPAM.</description>
+    </item>
+
+    <item>
+      <title>Architecture of the "xapi toolstack" for Xen</title>
+      <link>https://xapi-project.github.io/getting-started/architecture.html</link>
+      <guid>https://xapi-project.github.io/getting-started/architecture.html</guid>
+      <pubDate>Tue, 02 Dec 2014 00:00:00 +0000</pubDate>
+      <description>A high-level overview of the "xapi toolstack" which supports clusters, shared storage with live migration, HA etc.</description>
+    </item>
+
+    <item>
+      <title>Using Irmin to add fault-tolerance to the Xenstore database</title>
+      <link>https://mirage.io/blog/introducing-irmin-in-xenstore</link>
+      <guid>https://mirage.io/blog/introducing-irmin-in-xenstore</guid>
+      <pubDate>Mon, 21 Jul 2014 00:00:00 +0000</pubDate>
+      <description>Xenstore is a critical component needed by hosts running the Xen hypervisor. We can use Irmin to add extra fault-tolerance.</description>
+    </item>
+
+    <item>
+      <title>Ceph and libvirt technology preview</title>
+      <link>https://wiki.xenproject.org/index.php?title=Ceph_and_libvirt_technology_preview</link>
+      <guid>https://wiki.xenproject.org/index.php?title=Ceph_and_libvirt_technology_preview</guid>
+      <pubDate>Sun, 07 Jul 2013 00:00:00 +0000</pubDate>
+      <description>Experimental packages which added support for libvirt and Ceph to XenServer.</description>
+    </item>
+
+    <item>
+      <title>Building a "Xenstore stub domain" with MirageOS</title>
+      <link>https://mirage.io/blog/xenstore-stub-domain</link>
+      <guid>https://mirage.io/blog/xenstore-stub-domain</guid>
+      <pubDate>Wed, 12 Sep 2012 00:00:00 +0000</pubDate>
+      <description>Using MirageOS to harden a critical service called "xenstore", required by the Xen hypervisor.</description>
+    </item>
+
+  </channel>
+</rss>
