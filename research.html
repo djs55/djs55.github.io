@@ -113,18 +113,21 @@ and
 <h2>Interests</h2>
 
 <p>
-My latest research interest is on cloud computing, rethinking the role of an Operating System (OS)
-now that you can rely on a hypervisor to do many of the things an OS kernel had to
-do before. I've been working on the
+My current interest is using
+<a href="http://cacm.acm.org/magazines/2014/1/170866-unikernels/abstract">Virtual Library Operating Systems</a>
+to improve the developer experience of tools like Docker Desktop.
+For an overview see
+<a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">A Decade of Docker Containers</a>
+in the Communications of the ACM.
+</p>
+Much of the unikernel tech and ideas came from the
 <a href="http://mirage.io/">MirageOS</a>
-project to create a &quot;programming framework&quot; (really a set of nicely composable
-libraries) which makes it easy to write applications which run directly on top of
-hypervisors. For an overview of this work, check out the recent
-<a href="http://cacm.acm.org/magazines/2014/1/170866-unikernels/abstract">Communications of the ACM article</a>
-or the
-<a href="papers/final/asplos2013.pdf">ASPLOS 2013 paper</a>
-or explore the
-<a href="http://openmirage.org/docs/">MirageOS docs.</a>
+project which
+explored how to write applications
+which run directly on top of hypervisors, without a traditional Operating System in the stack.
+For an overview of Mirage, check out the
+<a href="https://anil.recoil.org/notes/unikernels-test-of-time">APLOS 2013 paper</a>
+which won the most influential paper award.
 </p>
 
 <p>
@@ -166,6 +169,25 @@ for support and funding respectively. I was also sponsored by the now defunct
 <p>Several of the papers we've written have won prizes:</p>
 
 <table class="paper-entry">
+
+<tr>
+<td><a href="papers/2025-icfp-docker.pdf"><img src="papers/2025-icfp-docker.png" alt="Millions of Docker Desktops paper"></a></td>
+<td>
+    <p><b>Functional Networking for Millions of Docker Desktops (Experience Report)</b> -
+      A. Madhavapeddy, D.J. Scott, P. Ferris, R.T. Gibb, T. Gazagnaire
+    </p>
+    <p>won the <a href="https://www.cl.cam.ac.uk/ring/awards.html">
+      Cambridge Computer Lab Ring Publication of the Year 2026</a>
+    and was presented at
+    <a href="https://www.youtube.com/watch?v=1_Y6hmj-VpY">
+      ICFP 2025</a>
+    </p>
+    <p> We reflect on a decade of shipping functional OCaml code in production
+        in the Docker Desktop app and discuss the lessons learned. We conclude
+	that OCaml is a good fit for this kind of systems programming.
+    </p>
+</td>
+</tr>
 <tr>
 <td><a href="papers/final/2015-nsdi-jitsu.pdf"><img src="papers/final/2015-nsdi-jitsu.jpg" alt="Jitsu paper"></a></td>
 <td>
@@ -190,7 +212,6 @@ for support and funding respectively. I was also sponsored by the now defunct
     </p>
 </td>
 </tr>
-
 <tr>
 <td><a href="papers/final/asplos2013.pdf"><img src="papers/final/asplos2013.jpg" alt="Unikernels paper"></a></td>
 <td>
