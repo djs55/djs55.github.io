@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Running Wireshark in Docker compose - Dave Scott</title>
+    <meta name="description" content="How to run Wireshark to debug a Docker compose network in Docker Desktop">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://djs55.github.io/docker-compose-wireshark/">
+    <meta property="og:title" content="Running Wireshark on a Docker compose network">
+    <meta property="og:description" content="How to run Wireshark to debug a Docker compose network in Docker Desktop">
+    <meta property="og:image" content="https://djs55.github.io/djs55.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://djs55.github.io/docker-compose-wireshark/">
+    <meta name="twitter:title" content="Running Wireshark on a Docker compose network">
+    <meta name="twitter:description" content="How to run Wireshark to debug a Docker compose network in Docker Desktop">
+    <meta name="twitter:image" content="https://djs55.github.io/djs55.png">
+
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+
+  <body class="terminal">
+
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+      <nav class="terminal-menu">
+        <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+          <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="container">
+      <h1>Running Wireshark in Docker compose</h1>
+
+      <p>
+	Debugging network problems can be painful. When logs aren't enough I reach for
+        <a href="https://www.wireshark.org/">Wireshark</a>,
+	but when I'm running a Docker-based app on my Mac, the
+	wireshark can't see the internal network traffic.
+	I often resort to running tcpdump in a container, but then I need to
+	remember the filter syntax, remember to "docker run -v"
+	a directory, write the pcap, and then open it on the host (then change the code,
+        capture again, reload etc etc).
+	What I really want is for
+        Wireshark
+	to just work,
+	directly inside Docker, attached directly to the docker network, with the GUI
+	on my screen.
+      </p>
+
+      <h1>The problem: the Linux VM</h1>
+      <p>
+        If I'm running the native docker engine on linux, I can run see the internal
+	docker network interfaces and attach native wireshark to them, no problem.
+	However Docker Desktop runs Linux in a virtual machine. This is necessary
+	on Mac and Windows where you can't run Linux containers with Linux networking
+	on the host (obviously) and also desirable, because it isolates your dev
+	machine from the Linux environment.
+	However this isolation means the host wireshark can't see the internal container traffic.
+      </p>
+
+      <h1>The solution: run Wireshark in Linux and forward the UI!</h1>
+      <p>
+        Docker Desktop 4.86.0 comes with a new beta version of
+        <a href="https://docs.docker.com/desktop/features/vmm/">Docker VMM</a>,
+	which runs the Linux VM. It exposes virtual interfaces in Linux for
+	the network, disk devices, shared filesystems and also Linux graphics.
+	Docker VMM powers Docker Desktop and the
+	secure microVMs used by
+	<a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">Docker Sandboxes</a>.
+      </p>
+      <p>
+        To run Wireshark in a container as a demo, try this:
+      </p>
+      <pre><code>$ docker run -it --rm -v /run/wayland-0:/run/wayland-0 -e XDG_RUNTIME_DIR=/run djs55/wireshark:latest</code></pre>
+      <p>
+        You should see a Window like this:
+      </p>
+      <p>
+        <center>
+          <img src="linux-wireshark.png" alt="Wireshark window forwarded to the host" width="600px">
+          <br>
+          Wireshark running in a container, displayed on the host desktop. The blue border is a highlight drawn on the host
+	  to emphasise that the contents come from inside a container, a homage to
+          <a href="https://www.qubes-os.org/">Qubes OS</a>
+          <br>
+        </center>
+      </p>
+
+      <h1>A more realistic example</h1>
+      <p> Cut and paste this docker-compose.yml:</p>
+      <pre><code>services:
+  # A backend that echoes back the HTTP request headers
+  backend:
+    image: traefik/whoami
+    ports:
+      - "8081:80"
+
+  # A frontend that calls the backend every couple of seconds
+  frontend:
+    image: busybox
+    command: ["sh", "-c", "while true; do wget -q -O - http://backend/ >/dev/null; sleep 2; done"]
+    depends_on: [backend]
+
+  wireshark:
+    image: djs55/wireshark
+    # Share the backend's network namespace and then we can capture on eth0
+    network_mode: "service:backend"
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    depends_on: [backend]
+    volumes:
+      - /run/wayland-0:/run/wayland-0
+    environment:
+      - WAYLAND_DISPLAY=/run/wayland-0
+      - XDG_RUNTIME_DIR=/run</code></pre>
+      <p>
+        Then simply:
+      </p>
+      <pre><code>$ docker compose up</code></pre>
+      <p> Then select <code>eth0</code> and then:</p>
+      <p>
+        <center>
+          <img src="linux-wireshark-compose.png" alt="Wireshark window forwarded to the host attached to a docker-compose network" width="600px">
+          <br>
+	  Wireshark can now see the traffic from the container in real time!
+          <br>
+        </center>
+      </p>
+    <p>
+      Docker VMM can do much more than this, download the
+      <a href="https://www.docker.com/products/docker-desktop/">latest Docker Desktop</a>
+      and give it a whirl!
+    </p>
+    </div>
+  </body>
+</html>
