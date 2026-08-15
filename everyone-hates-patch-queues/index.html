@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Patch queues and agents - Dave Scott</title>
+    <meta name="description" content="How important is upstreaming that patch? Less important than it used to be. Is it worth the hassle?">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://djs55.github.io/everyone-hates-patch-queues/">
+    <meta property="og:title" content="Everyone hates patch queues (but should they?)">
+    <meta property="og:description" content="How important is upstreaming that patch? Less important than it used to be. Is it worth the hassle?">
+    <meta property="og:image" content="https://djs55.github.io/djs55.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://djs55.github.io/everyone-hates-patch-queues/">
+    <meta name="twitter:title" content="Everyone hates patch queues (but should they?)">
+    <meta name="twitter:description" content="How important is upstreaming that patch? Less important than it used to be. Is it worth the hassle?">
+    <meta name="twitter:image" content="https://djs55.github.io/djs55.png">
+
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+
+  <body class="terminal">
+
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+      <nav class="terminal-menu">
+        <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+          <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+        </ul>
+      </nav>
+    </div><p
+
+    <div class="container">
+      <h1>Everyone hates patch queues</h1>
+
+      <p>
+        In the dark days before 2026 the standard advice was to avoid forking open-source
+	projects: maybe a temporary patch is ok, but don't let it linger!
+	Watch out or you'll get
+	stuck in everlasting maintenance hell! I guess you'd better get reading
+	<a href="https://git-scm.com/docs/git-send-email">git send email</a>
+      </p>
+
+      <h1>Anecdote: massive kernel patch queues</h1>
+      <p>I worked on
+      <a href="https://www.xenserver.com/">XenServer</a>:
+      a distribution of the Xen hypervisor which runs on-prem VMs
+      with
+      <a href="https://xapi-project.github.io/features/VGPU/vgpu.html">vGPU</a>,
+      <a href="https://xapi-project.github.io/features/XSM/XSM.html">storage migration</a>,
+      <a href="https://xapi-project.github.io/features/HA/HA.html">High Availability</a> etc.
+      The hypervisor itself is small and trusted.
+      By design it doesn't include things
+      like device drivers, which can be enormous and complicated. So where did it get storage or
+      network drivers from? Same place as almost everyone else: the Linux kernel.
+      </p>
+      <p>
+      Running Linux on Xen was actually quite hard.
+      At the time Intel and AMD processors lacked hardware virtualization support, so Linux
+      would crash or otherwise refuse to boot.
+      The Xen project pioneered the technique of &quot;paravirtualizing&quot; Linux where Linux was patched to be fully
+      aware that it was running under a hypervisor.
+      The changes required were extensive. Everywhere Linux wanted to just do things
+      it needed to be ask permission first with 
+      &quot;hypercalls&quot;. This manifested
+      as a large (contentious!) patch queue.
+      </p>
+      <p>
+      The problem with a large patch queue is that it bit-rots. Linux moves fast, changes (improves)
+      things, and suddenly the patches don't apply (obvious) or (worse) don't work. They need redesign in some cases. Owning an
+      out-of-tree patch queue is an ongoing commitment like owning a pet. We recognised the
+      net present cost of all the future patch maintenance and judged it was cheaper in the long
+      term to task human engineers with discussing, reimplementing and upstreaming these patches.
+      [ Also it's nice to offer things back to the community ]
+      <p>
+      <p>In fact we considered the kernel patch queue as a physical manifestation of our <em>technical debt</em>, 
+      a burden that would consume resources we'd rather spend on making new features for our customers.</p>
+      Although I've not worked there for years, I notice their patch queue
+      is a 
+      <a href="https://github.com/xenserver/kernel.spec/tree/1b607409c9bad8ad7d32117237f2cf0aeb025589/patches">very manageable size these days</a>: very nice.
+      </p>
+      <h1> But now in 2026 we have new tools </h1>
+      <p>
+      The cost of upstreaming patches is the same as it was: it requires asking (expert) humans to talk
+      to other (expert) humans, ideally travelling to meet them at conferences to form bonds,
+      agree approaches, then rework things to make them acceptable.
+      </p>
+      <p>
+      <em>The obvious change in 2026 is that agents make patch queue maintenance cheaper.</em>
+      </p>
+      <p>
+      The tedious task of rebasing, adapting to interface and architectural changes, can now
+      be (mostly) automated. With a much lower net present maintenance cost, is it worth
+      upstreaming patches at all?
+      </p>
+      <p> The crossover point where the patch queue maintenance exceeds upstreaming cost has
+      moved, making it economically viable in more cases to just keep the patch queue. Obviously
+      the patches can still be open-source, and the original project can see them, and perhaps even
+      choose to use them as inspiration for <em>their</em> agents and &quot;remix&quot; the good parts back in to
+      the mothership
+      (assuming compatible licenses). Some people have suggested that PRs should include
+      the prompt rather than the code (how can you review all that code anyway?). A prompt with a branch
+      which works -- an executable prototype -- would be even better.
+      </p>
+      <h1>What next?</h1>
+      <p>
+      It seems likely to me that the lower cost of maintenance will lead to an increase in the size of
+      the average fork. If agents rebasing power keeps improving, a lot more people will never bother
+      upstreaming. There'll be thousands of forks, with agents comparing them to each other and
+      &quot;remixing&quot; each other's work. And this will be ok.
+      </p>
+      <h1>Footnote</h1>
+      <p>Xen runs device drivers in VMs which can have their privileges limited.
+      This exposes lots of interesting bugs, like the time when the WiFi &quot;driver domain&quot;
+      would receive a packet and crash because it would blatantly write memory it didn't allocate
+      (... and which went unnoticed in a normal system because someone else had allocated it for themselves 🙈)
+      </p>
+
+    </div>
+  </body>
+</html>
