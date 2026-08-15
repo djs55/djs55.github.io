@@ -8,6 +8,14 @@
     <atom:link href="https://dave.recoil.org/feed.xml" rel="self" type="application/rss+xml"/>
 
     <item>
+      <title>Everyone hates patch queues (but should they?)</title>
+      <link>https://dave.recoil.org/everyone-hates-patch-queues/</link>
+      <guid>https://dave.recoil.org/everyone-hates-patch-queues/</guid>
+      <pubDate>Sat, 15 Aug 2026 00:00:00 +0000</pubDate>
+      <description>How important is upstreaming that patch? Less important than it used to be. Is it worth the hassle?</description>
+    </item>
+
+    <item>
       <title>Hello World with Gaussian Splats</title>
       <link>https://dave.recoil.org/splats/</link>
       <guid>https://dave.recoil.org/splats/</guid>
