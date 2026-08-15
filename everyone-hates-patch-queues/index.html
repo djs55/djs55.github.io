@@ -52,8 +52,8 @@
         In the dark days before 2026 the standard advice was to avoid forking open-source
 	projects: maybe a temporary patch is ok, but don't let it linger!
 	Watch out or you'll get
-	stuck in everlasting maintenance hell. Better get reading
-	<a href="https://git-scm.com/docs/git-send-email">git send email</a>!
+	stuck in everlasting maintenance hell! I guess you'd better get reading
+	<a href="https://git-scm.com/docs/git-send-email">git send email</a>
       </p>
 
       <h1>Anecdote: massive kernel patch queues</h1>
@@ -73,10 +73,11 @@
       Running Linux on Xen was actually quite hard.
       At the time Intel and AMD processors lacked hardware virtualization support, so Linux
       would crash or otherwise refuse to boot.
-      The Xen project pioneered the technique of &quot;paravirtualizing&quot; Linux. Linux was patched to be fully
+      The Xen project pioneered the technique of &quot;paravirtualizing&quot; Linux where Linux was patched to be fully
       aware that it was running under a hypervisor.
-      The changes required were extensive, for example
-      Linux had to use &quot;hypercalls&quot; to ask the hypervisor instead of trying to interact with the hardware directly. This manifested
+      The changes required were extensive. Everywhere Linux wanted to just do things
+      it needed to be ask permission first with 
+      &quot;hypercalls&quot;. This manifested
       as a large (contentious!) patch queue.
       </p>
       <p>
@@ -92,11 +93,6 @@
       Although I've not worked there for years, I notice their patch queue
       is a 
       <a href="https://github.com/xenserver/kernel.spec/tree/1b607409c9bad8ad7d32117237f2cf0aeb025589/patches">very manageable size these days</a>: very nice.
-      </p>
-      <p>Anecdote within the anecdote: Xen runs device drivers in VMs which can have their privileges limited.
-      This exposes lots of interesting bugs, like the time when the WiFi &quot;driver domain&quot;
-      would receive a packet and crash because it would blatantly read memory it didn't allocate
-      (... and which went unnoticed in a normal system because someone else had allocated it for themselves 🙈)
       </p>
       <h1> But now in 2026 we have new tools </h1>
       <p>
@@ -119,16 +115,20 @@
       the mothership
       (assuming compatible licenses). Some people have suggested that PRs should include
       the prompt rather than the code (how can you review all that code anyway?). A prompt with a branch
-      which works would be even better.
+      which works -- an executable prototype -- would be even better.
       </p>
+      <h1>What next?</h1>
       <p>
-      Clearly this is another case of &quot;the future is already here – it's just not evenly distributed.&quot;.
-
-      The lower cost of patch queue maintenance will manifest as an increase in the size of the average
-      patch queue (or other form of diverged fork). If agents rebasing power keeps improving,
-      many people will fork, diverge and never bother upstreaming, changing everything to
-      their preference like the
-      <a href="https://world.hey.com/dhh/the-malleable-computer-7c187a9b">&quot;malleable computer&quot;</a> idea (and this will be ok).
+      It seems likely to me that the lower cost of maintenance will lead to an increase in the size of
+      the average fork. If agents rebasing power keeps improving, a lot more people will never bother
+      upstreaming. There'll be thousands of forks, with agents comparing them to each other and
+      &quot;remixing&quot; each other's work. And this will be ok.
+      </p>
+      <h1>Footnote</h1>
+      <p>Xen runs device drivers in VMs which can have their privileges limited.
+      This exposes lots of interesting bugs, like the time when the WiFi &quot;driver domain&quot;
+      would receive a packet and crash because it would blatantly write memory it didn't allocate
+      (... and which went unnoticed in a normal system because someone else had allocated it for themselves 🙈)
       </p>
 
     </div>
