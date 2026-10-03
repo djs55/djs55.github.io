@@ -53,7 +53,8 @@
       <p>
         There's a lot of buzz about &quot;microVMs&quot;, where a workload runs
         with a stripped down Linux kernel, on a minimalist VMM such as
-        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a> (released in 2018)
+        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a> (announced at
+        <a href="https://brooker.co.za/blog/2025/09/18/firecracker.html">re:Invent 2018</a>)
         on top of a hypervisor
         like KVM or Xen. MicroVMs are often contrasted to, and considered more secure than,
         traditional Linux Docker containers.
@@ -88,7 +89,7 @@
       <p>
         The VM kernel and root filesystem were minimal too, based on the
         <a href="https://github.com/linuxkit/linuxkit">LinuxKit</a> project. The current version is an
-        even more slimmed down variant but conceptually the same, similar to
+        even more slimmed down and efficient variant but conceptually the same, similar to
         <a href="https://github.com/containerd/nerdbox">containerd/nerdbox</a>.
       </p>
 
@@ -107,29 +108,36 @@
           <b>Minimal devices.</b> We could carefully limit the host / VM interface, making it easy to understand and audit.
         </li>
         <li>
-          <b>VPNs and network policy.</b> It was easy to interoperate with VPNs, and to impose
+          <b>VPNs and network policy.</b> It was easy to interoperate with VPNs, and to extend later to impose
           networking policy such as
           <a href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/">Registry Access Management</a>.
         </li>
       </ul>
-
-      <h1>And now</h1>
       <p>
-        The Docker microVM tech is the foundation of Docker Sandboxes today
+        <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">
+          <img src="/carousel/2026-cacm.png" alt="CACM 2026 - A Decade of Docker Containers" style="float: right; width: auto; max-width: 30%; margin: 0 0 8px 16px">
+        </a>
+      </p>
+      <h1>And now in 2026</h1>
+      <p>
+        The Docker microVM tech is the foundation of both Docker Desktop and also <em>Docker Sandboxes</em>
         (<a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">why microVMs</a>).
-        It continues to get faster, lower overhead and more secure over time.
+        Docker Sandboxes enables you to do things like
+        <a href="https://www.docker.com/blog/docker-sandboxes-run-claude-code-and-other-coding-agents-unsupervised-but-safely/">run your favourite coding agent and harness securely</a>,
+        with strict isolation and governance.
+      </p>
+      <p>
+        To see what Docker microVM's can do, install
+        <a href="https://docs.docker.com/ai/sandboxes/install/">Docker Sandboxes (sbx)</a>
+        and try `sbx run claude`.
       </p>
 
       <h1>Further reading</h1>
+
       <p>
-        To read more about the history of the tech, see
+        To read more about the history of the tech, check out the article
         <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">A Decade of Docker Containers</a>
         (Communications of the ACM).
-      </p>
-      <p>
-        <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">
-          <img src="/carousel/2026-cacm.png" alt="CACM 2026 - A Decade of Docker Containers" style="width: 240px; max-width: 100%">
-        </a>
       </p>
 
       <h1>Footnote</h1>
