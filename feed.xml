@@ -8,6 +8,14 @@
     <atom:link href="https://dave.recoil.org/feed.xml" rel="self" type="application/rss+xml"/>
 
     <item>
+      <title>Docker has always used microVMs</title>
+      <link>https://dave.recoil.org/docker-has-always-used-microvms/</link>
+      <guid>https://dave.recoil.org/docker-has-always-used-microvms/</guid>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0000</pubDate>
+      <description>Docker Desktop has always run containers inside a minimal, purpose-built VM. Here is why, and what it bought us.</description>
+    </item>
+
+    <item>
       <title>Everyone hates patch queues (but should they?)</title>
       <link>https://dave.recoil.org/everyone-hates-patch-queues/</link>
       <guid>https://dave.recoil.org/everyone-hates-patch-queues/</guid>
