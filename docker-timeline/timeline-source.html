@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Dave Scott: Docker timeline</title>
+    <meta name="description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="twitter:title" content="Dave Scott: Docker timeline">
+    <meta name="twitter:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta property="og:site_name" content="Dave Scott">
+    <meta property="og:type" content="object">
+    <meta property="og:title" content="Dave Scott: Docker timeline">
+    <meta property="og:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <link rel="icon" href="/favicon.ico">
+    <link rel="alternate" type="application/rss+xml" title="Dave Scott's Blog" href="/feed.xml">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="light">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <script>document.documentElement.classList.add('js');</script>
+    <style>
+      /* ---- prompt line under the title ---- */
+      .prompt-line {
+        color: var(--secondary-color);
+        margin-top: calc(var(--global-space) * -1);
+      }
+      .prompt-line::before { content: "$ "; color: var(--primary-color); }
+      .cursor {
+        display: inline-block;
+        width: 0.6em;
+        height: 1.1em;
+        margin-left: 2px;
+        vertical-align: text-bottom;
+        background: var(--primary-color);
+        animation: blink 1.1s steps(1) infinite;
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      /* ---- year jump links ---- */
+      .years {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        list-style: none;
+        padding: 0;
+        margin: calc(var(--global-space) * 2) 0 calc(var(--global-space) * 3);
+      }
+      .years li { margin: 0; padding: 0; }
+      .years li::after { content: none; }
+      .years a.active { background: var(--primary-color); color: var(--invert-font-color); }
+
+      /* ---- timeline ---- */
+      .terminal-timeline { padding-top: 4px; }
+      .tl-progress {
+        position: absolute;
+        left: 35px;
+        top: 0;
+        width: 2px;
+        height: 0;
+        background: var(--primary-color);
+        z-index: 401;
+        transition: height 0.15s linear;
+      }
+      .terminal-timeline .terminal-card { scroll-margin-top: 20px; }
+      .terminal-timeline .terminal-card::before {
+        transition: background-color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+        z-index: 402;
+      }
+      .terminal-timeline .terminal-card.seen::before {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+      .terminal-card > header {
+        text-align: left;
+        padding-left: var(--global-space);
+        font-weight: bold;
+        transition: background-color 0.4s ease;
+      }
+      .terminal-card.seen > header { background-color: var(--font-color); }
+      .terminal-card > header .tagline { font-weight: normal; opacity: 0.85; }
+      .terminal-card article { margin-bottom: calc(var(--global-space) * 2); }
+      .terminal-card article:last-child { margin-bottom: 0; }
+      .terminal-card h3 {
+        font-size: var(--global-font-size);
+        margin: 0 0 4px;
+        padding: 0;
+      }
+      .terminal-card h3 .date { color: var(--secondary-color); font-weight: normal; }
+      .terminal-card p { margin-bottom: 0.4em; }
+      .links { color: var(--secondary-color); font-size: 0.93em; }
+      .links a { margin-right: 0.6em; }
+
+      /* Entrance animation, only when JS is running and motion is OK */
+      @media (prefers-reduced-motion: no-preference) {
+        .js .terminal-timeline .terminal-card {
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .js .terminal-timeline .terminal-card.seen {
+          opacity: 1;
+          transform: none;
+        }
+        .js .terminal-timeline .terminal-card article {
+          opacity: 0;
+          transform: translateX(-8px);
+          transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .js .terminal-timeline .terminal-card.seen article { opacity: 1; transform: none; }
+        .js .terminal-timeline .terminal-card.seen article:nth-child(2) { transition-delay: 0.08s; }
+        .js .terminal-timeline .terminal-card.seen article:nth-child(3) { transition-delay: 0.16s; }
+        .js .terminal-timeline .terminal-card.seen article:nth-child(4) { transition-delay: 0.24s; }
+        .js .terminal-timeline .terminal-card.seen article:nth-child(n+5) { transition-delay: 0.32s; }
+        .terminal-timeline .terminal-card.seen::before { animation: pop 0.5s ease; }
+        @keyframes pop { 50% { transform: scale(1.45); } }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cursor { animation: none; }
+        .tl-progress { transition: none; }
+      }
+
+      @media (max-width: 600px) {
+        .terminal-timeline { padding-left: 34px; }
+        .terminal-timeline::before, .tl-progress { left: 12px; }
+        .terminal-timeline .terminal-card::before { left: 5px; }
+      }
+    </style>
+  </head>
+
+  <body class="terminal">
+
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+      <nav class="terminal-menu">
+        <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+          <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="container">
+
+      <p class="prompt-line"><span id="typed">git log --author=djs55 --since=2015</span><span class="cursor" aria-hidden="true"></span></p>
+
+      <p>
+        Back in 2015 Docker was awesome on Linux, but the experience on Mac and Windows was
+        a little rough. Rather than shipping a coherent app, Docker shipped
+        a bundle of software components loosely glued together:
+        Virtual Box, docker machine, boot2docker and Kitematic (as &quot;Docker Toolbox&quot;)
+        There was a lot to fix. Installations often failed (for various reasons).
+        The networking often failed (interactions with firewall rules and VPNs). Worst of all
+        nothing worked unless you remembered to set a bunch of arcane environment
+        variables in your shell (DOCKER_TLS_VERIFY, DOCKER_HOST etc).
+      </p>
+      <p>
+        We used our systems background (and unikernel libraries) to create a seamless &quot;Docker for Mac&quot;
+        and &quot;Docker for Windows&quot; experience.
+        Later the same code evolved into a platform for running containers and AI agents in microVMs
+        and is used across the Docker product suite.
+        Here's a list of some of the things I've worked on, newest first.
+        Almost all of it was done with other people, so where I can I've linked to
+        the code, the blog posts and the papers.
+      </p>
+
+      <ul class="years" id="years">
+        <li><a href="#y2026">2026</a></li>
+        <li><a href="#y2025">2025</a></li>
+        <li><a href="#y2024">2024</a></li>
+        <li><a href="#y2023">2023</a></li>
+        <li><a href="#y2022">2022</a></li>
+        <li><a href="#y2021">2021</a></li>
+        <li><a href="#y2020">2020</a></li>
+        <li><a href="#y2019">2019</a></li>
+        <li><a href="#y2018">2018</a></li>
+        <li><a href="#y2017">2017</a></li>
+        <li><a href="#y2016">2016</a></li>
+        <li><a href="#y2015">2015</a></li>
+      </ul>
+
+      <div class="terminal-timeline" id="timeline">
+        <div class="tl-progress" id="progress" aria-hidden="true"></div>
+
+        <!-- 2026 -->
+        <div class="terminal-card" id="y2026">
+          <header>2026 <span class="tagline">&mdash; microVMs <b>and</b> containers</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2026-03:</span> A Decade of Docker Containers (CACM cover article)</h3>
+              <p>
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>,
+                <a href="https://openuk.uk/profiles/justincormack/">Justin Cormack</a> and I wrote up how Docker
+                got from Linux to Mac and Windows, the systems research underneath it, and where things are
+                heading with coding agents. The ACM made a nice video and cover art!
+              </p>
+              <p class="links">
+                <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">[article]</a>
+                <a href="https://doi.org/10.1145/3761803">[doi]</a>
+                <a href="https://anil.recoil.org/notes/cacm-docker-cover">[the cover]</a>
+                <a href="https://www.cst.cam.ac.uk/news/celebrating-decade-docker-containers">[Cambridge news]</a>
+              </p>
+            </article>
+            <article>
+              <h3>MicroVMs for Docker Sandboxes</h3>
+              <p>
+                Agents need to run somewhere where access to the outside is carefully controlled
+                i.e. a &quot;sandbox&quot;.
+                The unikernel derived VMM tech used in Docker Desktop is now also the isolation layer in
+                Docker Sandboxes, now enhanced with ultra-fast networking and support for running GUIs safely
+                inside the VMs.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">[why microVMs? from Srini and Craig]</a>
+                add
+                <a href="https://lnkd.in/p/eiRzHAgR">[an example safe GUI from Cody]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Publication of the Year</h3>
+              <p>
+                Our ICFP networking paper (see 2025) won the Cambridge Computer Lab Ring's
+                Publication of the Year award.
+              </p>
+              <p class="links">
+                <a href="https://www.cl.cam.ac.uk/ring/awards.html">[awards]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2025 -->
+        <div class="terminal-card" id="y2025">
+          <header>2025 <span class="tagline">&mdash;research reports</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2025-10:</span> Functional Networking for Millions of Docker Desktops (ICFP)</h3>
+              <p>
+                An experience report on ten years of running an OCaml, unikernel-inspired network stack
+                on millions of developer machines: what worked, what didn't and what we'd do again.
+                Written with
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>,
+                <a href="https://patrick.sirref.org/index/index.xml">Patrick Ferris</a>,
+                <a href="https://ryan.freumh.org/">Ryan Gibb</a>
+                and
+                <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>;
+                Anil gave the talk.
+              </p>
+              <p class="links">
+                <a href="https://dave.recoil.org/papers/2025-icfp-docker.pdf">[pdf]</a>
+                <a href="https://doi.org/10.1145/3747525">[doi]</a>
+                <a href="https://icfp25.sigplan.org/details/icfp-2025-papers/21/Functional-Networking-for-Millions-of-Docker-Desktops-Experience-Report-">[programme]</a>
+                <a href="https://anil.recoil.org/slides/icfp-docker-25.pdf">[slides]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2025-04-01:</span> ASPLOS Influential Paper Award</h3>
+              <p>
+                Our 2013 Unikernels paper won one of the ASPLOS Influential Paper Awards.
+                The Mirage OS libraries from that work are the same ones that ended up inside Docker Desktop.
+              </p>
+              <p class="links">
+                <a href="https://www.asplos-conference.org/asplos2025/awards/">[awards]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2024 -->
+        <div class="terminal-card" id="y2024">
+          <header>2024 <span class="tagline">&mdash; faster and more compatible</span></header>
+          <div>
+            <article>
+              <h3>Optimising virtiofs for containers</h3>
+              <p>
+                Although Apple's virtualization.framework is a great general-purpose VMM,
+                there are various ways to optimize specifically for Linux containers.
+                Therefore we created Docker VMM using Apple's lower-level hypervisor.framework,
+                built using a fork of
+                the excellent
+                <a href="https://github.com/libkrun/libkrun">libkrun project</a>.
+                Filesharing perf improved to the point where
+                a directory search over virtiofs would be &quot;faster than native macOS&quot;
+                if caches are warm. We shipped Docker VMM
+                as a beta in Desktop 4.35.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/docker-desktop-4-35/">[4.35 announcement]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2023 -->
+        <div class="terminal-card" id="y2023">
+          <header>2023 <span class="tagline">&mdash; faster and more efficient</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2023-08-17:</span> Resource Saver mode</h3>
+              <p>
+                In the cloud people often talk about &quot;scaling to zero&quot;. I've always
+                been a fan of the principle that your laptop should only be executing code if
+                you actually tell it to, i.e. definitely no battery reducing background polling loops.
+                I built a mechanism for shutting down the Docker Desktop helper VM, keeping it offline
+                as much as possible (e.g. by not booting it up for read API requests) and starting
+                it on demand to actually run containers.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/">[my 4.22 post]</a>
+                <a href="https://www.docker.com/blog/docker-desktop-4-21/">[4.21]</a>
+                <a href="https://www.docker.com/blog/docker-desktop-4-22/">[4.22]</a>
+                <a href="https://docs.docker.com/desktop/use-desktop/resource-saver/">[docs]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2023-04-27:</span> userspace TCP/IP version 2</h3>
+              <p>
+                I originally switched Docker from kernel networking to a custom userspace
+                stack
+                <a href="https://github.com/moby/vpnkit">vpnkit</a> (based on the Mirage unikernel libraries)
+                to work around OS security issues and to allow us to interoperate more easily
+                with corporate firewalls and VPNs.
+                Now it was time to switch Mac again to a
+                <a href="https://github.com/google/gvisor">google/gvisor</a>-based solution.
+                In our published
+                <code>iperf3</code> benchmark on a first-generation M1 Mac Mini, throughput went
+                from about 3.5 to 19 Gbit/s &mdash; over five times faster.
+              </p>
+              <p class="links">
+                <a href="https://docs.docker.com/desktop/release-notes/#4190">[4.19 release notes]</a>
+                <a href="https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/">[my performance write-up]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2022 -->
+        <div class="terminal-card" id="y2022">
+          <header>2022 <span class="tagline">&mdash; Docker in the enterprise </span></header>
+          <div>
+            <article>
+              <h3>Kubernetes beyond dockershim</h3>
+              <p>
+                Kubernetes was built on top of Docker, but in 2022 the method of talking to Docker was changing.
+                Various misleading headlines saying alarming things like
+                &quot;Kubernetes is deprecating Docker&quot; started appearing so we needed to act quickly.
+                To ensure zero hassle for our users, I migrated Desktop's Kubernetes integration to
+                <a href="https://github.com/mirantis/cri-dockerd">cri-dockerd</a>. This migration shipped in Desktop 4.7.0.
+                To explain what this all means properly I blogged about it in an April article
+                ahead of Kubernetes 1.24.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/dockershim-not-needed-docker-desktop-with-kubernetes-1-24/">[blog post]</a>
+              </p>
+            </article>
+            <article>
+              <h3>One HTTP proxy to rule them all</h3>
+              <p>
+                Enterprises often have sophisticated HTTP proxy setups, especially if they operate worldwide.
+                Originally Docker Desktop's handling of HTTP proxies was fragmented, each component
+                doing its own thing.
+                A customer told us the obvious truth, that proxy configuration should be "one and done", not something
+                that needs per-component consideration.
+                I consoliated all proxy handling across the product so every subcomponent behaved
+                identically, irrespective of programming language, and all supported the same feature set. Previously for example one component
+                would support PAC files proxy auth, while another relied on Unix-style environment variables.
+              </p>
+              <p class="links">
+                <a href="https://github.com/moby/vpnkit/pull/558">[moby/vpnkit#558]</a>
+                <a href="https://github.com/moby/vpnkit/pull/543">[moby/vpnkit#543]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2022-01-25:</span> How Docker Desktop Networking works under the hood</h3>
+              <p>
+                A common topic when speaking with customers is how exactly Docker Desktop's networking works
+                and how well will it interop with other network products.
+                I wrote a detailed blog post all
+                about the unikernel-inspired userspace networking stack that connects containers to
+                the outside world in Docker Desktop.
+                Later this work was refined and used by Valentin and Julius from CARIAD to produce a white paper.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">[blog post]</a>
+                <a href="https://www.docker.com/resources/how-docker-desktop-works-under-the-hood-white-paper/">[CARIAD white paper]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2021 -->
+        <div class="terminal-card" id="y2021">
+          <header>2021 <span class="tagline">&mdash; More Apple Silicon (and policy)</span></header>
+          <div>
+            <article>
+              <h3>Registry Access Management</h3>
+              <p>
+                Businesses want to control which registries their developers can pull from.
+                Inspired by
+                <a href="https://cilium.io/">Cilium</a>
+                I defined a network policy and then built an enforcement mechanism
+                using a combination of DNS + eBPF + cgroup hooks.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/">[announcement]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Apple Silicon support released</h3>
+              <p>
+                We shipped the GA version of Apple Silicon support! In the meantime Apple had published
+                a nice higher-level VMM API called virtualization.framework
+                which we intended to become our default. So I added support for this too and it shipped as an experimental
+                choice, while QEMU remained the default.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/released-docker-desktop-for-mac-apple-silicon/">[Docker + Apple Silicon GA]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2020 -->
+        <div class="terminal-card" id="y2020">
+          <header>2020 <span class="tagline">&mdash; Apple Silicon</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2020-11-29:</span> Early build demonstrates incoming Apple Silicon support</h3>
+              <p>
+                The first M1 Macs arrived and Docker didn't run on them yet. I put together the
+                early preview builds: integrating the engine and CLI, fixing startup problems and
+                iterating until the tech preview shipped in December, immediately after the hardware itself shipped.
+                 My screenshot of an early
+                build ended up in an AppleInsider post by Malcolm Owen.
+              </p>
+              <p class="links">
+                <a href="https://appleinsider.com/articles/20/11/29/early-docker-build-demonstrates-incoming-apple-silicon-support">[AppleInsider]</a>
+                <a href="https://github.com/docker/roadmap/issues/142">[roadmap issue]</a>
+                <a href="https://www.docker.com/press-release/Docker-Desktop-for-M1-powered-Macs/">[press release]</a>
+              </p>
+            </article>
+            <article>
+              <h3>DockerCon LIVE: New Docker Desktop filesharing features</h3>
+              <p>
+                A talk about the new file sharing on Windows and Mutagen on the Mac, and how they speed up
+                the edit-compile-test loop.
+              </p>
+              <p class="links">
+                <a href="https://www.youtube.com/watch?v=gyddZyc8r48">[video]</a>
+              </p>
+            </article>
+            <article>
+              <h3>gRPC-FUSE becomes the Mac default</h3>
+              <p>
+                After Windows, I brought the gRPC-FUSE file-sharing implementation to the Mac as
+                the default, reducing file-event CPU overhead and allowing shared paths to change
+                without restarting the VM. It shipped as the default in Docker Desktop 2.4.0.0
+                on 30 September.
+              </p>
+              <p>
+                I also implemented virtio-blk DISCARD in hyperkit so deleted data could be
+                given back to the host.
+              </p>
+              <p class="links">
+                <a href="https://github.com/docker/docs/blob/main/content/manuals/desktop/previous-versions/2.x-mac.md#docker-desktop-community-2400">[2.4.0.0 release notes]</a>
+                <a href="https://github.com/moby/hyperkit/pull/272">[moby/hyperkit#272]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2020-01-17:</span> Capturing logs in Docker Desktop</h3>
+              <p>
+                A deep-dive into how the logging system works, joint work with
+                <a href="http://www.skjegstad.com/">Magnus Skjegstad</a>.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/capturing-logs-in-docker-desktop/">[blog post]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2019 -->
+        <div class="terminal-card" id="y2019">
+          <header>2019 <span class="tagline">&mdash; file sharing</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2019-12-12:</span> New file sharing implementation in Docker Desktop for Windows</h3>
+              <p>
+                We replaced Samba with FUSE over gRPC over Hyper-V sockets. It's much faster, and file
+                change notifications finally work, so tools that watch for edits (like hot reload)
+                behave properly. I implemented the inotify event injection and spent a lot of time
+                on filesystem semantics and caching. The deep dive explains how it all fits together.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/new-filesharing-implementation-in-docker-desktop-windows/">[launch post]</a>
+                <a href="https://www.docker.com/blog/deep-dive-into-new-docker-desktop-filesharing-implementation/">[deep dive]</a>
+              </p>
+            </article>
+            <article>
+              <h3>vpnkit: new port forwarder</h3>
+              <p>
+                Rewrote host port forwarding in Go with a simple HTTP control protocol, replacing several
+                slightly different copies with one.
+              </p>
+              <p class="links">
+                <a href="https://github.com/moby/vpnkit/pull/477">[moby/vpnkit#477]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2019-02-25:</span> Addressing Time Drift in Docker for Mac</h3>
+              <p>
+                Why the VM's clock drifted away from the Mac's (laptops go to sleep!), why that breaks
+                builds and file sharing, and how we fixed it.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/addressing-time-drift-in-docker-desktop-for-mac/">[blog post]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2018 -->
+        <div class="terminal-card" id="y2018">
+          <header>2018 <span class="tagline">&mdash; Kubernetes and proxies</span></header>
+          <div>
+            <article>
+              <h3>Native Windows DNS</h3>
+              <p>
+                I changed Docker Desktop's Windows DNS handling to use the native
+                APIs. Using Windows' own resolver instead of reimplementing
+                its behaviour meant Docker followed the same DNS and VPN rules as other
+                Windows applications.
+              </p>
+            </article>
+            <article>
+              <h3>Kubernetes on Windows</h3>
+              <p>
+                Docker for Windows gained Kubernetes. I worked on networking for it, and looked at how to
+                change the VM's IP address without forcing everyone to reset their cluster.
+              </p>
+              <p class="links">
+                <a href="https://www.docker.com/blog/docker-windows-desktop-now-kubernetes/">[announcement]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Logging, sockets and named pipes</h3>
+              <p>
+                Added pluggable logging to LinuxKit, building on Magnus Skjegstad's earlier work, and taught
+                vpnkit to forward Unix sockets and Windows named pipes, including connections to
+                services such as the Docker socket.
+              </p>
+              <p class="links">
+                <a href="https://github.com/linuxkit/linuxkit/pull/3085">[linuxkit/linuxkit#3085]</a>
+                <a href="https://github.com/moby/vpnkit/pull/428">[moby/vpnkit#428]</a>
+              </p>
+            </article>
+            <article>
+              <h3>HTTP proxies on restricted networks</h3>
+              <p>
+                I added HTTP proxy modes for networks where only the proxy could resolve DNS,
+                with CONNECT support for TLS traffic and tests for the different request paths.
+                I also built more realistic HTTP proxy tests using host firewalls.
+              </p>
+              <p class="links">
+                <a href="https://github.com/moby/vpnkit/pull/320">[moby/vpnkit#320]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2017 -->
+        <div class="terminal-card" id="y2017">
+          <header>2017 <span class="tagline">&mdash; disks that shrink</span></header>
+          <div>
+            <article>
+              <h3>Don't corrupt the disk</h3>
+              <p>
+                Two hyperkit instances writing to the same disk file is a recipe for corruption.
+                I added locking on the backing file, replacing a fragile separate lock file, and added
+                TRIM for sparse raw disks.
+              </p>
+              <p class="links">
+                <a href="https://github.com/moby/hyperkit/pull/173">[moby/hyperkit#173]</a>
+                <a href="https://github.com/moby/hyperkit/pull/158">[moby/hyperkit#158]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Online disk compaction, enabled by default</h3>
+              <p>
+                I implemented online qcow2 compaction so Docker could return disk space without
+                a restart, enabled it by default, and later used sparse raw disks where APFS made
+                the simpler approach possible. Building on TRIM support from late 2016, the OCaml
+                algorithm recycles clusters in the background while the VM keeps running.
+              </p>
+              <p class="links">
+                <a href="https://dave.recoil.org/blogs/docker-for-mac-disk-space.html">[blog post]</a>
+                <a href="https://github.com/mirage/ocaml-qcow/pull/63">[mirage/ocaml-qcow#63]</a>
+                <a href="https://dave.recoil.org/disk-compact/">[2025 retrospective]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Reaching the host by name</h3>
+              <p>
+                I introduced <code>docker.for.mac.localhost</code> and
+                <code>docker.for.win.localhost</code> so containers could reach services on the
+                host without hard-coded IP addresses. These were precursors to the later
+                <code>host.docker.internal</code> name.
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2016 -->
+        <div class="terminal-card" id="y2016">
+          <header>2016 <span class="tagline">&mdash; vpnkit</span></header>
+          <div>
+            <article>
+              <h3><span class="date">2016-09-20:</span> CVE-2016-4739 in macOS Sierra</h3>
+              <p>
+                With <a href="http://www.skjegstad.com/">Magnus Skjegstad</a> and
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> I found that apps using
+                VMnet.framework could end up with a DNS proxy listening on all network interfaces.
+                Apple fixed it in macOS Sierra and credited us.
+              </p>
+              <p class="links">
+                <a href="https://support.apple.com/en-us/103424">[Apple security notes]</a>
+              </p>
+            </article>
+            <article>
+              <h3><span class="date">2016-01-27:</span> A userspace network stack for Docker for Mac</h3>
+              <p>
+                Lots of early users had VPNs, and VPNs didn't get along with the VM's networking.
+                So I plugged the Mirage OCaml TCP/IP stack into Docker for Mac: Ethernet frames from
+                the VM are turned into ordinary socket calls on the Mac, so as far as the VPN is concerned
+                it's just another app. On 2016-04-18 it became the default. It was open-sourced as
+                vpnkit in May, and I merged the Mac and Windows frontends (using Hyper-V sockets on Windows)
+                in July.
+              </p>
+              <p class="links">
+                <a href="https://github.com/moby/vpnkit">[moby/vpnkit]</a>
+                <a href="https://www.docker.com/blog/docker-unikernels-open-source/">[open-source announcement]</a>
+                <a href="https://web.archive.org/web/20191122200147/https://www.docker.com/blog/docker-for-mac-windows-beta/">[beta announcement]</a>
+                <a href="https://github.com/moby/vpnkit/pull/93">[moby/vpnkit#93]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+        <!-- 2015 -->
+        <div class="terminal-card" id="y2015">
+          <header>2015 <span class="tagline">&mdash; the beginning</span></header>
+          <div>
+            <article>
+              <h3>Thin-provisioned storage with qcow2</h3>
+              <p>
+                I integrated the Mirage qcow2 block layer into Docker for Mac's VM, giving
+                containers a disk that grew as needed instead of reserving its full size on the
+                laptop. This provided sparse storage even on HFS+, which lacked sparse-file
+                support, and let us offer a thin-provisioned 64 GiB container disk.
+              </p>
+              <p class="links">
+                <a href="https://github.com/mirage/ocaml-qcow">[mirage/ocaml-qcow]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Reactive VM configuration with Irmin</h3>
+              <p>
+                I integrated Irmin into Docker for Mac to store the VM's configuration, using
+                transactions, snapshots and watches to react to changes. Configuration became
+                versioned data: committing a new memory setting made the VM exit and pick up the change
+                on its next start.
+              </p>
+              <p class="links">
+                <a href="https://github.com/mirage/irmin">[mirage/irmin]</a>
+              </p>
+            </article>
+            <article>
+              <h3>Docker for Mac alpha</h3>
+              <p>
+                Alongside this, I debugged alpha builds and worked out how diagnostics reports
+                should work. Early changes fixed symlinks in shared folders and kept the VM's
+                clock in sync with the host. That code now lives in the LinuxKit repo.
+              </p>
+              <p class="links">
+                <a href="https://github.com/linuxkit/linuxkit/pull/1">[linuxkit/linuxkit#1]</a>
+                <a href="https://github.com/linuxkit/linuxkit/pull/2">[linuxkit/linuxkit#2]</a>
+              </p>
+            </article>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var cards = Array.prototype.slice.call(document.querySelectorAll('.terminal-timeline .terminal-card'));
+        var yearLinks = {};
+        document.querySelectorAll('#years a').forEach(function (a) {
+          yearLinks[a.getAttribute('href').slice(1)] = a;
+        });
+
+        // Type out the prompt once
+        var typed = document.getElementById('typed');
+        if (typed && !reduce) {
+          var text = typed.textContent, i = 0;
+          typed.textContent = '';
+          (function tick() {
+            typed.textContent = text.slice(0, ++i);
+            if (i < text.length) setTimeout(tick, 28 + Math.random() * 40);
+          })();
+        }
+
+        // Reveal cards as they scroll into view
+        if ('IntersectionObserver' in window) {
+          var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); }
+            });
+          }, { rootMargin: '0px 0px -12% 0px' });
+          cards.forEach(function (c) { io.observe(c); });
+        } else {
+          cards.forEach(function (c) { c.classList.add('seen'); });
+        }
+
+        // Jump links reveal their target immediately
+        Object.keys(yearLinks).forEach(function (id) {
+          yearLinks[id].addEventListener('click', function () {
+            var c = document.getElementById(id);
+            if (c) c.classList.add('seen');
+          });
+        });
+
+        // Fill the timeline line as you scroll, and highlight the current year
+        var timeline = document.getElementById('timeline');
+        var progress = document.getElementById('progress');
+        var ticking = false;
+        function update() {
+          ticking = false;
+          var r = timeline.getBoundingClientRect();
+          var mid = window.innerHeight * 0.6;
+          var h = Math.max(0, Math.min(r.height, mid - r.top));
+          progress.style.height = h + 'px';
+          var current = null;
+          cards.forEach(function (c) { if (c.getBoundingClientRect().top < mid) current = c.id; });
+          Object.keys(yearLinks).forEach(function (id) {
+            yearLinks[id].classList.toggle('active', id === current);
+          });
+        }
+        window.addEventListener('scroll', function () {
+          if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+        }, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+      })();
+    </script>
+  </body>
+</html>
