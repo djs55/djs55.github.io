@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Docker has always used microVMs - Dave Scott</title>
+    <meta name="description" content="Docker Desktop has always run containers inside a minimal, purpose-built VM. Here is why, and what it bought us.">
+    <meta name="author" content="Dave Scott">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://dave.recoil.org/docker-has-always-used-microvms/">
+    <meta property="og:title" content="Docker has always used microVMs">
+    <meta property="og:description" content="Docker Desktop has always run containers inside a minimal, purpose-built VM. Here is why, and what it bought us.">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dave.recoil.org/docker-has-always-used-microvms/">
+    <meta name="twitter:title" content="Docker has always used microVMs">
+    <meta name="twitter:description" content="Docker Desktop has always run containers inside a minimal, purpose-built VM. Here is why, and what it bought us.">
+
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff">
+    <meta name="color-scheme" content="white">
+
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+  </head>
+
+  <body class="terminal">
+
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+      <nav class="terminal-menu">
+        <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+          <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="container">
+      <h1>Docker has always used microVMs</h1>
+
+      <p>
+        Docker is all microVMs now? Always has been.
+      </p>
+      <p>
+        <!-- TODO: intro. People seem confused about Docker on Linux, raw containers and root.
+             Say which Docker this is about (Docker Desktop) and which it isn't. -->
+      </p>
+
+      <h1>Back in 2015</h1>
+      <p>
+        When I joined Docker in 2015 the state of the art was &quot;Docker Toolbox&quot;.
+        It used VirtualBox, which is a fully featured VMM product. It had its own GUI and its
+        own update process, and way more features than we needed (and lacked a few really
+        useful ones).
+      </p>
+
+      <h1>A library VMM</h1>
+      <p>
+        We started building a thing we later thought of as a &quot;library VMM&quot;: a VMM which could
+        be embedded inside the application, and which would be single purpose, minimal, secure
+        and fast. The first version was called
+        <a href="https://github.com/moby/hyperkit">hyperkit</a>
+        and the most recent one is &quot;Docker VMM&quot;
+        <!-- TODO: link Docker VMM -->.
+      </p>
+      <p>
+        The VM kernel and root filesystem were minimal too, based on the
+        <a href="https://github.com/linuxkit/linuxkit">LinuxKit</a> project. The current version is an
+        even more slimmed down variant but conceptually the same
+        <!-- TODO: link nerdbox -->.
+      </p>
+
+      <h1>What this gave us</h1>
+      <p>
+        For Docker Desktop this allowed:
+      </p>
+      <ul>
+        <li>
+          <b>Running rootless on all platforms.</b> But not &quot;rootless inside Linux&quot;:
+          the whole Linux kernel is untrusted, so even a Linux CVE
+          <!-- TODO: link a Linux CVE -->
+          doesn't matter.
+        </li>
+        <li>
+          <b>Minimal devices.</b> We could carefully control the host / VM interface.
+        </li>
+        <li>
+          <b>VPNs and network policy.</b> It was easy to interoperate with VPNs, and to impose L7
+          networking policy in the form of
+          <a href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/">RAM</a>.
+        </li>
+      </ul>
+
+      <h1>And now</h1>
+      <p>
+        The Docker microVM tech is the foundation of Docker Sandboxes today
+        (<a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">why microVMs</a>).
+        It continues to get faster, lower overhead and more secure over time.
+      </p>
+
+      <h1>Further reading</h1>
+      <p>
+        To read more about the tech, see
+        <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">how Docker Desktop networking works under the hood</a>
+        and
+        <a href="https://github.com/moby/vpnkit">vpnkit</a>.
+        <!-- TODO: more links -->
+      </p>
+
+    </div>
+  </body>
+</html>
