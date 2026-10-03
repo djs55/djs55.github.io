@@ -44,12 +44,14 @@
     </div>
 
     <div class="container">
-      <h1>Docker has always used microVMs</h1>
+      <h1>Docker has always used microVMs (well, since 2016)</h1>
 
       <p>
         There's a lot of buzz about &quot;microVMs&quot;, where a workload runs
-        with a stripped down Linux kernel, on a minimalist VMM on top of a hypervisor
-        like KVM or Xen. MicroVMs are often contrasted to and considered more secure than
+        with a stripped down Linux kernel, on a minimalist VMM such as
+        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a> (released in 2018)
+        on top of a hypervisor
+        like KVM or Xen. MicroVMs are often contrasted to, and considered more secure than,
         traditional Linux Docker containers.
         What if I told you that Docker Desktop has always used microVMs?
       </p>
@@ -63,9 +65,8 @@
         When I joined Docker in 2015 the state of the art was
         <a href="https://github.com/docker-archive/toolbox">Docker Toolbox</a>.
         It used
-        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a fully featured VMM product. VirtualBox had its own GUI and its
-        own update process, and way more features than we needed (and lacked a few really
-        useful ones).
+        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a great product with lots of features. VirtualBox has its own GUI and its
+        own update process; way more than we needed for Docker.
       </p>
 
       <h1 style="clear: both">A library VMM</h1>
@@ -74,7 +75,7 @@
         Using our
         <a href="https://mirage.io/">Mirage Unikernel libraries</a>
         we started building a &quot;library VMM&quot;: a VMM which could
-        be embedded inside the application, and which would be single purpose, minimal, secure
+        be embedded inside the Docker application, and which would be single purpose, minimal, secure
         and fast. The first version was called
         <a href="https://github.com/moby/hyperkit">hyperkit</a>
         and the most recent one is
@@ -83,13 +84,13 @@
       <p>
         The VM kernel and root filesystem were minimal too, based on the
         <a href="https://github.com/linuxkit/linuxkit">LinuxKit</a> project. The current version is an
-        even more slimmed down variant but conceptually the same, based on
+        even more slimmed down variant but conceptually the same, similar to
         <a href="https://github.com/containerd/nerdbox">containerd/nerdbox</a>.
       </p>
 
-      <h1>What this gave us</h1>
+      <h1>Docker for Mac in 2016</h1>
       <p>
-        For Docker Desktop this allowed:
+        For Docker for Mac (later renamed Docker Desktop) this allowed:
       </p>
       <ul>
         <li>
@@ -117,7 +118,7 @@
 
       <h1>Further reading</h1>
       <p>
-        To read more about the tech, see
+        To read more about the history of the tech, see
         <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/">A Decade of Docker Containers</a>
         (Communications of the ACM).
       </p>
@@ -127,7 +128,7 @@
       <sup>1</sup>
       Although we were aiming to make everything a library and link into a static
       unikernel-like process, for technical reasons it makes sense to still have a single
-      host process.
+      host process per VM.
       <a href="#fnref1" aria-label="Back to the text">&#8617;</a>
       </p>
 
