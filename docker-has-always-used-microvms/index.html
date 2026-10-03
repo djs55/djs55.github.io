@@ -47,35 +47,47 @@
       <h1>Docker has always used microVMs</h1>
 
       <p>
-        Docker is all microVMs now? Always has been.
+        There's a lot of buzz about &quot;microVMs&quot;, where a workload runs
+        with a stripped down Linux kernel, on a minimalist VMM on top of a hypervisor
+        like KVM or Xen. MicroVMs are often contrasted to and considered more secure than
+        traditional Linux Docker containers.
+        What if I told you that Docker Desktop has always used microVMs?
       </p>
       <p>
-        <!-- TODO: intro. People seem confused about Docker on Linux, raw containers and root.
-             Say which Docker this is about (Docker Desktop) and which it isn't. -->
+        <img src="microvms.jpg" alt="Always has been meme: wait, Docker uses microVMs? Always has been (since 2016)"/>
       </p>
 
       <h1>Back in 2015</h1>
       <p>
-        When I joined Docker in 2015 the state of the art was &quot;Docker Toolbox&quot;.
-        It used VirtualBox, which is a fully featured VMM product. It had its own GUI and its
+        When I joined Docker in 2015 the state of the art was
+        <a href="https://github.com/docker-archive/toolbox">Docker Toolbox</a>.
+        <img src="https://cloud.githubusercontent.com/assets/251292/9585188/2f31d668-4fca-11e5-86c9-826d18cf45fd.png" alt="Docker Toolbox logo">
+        It used
+        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a fully featured VMM product. VirtualBox had its own GUI and its
         own update process, and way more features than we needed (and lacked a few really
         useful ones).
       </p>
 
       <h1>A library VMM</h1>
       <p>
-        We started building a thing we later thought of as a &quot;library VMM&quot;: a VMM which could
+        We wanted Docker to feel like a native app on Mac and Windows, rather than a bundle of components.
+        Using our
+        <a href="https://mirage.io/">Mirage Unikernel libraries</a>
+        we started building a &quot;library VMM&quot;: a VMM which could
         be embedded inside the application, and which would be single purpose, minimal, secure
         and fast. The first version was called
         <a href="https://github.com/moby/hyperkit">hyperkit</a>
-        and the most recent one is &quot;Docker VMM&quot;
-        <!-- TODO: link Docker VMM -->.
+        and the most recent one is
+        <a href="https://www.docker.com/blog/docker-vmm-public-beta/">Docker VMM</a>.
+        Note although we were aiming to make everything a library and link into a static
+        unikernel-like process, for technical reasons it makes sense to still have a single
+        host process.
       </p>
       <p>
         The VM kernel and root filesystem were minimal too, based on the
         <a href="https://github.com/linuxkit/linuxkit">LinuxKit</a> project. The current version is an
-        even more slimmed down variant but conceptually the same
-        <!-- TODO: link nerdbox -->.
+        even more slimmed down variant but conceptually the same, based on
+        <a href="https://github.com/containerd/nerdbox">containerd/nerdbox</a>.
       </p>
 
       <h1>What this gave us</h1>
@@ -84,18 +96,18 @@
       </p>
       <ul>
         <li>
-          <b>Running rootless on all platforms.</b> But not &quot;rootless inside Linux&quot;:
-          the whole Linux kernel is untrusted, so even a Linux CVE
-          <!-- TODO: link a Linux CVE -->
+          <b>Running rootless on all platforms.</b> Without requiring &quot;rootless inside Linux&quot;:
+          the whole Linux kernel is untrusted, so even a
+          <a href="https://lwn.net/Articles/1097401/">Linux CVE</a>
           doesn't matter.
         </li>
         <li>
-          <b>Minimal devices.</b> We could carefully control the host / VM interface.
+          <b>Minimal devices.</b> We could carefully limit the host / VM interface, making it easy to understand and audit.
         </li>
         <li>
-          <b>VPNs and network policy.</b> It was easy to interoperate with VPNs, and to impose L7
-          networking policy in the form of
-          <a href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/">RAM</a>.
+          <b>VPNs and network policy.</b> It was easy to interoperate with VPNs, and to impose
+          networking policy such as
+          <a href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/">Registry Access Management</a>.
         </li>
       </ul>
 
@@ -109,10 +121,7 @@
       <h1>Further reading</h1>
       <p>
         To read more about the tech, see
-        <a href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/">how Docker Desktop networking works under the hood</a>
-        and
-        <a href="https://github.com/moby/vpnkit">vpnkit</a>.
-        <!-- TODO: more links -->
+        <!-- TODO: link the CACM article -->
       </p>
 
     </div>
