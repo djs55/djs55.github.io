@@ -16,10 +16,13 @@
     <meta property="og:title" content="Dave Scott's research">
     <meta property="og:description" content="Dave Scott works on Docker, bringing the benefits of containers to developers everywhere.">
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="#fff">
-    <meta name="color-scheme" content="white">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
     <style>
       /* Responsive table styles */
       table {
@@ -35,7 +38,7 @@
       .paper-entry td img {
         width: 200px;
         height: auto;
-        border: 1px solid #ccc;
+        border: 1px solid var(--secondary-color);
         box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
       }
       
@@ -47,7 +50,7 @@
         
         tr {
           margin-bottom: 1.5rem;
-          border-bottom: 1px solid #ccc;
+          border-bottom: 1px solid var(--secondary-color);
           padding-bottom: 1rem;
         }
         
@@ -98,6 +101,7 @@
           <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
           <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
           <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+          <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
         </ul>
       </nav>
     </div>

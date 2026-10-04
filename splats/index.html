@@ -9,10 +9,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="#fff">
-    <meta name="color-scheme" content="white">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
     <style>
       body {
         max-width: 1200px;
@@ -21,7 +24,7 @@
       }
       .viewer-container {
         margin: 20px 0;
-        border: 2px solid #000;
+        border: 2px solid var(--font-color);
         border-radius: 8px;
         overflow: hidden;
       }
@@ -44,7 +47,7 @@
       .comparison img {
         width: 100%;
         height: auto;
-        border: 2px solid #000;
+        border: 2px solid var(--font-color);
         border-radius: 4px;
       }
       .comparison figcaption {
@@ -54,7 +57,20 @@
       }
     </style>
   </head>
-  <body>
+  <body class="terminal">
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+        <nav class="terminal-menu">
+          <ul>
+            <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
     <div class="container">
       <h1>Hello World with Gaussian Splats</h1>
 

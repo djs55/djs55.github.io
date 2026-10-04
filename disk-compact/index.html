@@ -11,10 +11,13 @@
     <meta name="twitter:title" content="Online qcow2 defragmentation in OCaml in Docker for Mac">
     <meta name="twitter:description" content="Ensuring that disk space used by Docker for Mac doesn't grow without bound">
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="#fff">
-    <meta name="color-scheme" content="white">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <style>
@@ -44,6 +47,7 @@
               <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
               <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
               <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+              <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
             </ul>
           </nav>
         </div>
