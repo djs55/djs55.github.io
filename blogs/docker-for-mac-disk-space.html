@@ -15,17 +15,20 @@
     <meta property="og:title" content="Docker for Mac: reducing disk space">
     <meta property="og:description" content="Tips for reducing disk space usage of Docker for Mac">
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="#fff">
-    <meta name="color-scheme" content="white">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
     <style>
       .blog-post {
         max-width: 800px;
         margin: 0 auto;
       }
       pre {
-        background-color: #f0f0f0;
+        background-color: var(--code-bg-color);
         padding: 1rem;
         overflow-x: auto;
         font-size: 0.9rem;
@@ -33,7 +36,7 @@
         margin: 1.5rem 0;
       }
       code {
-        background-color: #f0f0f0;
+        background-color: var(--code-bg-color);
         padding: 0.2rem 0.4rem;
         border-radius: 3px;
         font-size: 0.9rem;
@@ -43,7 +46,7 @@
         padding: 0;
       }
       .date {
-        color: #666;
+        color: var(--secondary-color);
         font-style: italic;
         margin-bottom: 2rem;
       }
@@ -62,6 +65,7 @@
           <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
           <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
           <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+          <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
         </ul>
       </nav>
     </div>

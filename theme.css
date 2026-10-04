@@ -1,0 +1,17 @@
+/* Site-wide light/dark/auto theming, shared by all pages.
+   Loaded after terminal.css. theme.js sets data-theme="dark"/"light"
+   on <html> when the user overrides; "auto" follows the OS. */
+:root[data-theme="dark"] {
+  --background-color: #16181b; --font-color: #e6e6e6; --invert-font-color: #16181b;
+  --primary-color: #4fb3f6; --secondary-color: #9aa0a6; --code-bg-color: #262a30; --block-background-color: #16181b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background-color: #16181b; --font-color: #e6e6e6; --invert-font-color: #16181b;
+    --primary-color: #4fb3f6; --secondary-color: #9aa0a6; --code-bg-color: #262a30; --block-background-color: #16181b;
+  }
+}
+body { background: var(--background-color); transition: background-color .3s ease, color .3s ease; }
+.theme-toggle { background: none; border: 1px solid var(--secondary-color); color: var(--secondary-color);
+  font: inherit; padding: 0 8px; cursor: pointer; border-radius: 3px; }
+.theme-toggle:hover { color: var(--primary-color); border-color: var(--primary-color); }

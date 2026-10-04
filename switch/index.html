@@ -24,10 +24,13 @@
     <meta property="og:image:alt" content="A CLOS network switch design diagram">
     
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="#fff">
-    <meta name="color-scheme" content="white">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
   </head>
 <body>
 
@@ -43,6 +46,7 @@
               <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
               <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
               <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+              <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
             </ul>
           </nav>
         </div>
@@ -110,8 +114,8 @@
                 <input type="range" id="twistSlider" min="0" max="100" value="50" 
                        style="width: 100%; accent-color: #0c6; height: 15px; cursor: pointer;">
                 <div style="display: flex; justify-content: space-between; width: 100%; margin: 5px auto 0;">
-                    <span style="font-size: 0.9em; color: #333;">Switch</span>
-                    <span style="font-size: 0.9em; color: #333;">Multiplexer</span>
+                    <span style="font-size: 0.9em; color: var(--font-color);">Switch</span>
+                    <span style="font-size: 0.9em; color: var(--font-color);">Multiplexer</span>
                 </div>
             </div>
 

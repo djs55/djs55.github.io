@@ -140,7 +140,7 @@ COMMON_CSS = """
 .terminal-menu li::after { content: none; }
 """
 
-def head(title, extra_css, theme_color="#fff", color_scheme="light"):
+def head(title, extra_css, theme_color="#fff", color_scheme="light dark"):
     return f"""<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -156,9 +156,12 @@ def head(title, extra_css, theme_color="#fff", color_scheme="light"):
     <meta property="og:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" href="/favicon.ico">
-    <meta name="theme-color" content="{theme_color}">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
     <meta name="color-scheme" content="{color_scheme}">
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
     <script>document.documentElement.classList.add('js');</script>
     <style>{COMMON_CSS}{extra_css}</style>
   </head>
@@ -274,20 +277,6 @@ function store(key, val) {
 
 
 A_CSS = """
-:root[data-theme="dark"] {
-  --background-color: #16181b; --font-color: #e6e6e6; --invert-font-color: #16181b;
-  --primary-color: #4fb3f6; --secondary-color: #9aa0a6; --code-bg-color: #262a30; --block-background-color: #16181b;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --background-color: #16181b; --font-color: #e6e6e6; --invert-font-color: #16181b;
-    --primary-color: #4fb3f6; --secondary-color: #9aa0a6; --code-bg-color: #262a30; --block-background-color: #16181b;
-  }
-}
-body { background: var(--background-color); transition: background-color .3s ease, color .3s ease; }
-.theme-toggle { background: none; border: 1px solid var(--secondary-color); color: var(--secondary-color);
-  font: inherit; padding: 0 8px; cursor: pointer; border-radius: 3px; }
-.theme-toggle:hover { color: var(--primary-color); border-color: var(--primary-color); }
 .lede { max-width: 46em; }
 
 .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
@@ -346,11 +335,6 @@ body { background: var(--background-color); transition: background-color .3s eas
 
 A_JS = """
 (function () {
-  var root = document.documentElement, btn = document.getElementById('theme');
-  var modes = ['auto', 'light', 'dark'];
-  function apply(m) { if (m === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', m); btn.textContent = 'theme: ' + m; }
-  var mode = store('timeline-theme') || 'auto'; apply(mode);
-  btn.addEventListener('click', function () { mode = modes[(modes.indexOf(mode) + 1) % 3]; store('timeline-theme', mode); apply(mode); });
   var fill = document.getElementById('fill');
   var r = setupReveal({ cards: '.zz-year', timeline: '#timeline', onProgress: function (h) { fill.style.height = h + 'px'; } });
   // Pull each card up alongside the previous one, so the two columns interleave.
