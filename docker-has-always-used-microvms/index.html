@@ -74,8 +74,16 @@
         VMM, a unikernel links an app with only the drivers, filesystems etc it actually needs; other code is
         omitted. For example a
         <a href="https://mirageos.org/">MirageOS</a> unikernel app would have no processes, probably no filesystem,
-        only one vCPU. Certainly no ssh or shell (unless you want those). The VMM that hosts the Mirage virtual devices can
-        be similarly cut down: PV boot only, perhaps only a network interface. No legacy required.
+        only one vCPU. Certainly no ssh or shell (unless you really want those). The VMM that hosts the Mirage unikernel was also
+        minimal (see
+        <a href="https://github.com/Solo5/solo5">Solo5</a> and
+        <a href="https://github.com/mirage/mirage-solo5">mirage-solo5</a>
+          ). No legacy required.
+        We were so confident in the security of the system that we ran a
+        <a href="https://mirage.io/blog/bitcoin-pinata-results">bitcoin pinata</a> offering 10BTC to any
+        hacker able to claim it. The BTC went unclaimed.
+      </p>
+      <p>
         Boot can be really fast too:
         the &quot;Just-In-Time Summoning of Unikernels&quot; project
           (<a href="http://unikernel.org/files/2015-nsdi-jitsu.pdf">paper</a>, <a href="https://github.com/mirage/jitsu">code</a>)
@@ -96,12 +104,12 @@
       <p>
         Docker containers are an excellent way to package and run Linux software. However in 2015 the experience on
         Mac and Windows machines was a little rough.
-        <img src="https://cloud.githubusercontent.com/assets/251292/9585188/2f31d668-4fca-11e5-86c9-826d18cf45fd.png" alt="Docker Toolbox logo" style="float: right; width: auto; max-width: 40%; margin: 0 0 8px 16px">
+        <img src="https://cloud.githubusercontent.com/assets/251292/9585188/2f31d668-4fca-11e5-86c9-826d18cf45fd.png" alt="Docker Toolbox logo" style="float: right; width: auto; max-width: 40%; margin: 8px 8px 8px 16px">
         When I joined Docker in 2015 the state of the art was
         <a href="https://github.com/docker-archive/toolbox">Docker Toolbox</a>.
         It used
-        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a great product with lots of features. VirtualBox has its own GUI and its
-        own update process; way more than we needed for Docker.
+        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a great product with lots of features including a GUI.
+        It had more features than we needed for Docker, and unnecessary extra features mean a larger amount of code needs to be trusted.
       </p>
 
       <h1 style="clear: both">A library VMM</h1>
