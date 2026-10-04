@@ -60,7 +60,7 @@
             about how to build one.
             </p>
             <center>
-                <img src="switch-black-box.png" alt="A network switch connecting lots of inputs to lots of outputs" style="width: 50%; height: auto;">
+                <img src="switch-black-box.png" alt="A network switch connecting lots of inputs to lots of outputs" class="diagram" style="width: 50%; height: auto;">
             </center>
             <p>
             The networking pioneer
@@ -73,7 +73,7 @@
             data and direct the individual messages to the correct outputs.
             </p>
             <center>
-                <img src="switch-mux.png" alt="A network switch as a tree of multiplexers and demultiplexers" style="width: 50%; height: auto;">
+                <img src="switch-mux.png" alt="A network switch as a tree of multiplexers and demultiplexers" class="diagram" style="width: 50%; height: auto;">
             </center>
             <p>
             This is a fun high-level way to think about it, but if the switch has a large
@@ -97,7 +97,7 @@
             Sandy used a CLOS network design for his switches, which looked something like this:
             </p>
             <center>
-                <img src="switch-clos.png" alt="A CLOS network switch design used by Sandy" style="width: 50%; height: auto;">
+                <img src="switch-clos.png" alt="A CLOS network switch design used by Sandy" class="diagram" style="width: 50%; height: auto;">
             </center>
             <p>
             In the diagram above, the switch has 16 input ports and 16 output ports, and
@@ -130,11 +130,9 @@
         
         // Fixed aspect ratio for consistent view
         const camera = new THREE.PerspectiveCamera(75, containerWidth/containerHeight, 0.1, 10000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(containerWidth, containerHeight);
-        // Use this with the alpha: true setting from above
-        renderer.setClearColor(0xffffff, 1); // 0 opacity for transparency
-        // Also add this CSS to your canvas element
+        renderer.setClearColor(0x000000, 0); // fully transparent: the page background shows through
         renderer.domElement.style.background = 'transparent';
         renderer.domElement.style.margin = '0 auto';
         renderer.domElement.style.display = 'block';
@@ -280,6 +278,21 @@
 
         // Draw edges (lines) between stages with grouped connections
         const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+
+        // Recolour lines and nodes from the page theme, and refresh when the
+        // theme changes (manual toggle or OS preference flip)
+        function applyThemeColors() {
+            const css = getComputedStyle(document.documentElement);
+            lineMaterial.color.set(css.getPropertyValue('--font-color').trim() || '#000');
+            const blue = css.getPropertyValue('--primary-color').trim() || '#0000ff';
+            middle1Material.color.set(blue);
+            middle2Material.color.set(blue);
+            middle3Material.color.set(blue);
+        }
+        applyThemeColors();
+        new MutationObserver(applyThemeColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyThemeColors);
+
         const lines = []; // Store lines for updating positions
         const mirroredLines = []; // Store lines for updating positions
 

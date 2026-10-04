@@ -15,3 +15,11 @@ body { background: var(--background-color); transition: background-color .3s eas
 .theme-toggle { background: none; border: 1px solid var(--secondary-color); color: var(--secondary-color);
   font: inherit; padding: 0 8px; cursor: pointer; border-radius: 3px; }
 .theme-toggle:hover { color: var(--primary-color); border-color: var(--primary-color); }
+
+/* Transparent-background line art (black strokes): give it a light card
+   in dark mode so the strokes stay visible. Colored content (e.g. red
+   arrows) is preserved, so filters are not an option. */
+:root[data-theme="dark"] img.diagram { background: #fff; padding: 12px; border-radius: 6px; box-sizing: border-box; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) img.diagram { background: #fff; padding: 12px; border-radius: 6px; box-sizing: border-box; }
+}
