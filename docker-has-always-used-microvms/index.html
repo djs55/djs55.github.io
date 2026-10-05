@@ -42,11 +42,9 @@
       .microvm-timeline .milestone { position: relative; border-left: 1px solid var(--secondary-color); padding: 0 0 1rem 1.25rem; }
       .microvm-timeline .milestone::before { content: ""; position: absolute; left: -5px; top: 0.4rem; width: 9px; height: 9px; border: 1px solid var(--secondary-color); border-radius: 50%; background: var(--background-color); }
       .microvm-timeline .milestone p { margin: 0.25rem 0 0; }
-      .microvm-timeline .context-milestone .milestone { border-left-color: transparent; }
-      .microvm-timeline .context-milestone .milestone::after { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--secondary-color) 0 10px, transparent 10px 22px); }
-      .microvm-timeline .context-milestone .milestone::before { z-index: 1; }
-      .microvm-timeline .timeline-context-key { color: var(--secondary-color); font-size: 0.8rem; margin: -0.5rem 0 1rem; }
-      .microvm-timeline .timeline-context-key::before { content: ""; display: inline-block; width: 2.5rem; height: 2px; background: repeating-linear-gradient(to right, var(--secondary-color) 0 10px, transparent 10px 22px); vertical-align: middle; margin-right: 0.5rem; }
+      .microvm-timeline .time-gap .milestone { border-left-color: transparent; }
+      .microvm-timeline .time-gap .milestone::after { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--secondary-color) 0 10px, transparent 10px 22px); }
+      .microvm-timeline .time-gap .milestone::before { z-index: 1; }
       .microvm-timeline .microvm-milestone .milestone::before { background: var(--primary-color); border-color: var(--primary-color); }
       .microvm-timeline .milestone-label { color: var(--primary-color); font-size: 0.8rem; }
       .microvm-timeline li:last-child .milestone { padding-bottom: 0; border-left-color: transparent; }
@@ -127,16 +125,15 @@
 
       <aside class="microvm-timeline" aria-labelledby="microvm-timeline-title">
         <h2 id="microvm-timeline-title">Brief timeline (some sequences may be shortened)</h2>
-        <p class="timeline-context-key">Earlier systems context</p>
         <ol>
-          <li class="context-milestone">
+          <li class="time-gap">
             <span class="milestone-date">1990s</span>
             <div class="milestone">
               <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/projects/archive/nemesis/">Nemesis</a></strong>
               <p>A vertically integrated OS: applications take responsibility for much of their own system code.</p>
             </div>
           </li>
-          <li class="context-milestone">
+          <li class="time-gap">
             <time class="milestone-date" datetime="2003-10">Oct 2003</time>
             <div class="milestone">
               <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/papers/2003-xensosp.pdf">Xen and the art of virtualization published</a></strong>
@@ -186,7 +183,7 @@
               <p>Containers run inside a minimal Linux VM, with HyperKit and MirageOS libraries on the host.</p>
             </div>
           </li>
-          <li>
+          <li class="time-gap">
             <time class="milestone-date" datetime="2018-11-26">Nov 2018</time>
             <div class="milestone">
               <strong><a href="https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/">Firecracker announced at re:Invent</a></strong>
