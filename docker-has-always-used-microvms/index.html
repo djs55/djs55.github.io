@@ -83,19 +83,50 @@
       <p>
         There's a lot of buzz about &quot;microVMs&quot;, where a workload runs
         with a stripped down Linux kernel, on a minimalist VMM such as
-        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a> (announced at
-        <a href="https://brooker.co.za/blog/2025/09/18/firecracker.html">re:Invent 2018</a>)
+        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a>
         on top of a hypervisor
         like KVM or Xen. MicroVMs are often contrasted to, and considered more secure than,
         traditional Linux Docker containers.
-        What if I told you that Docker Desktop has always used microVMs?
+        What if I told you that Docker Desktop has always used microVMs? (since 2016)
       </p>
       <p>
         <img src="microvms.jpg" alt="Always has been meme: wait, Docker uses microVMs? Always has been (since 2016)"/>
       </p>
 
+     <h1>Unikernels are microVMs</h1>
+      <p>
+        Unikernels can be considered an early form of microVM. Rather than booting a full Linux kernel on a full
+        VMM, a unikernel links an app with only the drivers, filesystems and subsystems it actually needs; other code is
+        omitted. For example a
+        <a href="https://mirageos.org/">MirageOS</a> unikernel app would have no processes, probably no filesystem,
+        only one vCPU. Certainly no ssh or shell (unless you really want those). The VMM that hosts the Mirage unikernel was also
+        minimal (see
+        <a href="https://github.com/Solo5/solo5">Solo5</a> and
+        <a href="https://github.com/mirage/mirage-solo5">mirage-solo5</a>
+          ). No legacy required.
+        We were so confident in the security of the system that we ran a
+        <a href="https://mirage.io/blog/bitcoin-pinata-results">bitcoin pinata</a> offering 10BTC to any
+        hacker able to claim it. The BTC went unclaimed.
+      </p>
+      <p>
+        Boot can be really fast too:
+        the &quot;Just-In-Time Summoning of Unikernels&quot; project
+          (<a href="http://unikernel.org/files/2015-nsdi-jitsu.pdf">paper</a>, <a href="https://github.com/mirage/jitsu">code</a>)
+        optimized x86 VM creation time down to about 20ms (120ms on an underpowered 2015 ARM dev board)
+      </p>
+      <p>
+        The main (obvious) downside of unikernels is having to link your app with a bunch of kernel code.
+        A lot of people would like to run existing Linux programs!
+      </p>
+      <p>
+        While we were developing Unikernels, Docker was busy inventing the modern form of Linux containers and revolutionising
+        how software is built, shared and run.
+        <a href="https://techcrunch.com/2016/01/21/docker-acquires-unikernel-systems-as-it-looks-beyond-containers/">Docker acquired Unikernel Systems in 2016</a>
+        and we combined the best of Unikernels (microVMs) and Linux containers into Docker for Mac (later Docker Desktop).
+      </p>
+
       <aside class="microvm-timeline" aria-labelledby="microvm-timeline-title">
-        <h2 id="microvm-timeline-title">A few milestones</h2>
+        <h2 id="microvm-timeline-title">Brief timeline (some sequences may be shortened)</h2>
         <p class="timeline-context-key">Earlier systems context</p>
         <ol>
           <li class="context-milestone">
@@ -149,13 +180,6 @@
             </div>
           </li>
           <li>
-            <time class="milestone-date" datetime="2016-07-22">22 Jul 2016</time>
-            <div class="milestone">
-              <strong><a href="https://github.com/mirage/mirage/pull/565">Mirage integrates Solo5 + ukvm</a></strong>
-              <p>Solo5’s minimal kernel + ukvm’s <a href="https://www.usenix.org/conference/hotcloud16/workshop-program/presentation/williams">minimal VMM</a>, integrated into the Mirage tool.</p>
-            </div>
-          </li>
-          <li>
             <time class="milestone-date" datetime="2016-07-28">28 Jul 2016</time>
             <div class="milestone">
               <strong><a href="https://github.com/docker/docs/blob/main/content/manuals/desktop/previous-versions/archive-mac.md#stable-releases-of-2016">Docker for Mac generally available</a></strong>
@@ -173,59 +197,16 @@
             <time class="milestone-date" datetime="2026">2026</time>
             <div class="milestone">
               <strong><a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">Docker Sandboxes</a></strong>
-              <p>A separate microVM and Docker daemon for each coding agent session.</p>
+              <p>A separate locked-down microVM and Docker daemon for each coding agent session with support for governance.</p>
             </div>
           </li>
         </ol>
       </aside>
 
-      <h1>Some pre-history</h1>
+      <h1 style="clear: both">A library VMM for Desktop applications</h1>
       <p>
-        Unikernels can be considered an early form of microVM. Rather than booting a full Linux kernel on a full
-        VMM, a unikernel links an app with only the drivers, filesystems etc it actually needs; other code is
-        omitted. For example a
-        <a href="https://mirageos.org/">MirageOS</a> unikernel app would have no processes, probably no filesystem,
-        only one vCPU. Certainly no ssh or shell (unless you really want those). The VMM that hosts the Mirage unikernel was also
-        minimal (see
-        <a href="https://github.com/Solo5/solo5">Solo5</a> and
-        <a href="https://github.com/mirage/mirage-solo5">mirage-solo5</a>
-          ). No legacy required.
-        We were so confident in the security of the system that we ran a
-        <a href="https://mirage.io/blog/bitcoin-pinata-results">bitcoin pinata</a> offering 10BTC to any
-        hacker able to claim it. The BTC went unclaimed.
-      </p>
-      <p>
-        Boot can be really fast too:
-        the &quot;Just-In-Time Summoning of Unikernels&quot; project
-          (<a href="http://unikernel.org/files/2015-nsdi-jitsu.pdf">paper</a>, <a href="https://github.com/mirage/jitsu">code</a>)
-        optimized x86 VM creation time down to about 20ms (120ms on an underpowered 2015 ARM dev board)
-      </p>
-      <p>
-        Unikernel history can be traced back to earlier systems such as
-        <a href="https://www.cl.cam.ac.uk/research/srg/netos/projects/archive/nemesis">Nemesis</a>, a &quot;vertically integrated&quot;
-        operating system which was the predecessor of
-        <a href="https://xenproject.org">the Xen hypervisor</a>, which enabled the first public clouds (i.e. AWS).
-      </p>
-      <p>
-        The main (obvious) downside of unikernels is having to link your app with a bunch of kernel code.
-        A lot of people would like to run existing Linux programs!
-      </p>
-
-      <h1>Docker in 2015</h1>
-      <p>
-        Docker containers are an excellent way to package and run Linux software. However in 2015 the experience on
-        Mac and Windows machines was a little rough.
-        <img src="https://cloud.githubusercontent.com/assets/251292/9585188/2f31d668-4fca-11e5-86c9-826d18cf45fd.png" alt="Docker Toolbox logo" style="float: right; width: auto; max-width: 40%; margin: 8px 8px 8px 16px">
-        When I joined Docker in 2015 the state of the art was
-        <a href="https://github.com/docker-archive/toolbox">Docker Toolbox</a>.
-        It used
-        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a great product with lots of features including a GUI.
-        It had more features than we needed for Docker, and unnecessary extra features mean a larger amount of code needs to be trusted.
-      </p>
-
-      <h1 style="clear: both">A library VMM</h1>
-      <p>
-        We wanted Docker to feel like a native app on Mac and Windows, rather than a bundle of components.
+        Our priority back then wasn't to add microVMs to Docker for their own sake.
+        Instead our goal was to make Docker feel like a native app on Mac and Windows, rather than a bundle of components.
         Using our
         <a href="https://mirage.io/">Mirage Unikernel libraries</a>
         we started building a &quot;library VMM&quot;: a VMM which could
