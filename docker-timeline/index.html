@@ -2,15 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Dave Scott: Docker timeline</title>
-    <meta name="description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <title>Dave Scott: Systems timeline</title>
+    <meta name="description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta name="author" content="Dave Scott">
-    <meta name="twitter:title" content="Dave Scott: Docker timeline">
-    <meta name="twitter:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta name="twitter:title" content="Dave Scott: Systems timeline">
+    <meta name="twitter:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta property="og:site_name" content="Dave Scott">
     <meta property="og:type" content="object">
-    <meta property="og:title" content="Dave Scott: Docker timeline">
-    <meta property="og:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta property="og:title" content="Dave Scott: Systems timeline">
+    <meta property="og:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" href="/favicon.ico">
     <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
@@ -21,7 +21,7 @@
     <script src="/theme.js"></script>
     <script>document.documentElement.classList.add('js');</script>
     <style>
-.lk { display: inline-flex; align-items: center; gap: 4px; margin-right: 0.9em; white-space: nowrap; }
+.lk { display: inline-flex; align-items: center; gap: 4px; margin-right: 0.9em; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .lk svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .links { color: var(--secondary-color); font-size: 0.93em; line-height: 1.7em; }
 .tag { display: inline-block; font-size: 0.78em; line-height: 1.5; padding: 0 6px; margin: 0 4px 2px 0;
@@ -103,7 +103,7 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
 .years li { margin: 0; padding: 0; } .years li::after { content: none; }
 .years a.active { background: var(--primary-color); color: var(--invert-font-color); }
 
-.zz { position: relative; padding: 10px 0 40px; }
+.zz { display: flex; flex-direction: column; position: relative; padding: 10px 0 40px; }
 .zz-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--secondary-color); opacity: .5; }
 .zz-fill { position: absolute; left: 50%; top: 0; width: 2px; margin-left: -1px; height: 0; background: var(--primary-color); }
 .zz-year { position: relative; display: flex; margin: 0 0 34px; scroll-margin-top: 20px; pointer-events: none; }
@@ -118,11 +118,20 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
 .zz-year.left .zz-card::after { right: -42px; } .zz-year.right .zz-card::after { left: -42px; }
 .zz-card > header { text-align: left; padding-left: 10px; transition: background-color .4s ease; }
 .zz-year.seen .zz-card > header { background: var(--font-color); color: var(--background-color); }
-.zz-card article { margin-bottom: 18px; transition: opacity .3s ease; }
+.zz-card article { display: flow-root; margin-bottom: 18px; transition: opacity .3s ease; }
 .zz-card article:last-child { margin-bottom: 0; }
 .zz-card h3 { font-size: var(--global-font-size); margin: 0 0 4px; padding: 0; }
 .zz-card h3 .date { color: var(--secondary-color); font-weight: normal; }
 .zz-card p { margin-bottom: .4em; }
+.thumbnail { float: right; width: 112px; max-width: 38%; margin: 4px 0 12px 16px; }
+.thumbnail a { display: block; background: #fff; }
+.thumbnail img { display: block; width: 100%; height: auto; max-height: 170px; object-fit: contain;
+  border: 1px solid var(--secondary-color); border-radius: 2px; }
+.thumbnail a:hover img { border-color: var(--primary-color); }
+.links { clear: both; }
+@media (max-width: 480px) {
+  .thumbnail { float: none; max-width: 100%; margin: 10px 0 14px; }
+}
 .meta { margin: 0 0 4px; }
 .filtered { display: none !important; }
 
@@ -184,6 +193,12 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
 
     <div class="container">
       <div class="lede"><p>
+        My work on Docker grew out of earlier work on MirageOS, OCaml and the
+        Xapi / Xen toolstack. We explored how to build systems from reusable,
+        type-safe libraries: network protocols, storage and the machinery for managing VMs.
+        The timeline includes both the papers and the code, back to Melange in 2007.
+      </p>
+      <p>
         Back in 2015 Docker was awesome on Linux, but the experience on Mac and Windows was
         a little rough. Rather than shipping a coherent app, Docker shipped
         a bundle of software components loosely glued together:
@@ -203,12 +218,14 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
         the code, the blog posts and the papers.
       </p></div>
       <div class="filters" role="group" aria-label="Filter by theme"><button type="button" class="chip active" data-tag="all">all</button><button type="button" class="chip" data-tag="networking">networking</button><button type="button" class="chip" data-tag="storage">storage</button><button type="button" class="chip" data-tag="files">file sharing</button><button type="button" class="chip" data-tag="vms">VMs &amp; platforms</button><button type="button" class="chip" data-tag="enterprise">enterprise</button><button type="button" class="chip" data-tag="writing">papers &amp; talks</button></div>
-      <ul class="years"><li><a href="#y2026">2026</a></li><li><a href="#y2025">2025</a></li><li><a href="#y2024">2024</a></li><li><a href="#y2023">2023</a></li><li><a href="#y2022">2022</a></li><li><a href="#y2021">2021</a></li><li><a href="#y2020">2020</a></li><li><a href="#y2019">2019</a></li><li><a href="#y2018">2018</a></li><li><a href="#y2017">2017</a></li><li><a href="#y2016">2016</a></li><li><a href="#y2015">2015</a></li></ul>
+      <ul class="years"><li><a href="#y2026">2026</a></li><li><a href="#y2025">2025</a></li><li><a href="#y2024">2024</a></li><li><a href="#y2023">2023</a></li><li><a href="#y2022">2022</a></li><li><a href="#y2021">2021</a></li><li><a href="#y2020">2020</a></li><li><a href="#y2019">2019</a></li><li><a href="#y2018">2018</a></li><li><a href="#y2017">2017</a></li><li><a href="#y2016">2016</a></li><li><a href="#y2015">2015</a></li><li><a href="#y2014">2014</a></li><li><a href="#y2013">2013</a></li><li><a href="#y2012">2012</a></li><li><a href="#y2011">2011</a></li><li><a href="#y2010">2010</a></li><li><a href="#y2007">2007</a></li></ul>
       <div class="zz" id="timeline"><div class="zz-line"></div><div class="zz-fill" id="fill"></div>
       <section class="zz-year left" id="y2026" data-year="2026">
         <div class="zz-node">2026</div>
         <div class="zz-card terminal-card"><header>microVMs <b>and</b> containers</header><div>
-          <article data-tags="writing"><h3><span class="date">2026-03:</span> A Decade of Docker Containers (CACM cover article)</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><p>
+          <article data-tags="writing"><h3><span class="date">2026-03:</span> A Decade of Docker Containers (CACM cover article)</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/"><img src="/carousel/2026-cacm.png" alt="Communications of the ACM cover for A Decade of Docker Containers" width="581" height="778" loading="lazy" decoding="async"></a>
+              </figure><p>
                 <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>,
                 <a href="https://openuk.uk/profiles/justincormack/">Justin Cormack</a> and I wrote up how Docker
                 got from Linux to Mac and Windows, the systems research underneath it, and where things are
@@ -230,7 +247,9 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
       <section class="zz-year right" id="y2025" data-year="2025">
         <div class="zz-node">2025</div>
         <div class="zz-card terminal-card"><header>research reports</header><div>
-          <article data-tags="networking writing"><h3><span class="date">2025-10:</span> Functional Networking for Millions of Docker Desktops (ICFP)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+          <article data-tags="networking writing"><h3><span class="date">2025-10:</span> Functional Networking for Millions of Docker Desktops (ICFP)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/2025-icfp-docker.pdf"><img src="/papers/2025-icfp-docker.png" alt="First page of Functional Networking for Millions of Docker Desktops" width="684" height="1012" loading="lazy" decoding="async"></a>
+              </figure><p>
                 An experience report on ten years of running an OCaml, unikernel-inspired network stack
                 on millions of developer machines: what worked, what didn't and what we'd do again.
                 Written with
@@ -241,7 +260,9 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
                 <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>;
                 Anil gave the talk.
               </p><p class="links"><a class="lk lk-paper" href="https://dave.recoil.org/papers/2025-icfp-docker.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-paper" href="https://doi.org/10.1145/3747525" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>doi</a><a class="lk lk-paper" href="https://icfp25.sigplan.org/details/icfp-2025-papers/21/Functional-Networking-for-Millions-of-Docker-Desktops-Experience-Report-" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>programme</a><a class="lk lk-talk" href="https://anil.recoil.org/slides/icfp-docker-25.pdf" title="talk"><svg aria-hidden="true"><use href="#i-talk"/></svg>slides</a></p></article>
-          <article data-tags="writing"><h3><span class="date">2025-04-01:</span> ASPLOS Influential Paper Award</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><p>
+          <article data-tags="writing"><h3><span class="date">2025-04-01:</span> ASPLOS Influential Paper Award</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/asplos2013.pdf"><img src="/papers/final/asplos2013.jpg" alt="First page of the 2013 Unikernels paper" width="160" height="207" loading="lazy" decoding="async"></a>
+              </figure><p>
                 Our 2013 Unikernels paper won one of the ASPLOS Influential Paper Awards.
                 The Mirage OS libraries from that work are the same ones that ended up inside Docker Desktop.
               </p><p class="links"><a class="lk lk-award" href="https://www.asplos-conference.org/asplos2025/awards/" title="award"><svg aria-hidden="true"><use href="#i-award"/></svg>awards</a></p></article>
@@ -420,7 +441,9 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
                 I added locking on the backing file, replacing a fragile separate lock file, and added
                 TRIM for sparse raw disks.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/moby/hyperkit/pull/173" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/hyperkit#173</a><a class="lk lk-pr" href="https://github.com/moby/hyperkit/pull/158" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/hyperkit#158</a></p></article>
-          <article data-tags="storage writing"><h3>Online disk compaction, enabled by default</h3><p class="meta"><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+          <article data-tags="storage writing"><h3>Online disk compaction, enabled by default</h3><p class="meta"><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/disk-compact/"><img src="/disk-compact/qcow2.png" alt="Diagram of qcow2 disk storage" width="1056" height="642" loading="lazy" decoding="async"></a>
+              </figure><p>
                 I implemented online qcow2 compaction so Docker could return disk space without
                 a restart, enabled it by default, and later used sparse raw disks where APFS made
                 the simpler approach possible. Building on TRIM support from late 2016, the OCaml
@@ -455,8 +478,10 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
       </section>
       <section class="zz-year right" id="y2015" data-year="2015">
         <div class="zz-node">2015</div>
-        <div class="zz-card terminal-card"><header>the beginning</header><div>
-          <article data-tags="storage"><h3>Thin-provisioned storage with qcow2</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+        <div class="zz-card terminal-card"><header>from Xen and Mirage to Docker</header><div>
+          <article data-tags="storage"><h3>Thin-provisioned storage with qcow2</h3><p class="meta"><span class="tag tag-storage">storage</span></p><figure class="thumbnail">
+                <a href="/disk-compact/"><img src="/disk-compact/qcow2.png" alt="Diagram of qcow2 disk storage" width="1056" height="642" loading="lazy" decoding="async"></a>
+              </figure><p>
                 I integrated the Mirage qcow2 block layer into Docker for Mac's VM, giving
                 containers a disk that grew as needed instead of reserving its full size on the
                 laptop. This provided sparse storage even on HFS+, which lacked sparse-file
@@ -473,6 +498,150 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
                 should work. Early changes fixed symlinks in shared folders and kept the VM's
                 clock in sync with the host. That code now lives in the LinuxKit repo.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/linuxkit/linuxkit/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>linuxkit/linuxkit#1</a><a class="lk lk-pr" href="https://github.com/linuxkit/linuxkit/pull/2" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>linuxkit/linuxkit#2</a></p></article>
+          <article data-tags="networking vms writing"><h3><span class="date">2015-05:</span> Jitsu: Just-In-Time Summoning of Unikernels (NSDI)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/2015-nsdi-jitsu.pdf"><img src="/papers/final/2015-nsdi-jitsu.jpg" alt="First page of Jitsu: Just-In-Time Summoning of Unikernels" width="175" height="226" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With the Jitsu team, I co-authored a paper on starting small MirageOS unikernels in
+                response to network traffic on Xen/ARM. Shared-memory communication and connection
+                hand-off let services start on demand while masking boot latency. In January I also
+                proposed a simpler Jitsu backend using libxl directly; that PR was an RFC.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/2015-nsdi-jitsu.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/madhavapeddy" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>paper and talk</a><a class="lk lk-pr" href="https://github.com/mirage/jitsu/pull/3" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/jitsu#3</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2015-02 to 03:</span> Journalled storage with Mirage block libraries</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I exposed LVM logical volumes as Mirage BLOCK devices and added a transparent redo
+                log to mirage-block-volume. Alongside this, I worked on shared-block-ring
+                suspend/resume and modelled the queue protocol in Promela to reason about
+                synchronising storage updates.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/26" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#26</a><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/32" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#32</a><a class="lk lk-pr" href="https://github.com/mirage/shared-block-ring/pull/20" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/shared-block-ring#20</a><a class="lk lk-pr" href="https://github.com/xapi-project/xapi-project.github.io/pull/94" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xapi-project.github.io#94</a></p></article>
+          <article data-tags="vms storage"><h3><span class="date">2015-02-10:</span> Running Xapi on ARM</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span></p><p>
+                I added Xapi to the Xen ARM builder, so hosts could upload and run VMs through
+                XenAPI and xe, collect performance metrics, and use thin-provisioned LVM storage.
+                Xapi could run alongside xl and libvirt on the same host.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/xen-arm-builder/pull/51" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/xen-arm-builder#51</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2015-01-31:</span> Choosing entropy sources for Mirage on Xen</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I added separate choices for the strongest available Xen entropy source and a weak
+                source for development and experiments. This made the choice explicit in the
+                unikernel configuration.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/359" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#359</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2015-01-19:</span> OCaml Ctypes for device mapper</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I switched camldm from hand-written C stubs to OCaml Ctypes bindings, part of the
+                work on reusable storage tools for Xapi.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/camldm/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/camldm#1</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2014" data-year="2014">
+        <div class="zz-node">2014</div>
+        <div class="zz-card terminal-card"><header>Mirage libraries and the Xen toolstack</header><div>
+          <article data-tags="vms"><h3><span class="date">2014-09-14:</span> Packaging the Xapi toolstack with opam</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I submitted the Xapi toolstack and its supporting libraries and services to the main
+                opam repository, making the OCaml components available through the same package
+                manager as the wider ecosystem.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/ocaml/opam-repository/pull/2700" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>ocaml/opam-repository#2700</a></p></article>
+          <article data-tags="vms networking"><h3><span class="date">2014-08 to 09:</span> Deploying and connecting Mirage unikernels</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span></p><p>
+                I taught Mirage to generate a .xe script to upload a unikernel to a host running
+                Xapi, using xe-unikernel-upload. I also made the shared-memory vchan implementation
+                easier to test by functorising its environmental dependencies and adding Unix tests.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/285" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#285</a><a class="lk lk-pr" href="https://github.com/mirage/ocaml-vchan/pull/38" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-vchan#38</a></p></article>
+          <article data-tags="vms storage writing"><h3><span class="date">2014-07-21:</span> Irmin-backed Xenstore prototype</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://mirage.io/blog/introducing-irmin-in-xenstore"><img src="/docker-timeline/xenstore-diagram.png" alt="Xenstore controls device configuration while VM I/O uses shared memory" width="500" height="371" loading="lazy" decoding="async"></a>
+              </figure><p>
+                I built a Xenstore prototype using Irmin for transactions and persistence. It
+                recorded both the database and connection state, allowing the server to recover
+                after a restart while VMs kept running. The history could be inspected with <code>git log</code>,
+                and Irmin could merge independent device-configuration transactions without forcing
+                clients to retry. I described the design in a Mirage blog post and the Xenstore TNG
+                talk.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/djs55/ocaml-xenstore/pull/43" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/ocaml-xenstore#43</a><a class="lk lk-link" href="https://mirage.io/blog/introducing-irmin-in-xenstore" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>blog post</a><a class="lk lk-talk" href="https://crank.recoil.org/w/ri2YvBLjpz8YF1CUp3GfPV" title="talk"><svg aria-hidden="true"><use href="#i-talk"/></svg>Xenstore TNG video</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2014-02-01:</span> Indirect descriptors for Xen block I/O</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I added an initial implementation of indirect descriptors to the Mirage Xen block
+                driver, extending the way block requests could describe their buffers.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-block-xen/pull/26" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-block-xen#26</a></p></article>
+          <article data-tags="vms writing"><h3><span class="date">2014-01:</span> Unikernels: The Rise of the Virtual Library Operating System (CACM)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://cacm.acm.org/magazines/2014/1/170866-unikernels"><img src="/carousel/2014-cacm.png" alt="Communications of the ACM cover featuring Unikernels" width="832" height="1113" loading="lazy" decoding="async"></a>
+              </figure><p>
+                Anil Madhavapeddy and I wrote a broader overview of unikernels for Communications of
+                the ACM, explaining the library OS approach and the ideas behind MirageOS.
+              </p><p class="links"><a class="lk lk-paper" href="https://cacm.acm.org/magazines/2014/1/170866-unikernels" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>article</a><a class="lk lk-link" href="https://queue.acm.org/detail.cfm?id=2566628" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>open access</a><a class="lk lk-news" href="https://anil.recoil.org/notes/unikernels-in-cacm" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>background</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2013" data-year="2013">
+        <div class="zz-node">2013</div>
+        <div class="zz-card terminal-card"><header>unikernels for the cloud</header><div>
+          <article data-tags="storage"><h3><span class="date">2013-12:</span> Reusable storage libraries for Mirage</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I worked on the FAT filesystem and Unix/Xen block interfaces, including adding files
+                to FAT images and implementing the common Mirage BLOCK signature in the Xen driver.
+                These libraries let storage code run across different backends.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/ocaml-fat/pull/10" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-fat#10</a><a class="lk lk-pr" href="https://github.com/mirage/mirage-block-xen/pull/8" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-block-xen#8</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2013-09:</span> Xen event delivery without periodic polling</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I changed the Mirage Xen runtime to use asynchronous hypervisor callbacks and event-
+                channel counters. Waiting threads could block and resume without missing
+                notifications, with a timer interrupt handling timeouts.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/58" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#58</a></p></article>
+          <article data-tags="vms networking writing"><h3><span class="date">2013-03:</span> Unikernels: Library Operating Systems for the Cloud (ASPLOS)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/asplos2013.pdf"><img src="/papers/final/asplos2013.jpg" alt="First page of Unikernels: Library Operating Systems for the Cloud" width="160" height="207" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With the Mirage team, I co-authored the paper describing how to compile an OCaml
+                application and the libraries it needs into a small, specialised VM image running
+                directly on a hypervisor. We evaluated network services built this way. The paper
+                later received an ASPLOS Influential Paper Award in 2025.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/asplos2013.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="/unikernels/" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>2025 retrospective</a><a class="lk lk-award" href="https://www.asplos-conference.org/asplos2025/awards/" title="award"><svg aria-hidden="true"><use href="#i-award"/></svg>award</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2012" data-year="2012">
+        <div class="zz-node">2012</div>
+        <div class="zz-card terminal-card"><header>building the Mirage Xen runtime</header><div>
+          <article data-tags="vms networking"><h3><span class="date">2012-12-20:</span> Suspend/resume and multiple network interfaces</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span></p><p>
+                I integrated suspend/resume support, Cstruct changes and fixes for multiple virtual
+                network interfaces into the Mirage platform.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/14" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#14</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2012-09-04:</span> Infrastructure for a Xenstore stub domain</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I added Xen infrastructure for running Xenstore in a stub domain: a small VM
+                separate from the host control domain. Grant-reference mapping also provided
+                building blocks for device backends and proxies.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#1</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2012-04-21:</span> Faster Mirage block I/O</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I added multi-page rings and batched requests to the block performance test. On my
+                test storage, this reached about 770 MiB/s for random reads in 512 KiB blocks.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/87" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#87</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2011" data-year="2011">
+        <div class="zz-node">2011</div>
+        <div class="zz-card terminal-card"><header>Mirage meets Xapi</header><div>
+          <article data-tags="vms"><h3><span class="date">2011-08-10:</span> Memory accounting in the Xen toolstack</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I fixed a squeezed memory-management problem that could leak host memory when VMs
+                had no balloon drivers, part of the ongoing work on XenServer VM management.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/xen-api/pull/305" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xen-api#305</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2011-07-15:</span> Mirage deployment through xe</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I improved Mirage's XCP deployment script to use the xe remote API directly,
+                discover the running VM's UUID from Xenstore, and query block-device information
+                instead of relying on a lookup table.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/10" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#10</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2010" data-year="2010">
+        <div class="zz-node">2010</div>
+        <div class="zz-card terminal-card"><header>OCaml in an industrial product</header><div>
+          <article data-tags="vms writing"><h3><span class="date">2010-09:</span> Using Functional Programming within an Industrial Product Group: Perspectives and Perceptions (ICFP)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/icfp2010.pdf"><img src="/papers/final/icfp2010.png" alt="First page of the XenServer OCaml experience report" width="387" height="500" loading="lazy" decoding="async"></a>
+              </figure><p>
+                Richard Sharp, Thomas Gazagnaire, Anil Madhavapeddy and I reported on using OCaml to
+                build XenServer. We discussed the engineering experience as well as hiring,
+                collaboration and the reactions to using a less mainstream language in a large
+                product team.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/icfp2010.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="https://www.icfpconference.org/icfp2010/accepted_papers.html" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>programme</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2007" data-year="2007">
+        <div class="zz-node">2007</div>
+        <div class="zz-card terminal-card"><header>type-safe network services</header><div>
+          <article data-tags="networking writing"><h3><span class="date">2007-03:</span> Melange: Creating a “Functional” Internet (EuroSys)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/eurosys2007.pdf"><img src="/papers/final/eurosys2007.jpg" alt="First page of Melange: Creating a Functional Internet" width="160" height="226" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With Anil Madhavapeddy, Alex Ho, Tim Deegan and Ripduman Sohan, I co-authored the
+                Melange paper. We combined OCaml's static typing with generated packet-handling code
+                to build SSH and DNS servers, exploring how type-safe network services could perform
+                competitively with existing C implementations. The work was a precursor to MirageOS.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/eurosys2007.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-news" href="https://anil.recoil.org/notes/unikernels-in-cacm" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>background</a></p></article>
         </div></div>
       </section>
       </div>
@@ -551,7 +720,7 @@ function runBoot() {
         '[  OK  ] Reached target resource-saver.target - Pause VM when idle.',
         '',
         ['moby login: ', 'djs55'],
-        ['djs55@moby:~$ ', 'git log --author=djs55 --since=2015 > timeline'],
+        ['djs55@moby:~$ ', 'git log --author=djs55 --since=2007 > timeline'],
         ['djs55@moby:~$ ', 'startx ./timeline'],
         '',
         'X.Org X Server 1.21.1.8',
@@ -569,7 +738,7 @@ function runBoot() {
         ['C:\\>', 'hyperv /start linuxkit'],
         ['C:\\>', 'vpnkit /ethernet /dns'],
         ['C:\\>', 'grpcfuse /share C:\\USERS'],
-        ['C:\\>', 'git log --author=djs55 --since=2015'],
+        ['C:\\>', 'git log --author=djs55 --since=2007'],
         ['C:\\>', 'win']
       ]
     },
@@ -585,7 +754,7 @@ function runBoot() {
         '[    0.733420] dockerd: API listening on /var/run/docker.sock',
         '[    0.901337] resource-saver: will pause VM when idle',
         '',
-        '$ git log --author=djs55 --since=2015'
+        '$ git log --author=djs55 --since=2007'
       ]
     }
   };
