@@ -194,19 +194,9 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
     <div class="container">
       <div class="lede"><p>
         My work on Docker grew out of earlier work on MirageOS, OCaml and the
-        Xapi / Xen toolstack. We explored how to build systems from reusable,
+        <a href="https://xapi-project.github.io/">Xapi</a> / Xen toolstack. We explored how to build systems from reusable,
         type-safe libraries: network protocols, storage and the machinery for managing VMs.
         The timeline includes both the papers and the code, back to Melange in 2007.
-      </p>
-      <p>
-        Back in 2015 Docker was awesome on Linux, but the experience on Mac and Windows was
-        a little rough. Rather than shipping a coherent app, Docker shipped
-        a bundle of software components loosely glued together:
-        Virtual Box, docker machine, boot2docker and Kitematic (as &quot;Docker Toolbox&quot;)
-        There was a lot to fix. Installations often failed (for various reasons).
-        The networking often failed (interactions with firewall rules and VPNs). Worst of all
-        nothing worked unless you remembered to set a bunch of arcane environment
-        variables in your shell (DOCKER_TLS_VERIFY, DOCKER_HOST etc).
       </p>
       <p>
         We used our systems background (and unikernel libraries) to create a seamless &quot;Docker for Mac&quot;
@@ -513,9 +503,9 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
                 synchronising storage updates.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/26" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#26</a><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/32" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#32</a><a class="lk lk-pr" href="https://github.com/mirage/shared-block-ring/pull/20" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/shared-block-ring#20</a><a class="lk lk-pr" href="https://github.com/xapi-project/xapi-project.github.io/pull/94" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xapi-project.github.io#94</a></p></article>
           <article data-tags="vms storage"><h3><span class="date">2015-02-10:</span> Running Xapi on ARM</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span></p><p>
-                I added Xapi to the Xen ARM builder, so hosts could upload and run VMs through
+                I added <a href="https://xapi-project.github.io/">Xapi</a> to the Xen ARM builder, so hosts could upload and run VMs through
                 XenAPI and xe, collect performance metrics, and use thin-provisioned LVM storage.
-                Xapi could run alongside xl and libvirt on the same host.
+                <a href="https://xapi-project.github.io/">Xapi</a> could run alongside xl and libvirt on the same host.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/xen-arm-builder/pull/51" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/xen-arm-builder#51</a></p></article>
           <article data-tags="vms"><h3><span class="date">2015-01-31:</span> Choosing entropy sources for Mirage on Xen</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
                 I added separate choices for the strongest available Xen entropy source and a weak
@@ -524,7 +514,7 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/359" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#359</a></p></article>
           <article data-tags="storage"><h3><span class="date">2015-01-19:</span> OCaml Ctypes for device mapper</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
                 I switched camldm from hand-written C stubs to OCaml Ctypes bindings, part of the
-                work on reusable storage tools for Xapi.
+                work on reusable storage tools for <a href="https://xapi-project.github.io/">Xapi</a>.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/camldm/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/camldm#1</a></p></article>
         </div></div>
       </section>
@@ -532,13 +522,13 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
         <div class="zz-node">2014</div>
         <div class="zz-card terminal-card"><header>Mirage libraries and the Xen toolstack</header><div>
           <article data-tags="vms"><h3><span class="date">2014-09-14:</span> Packaging the Xapi toolstack with opam</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
-                I submitted the Xapi toolstack and its supporting libraries and services to the main
+                I submitted the <a href="https://xapi-project.github.io/">Xapi</a> toolstack and its supporting libraries and services to the main
                 opam repository, making the OCaml components available through the same package
                 manager as the wider ecosystem.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/ocaml/opam-repository/pull/2700" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>ocaml/opam-repository#2700</a></p></article>
           <article data-tags="vms networking"><h3><span class="date">2014-08 to 09:</span> Deploying and connecting Mirage unikernels</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span></p><p>
                 I taught Mirage to generate a .xe script to upload a unikernel to a host running
-                Xapi, using xe-unikernel-upload. I also made the shared-memory vchan implementation
+                <a href="https://xapi-project.github.io/">Xapi</a>, using xe-unikernel-upload. I also made the shared-memory vchan implementation
                 easier to test by functorising its environmental dependencies and adding Unix tests.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/285" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#285</a><a class="lk lk-pr" href="https://github.com/mirage/ocaml-vchan/pull/38" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-vchan#38</a></p></article>
           <article data-tags="vms storage writing"><h3><span class="date">2014-07-21:</span> Irmin-backed Xenstore prototype</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
@@ -558,7 +548,7 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
           <article data-tags="vms writing"><h3><span class="date">2014-01:</span> Unikernels: The Rise of the Virtual Library Operating System (CACM)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
                 <a href="https://cacm.acm.org/magazines/2014/1/170866-unikernels"><img src="/carousel/2014-cacm.png" alt="Communications of the ACM cover featuring Unikernels" width="832" height="1113" loading="lazy" decoding="async"></a>
               </figure><p>
-                Anil Madhavapeddy and I wrote a broader overview of unikernels for Communications of
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> and I wrote a broader overview of unikernels for Communications of
                 the ACM, explaining the library OS approach and the ideas behind MirageOS.
               </p><p class="links"><a class="lk lk-paper" href="https://cacm.acm.org/magazines/2014/1/170866-unikernels" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>article</a><a class="lk lk-link" href="https://queue.acm.org/detail.cfm?id=2566628" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>open access</a><a class="lk lk-news" href="https://anil.recoil.org/notes/unikernels-in-cacm" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>background</a></p></article>
         </div></div>
@@ -608,7 +598,8 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
         <div class="zz-node">2011</div>
         <div class="zz-card terminal-card"><header>Mirage meets Xapi</header><div>
           <article data-tags="vms"><h3><span class="date">2011-08-10:</span> Memory accounting in the Xen toolstack</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
-                I fixed a squeezed memory-management problem that could leak host memory when VMs
+                I fixed a memory-management problem in the
+                <a href="https://xapi-project.github.io/squeezed/architecture/architecture.html">memory ballooning daemon</a> that could leak host memory when VMs
                 had no balloon drivers, part of the ongoing work on XenServer VM management.
               </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/xen-api/pull/305" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xen-api#305</a></p></article>
           <article data-tags="vms"><h3><span class="date">2011-07-15:</span> Mirage deployment through xe</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
@@ -624,7 +615,7 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
           <article data-tags="vms writing"><h3><span class="date">2010-09:</span> Using Functional Programming within an Industrial Product Group: Perspectives and Perceptions (ICFP)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
                 <a href="/papers/final/icfp2010.pdf"><img src="/papers/final/icfp2010.png" alt="First page of the XenServer OCaml experience report" width="387" height="500" loading="lazy" decoding="async"></a>
               </figure><p>
-                Richard Sharp, Thomas Gazagnaire, Anil Madhavapeddy and I reported on using OCaml to
+                <a href="https://www.linkedin.com/in/richardsharp/">Richard Sharp</a>, <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>, <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> and I reported on using OCaml to
                 build XenServer. We discussed the engineering experience as well as hiring,
                 collaboration and the reactions to using a less mainstream language in a large
                 product team.
@@ -637,7 +628,7 @@ html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
           <article data-tags="networking writing"><h3><span class="date">2007-03:</span> Melange: Creating a “Functional” Internet (EuroSys)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
                 <a href="/papers/final/eurosys2007.pdf"><img src="/papers/final/eurosys2007.jpg" alt="First page of Melange: Creating a Functional Internet" width="160" height="226" loading="lazy" decoding="async"></a>
               </figure><p>
-                With Anil Madhavapeddy, Alex Ho, Tim Deegan and Ripduman Sohan, I co-authored the
+                With <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>, <a href="https://www.linkedin.com/in/alexho/">Alex Ho</a>, <a href="https://tjd.phlegethon.org/">Tim Deegan</a> and <a href="https://www.linkedin.com/in/rip-sohan-470928b/">Ripduman Sohan</a>, I co-authored the
                 Melange paper. We combined OCaml's static typing with generated packet-handling code
                 to build SSH and DNS servers, exploring how type-safe network services could perform
                 competitively with existing C implementations. The work was a precursor to MirageOS.
