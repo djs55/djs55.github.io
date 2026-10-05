@@ -32,6 +32,30 @@
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
     <link rel="stylesheet" href="/theme.css" />
     <script src="/theme.js"></script>
+    <style>
+      .microvm-timeline { margin: 2rem 0; }
+      .microvm-timeline h2 { margin-bottom: 1rem; }
+      .microvm-timeline ol { list-style: none; padding: 0; margin: 0; }
+      .microvm-timeline li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); padding: 0; margin: 0; }
+      .microvm-timeline li::before { content: none; }
+      .microvm-timeline .milestone-date { padding: 0.1rem 1rem 1rem 0; color: var(--secondary-color); font-size: 0.9rem; }
+      .microvm-timeline .milestone { position: relative; border-left: 1px solid var(--secondary-color); padding: 0 0 1rem 1.25rem; }
+      .microvm-timeline .milestone::before { content: ""; position: absolute; left: -5px; top: 0.4rem; width: 9px; height: 9px; border: 1px solid var(--secondary-color); border-radius: 50%; background: var(--background-color); }
+      .microvm-timeline .milestone p { margin: 0.25rem 0 0; }
+      .microvm-timeline .time-gap .milestone { border-left-color: transparent; }
+      .microvm-timeline .time-gap .milestone::after { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--secondary-color) 0 10px, transparent 10px 22px); }
+      .microvm-timeline .time-gap .milestone::before { z-index: 1; }
+      .microvm-timeline .microvm-milestone .milestone::before { background: var(--primary-color); border-color: var(--primary-color); }
+      .microvm-timeline .milestone-label { color: var(--primary-color); font-size: 0.8rem; }
+      .microvm-timeline li:last-child .milestone { padding-bottom: 0; border-left-color: transparent; }
+      .microvm-timeline li:last-child .milestone-date { padding-bottom: 0; }
+      iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; }
+      @media (max-width: 480px) {
+        .microvm-timeline li { grid-template-columns: 5.5rem minmax(0, 1fr); }
+        .microvm-timeline .milestone-date { padding-right: 0.5rem; font-size: 0.8rem; }
+        .microvm-timeline .milestone { padding-left: 1rem; }
+      }
+    </style>
   </head>
 
   <body class="terminal">
@@ -57,21 +81,20 @@
       <p>
         There's a lot of buzz about &quot;microVMs&quot;, where a workload runs
         with a stripped down Linux kernel, on a minimalist VMM such as
-        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a> (announced at
-        <a href="https://brooker.co.za/blog/2025/09/18/firecracker.html">re:Invent 2018</a>)
+        <a href="https://github.com/firecracker-microvm/firecracker">firecracker</a>
         on top of a hypervisor
         like KVM or Xen. MicroVMs are often contrasted to, and considered more secure than,
         traditional Linux Docker containers.
-        What if I told you that Docker Desktop has always used microVMs?
+        What if I told you that Docker Desktop has always used microVMs? (since 2016)
       </p>
       <p>
         <img src="microvms.jpg" alt="Always has been meme: wait, Docker uses microVMs? Always has been (since 2016)"/>
       </p>
 
-      <h1>Some pre-history</h1>
+     <h1>Unikernels are microVMs</h1>
       <p>
         Unikernels can be considered an early form of microVM. Rather than booting a full Linux kernel on a full
-        VMM, a unikernel links an app with only the drivers, filesystems etc it actually needs; other code is
+        VMM, a unikernel links an app with only the drivers, filesystems and subsystems it actually needs; other code is
         omitted. For example a
         <a href="https://mirageos.org/">MirageOS</a> unikernel app would have no processes, probably no filesystem,
         only one vCPU. Certainly no ssh or shell (unless you really want those). The VMM that hosts the Mirage unikernel was also
@@ -90,31 +113,97 @@
         optimized x86 VM creation time down to about 20ms (120ms on an underpowered 2015 ARM dev board)
       </p>
       <p>
-        Unikernel history can be traced back to earlier systems such as
-        <a href="https://www.cl.cam.ac.uk/research/srg/netos/projects/archive/nemesis">Nemesis</a>, a &quot;vertically integrated&quot;
-        operating system which was the predecessor of
-        <a href="https://xenproject.org">the Xen hypervisor</a>, which enabled the first public clouds (i.e. AWS).
-      </p>
-      <p>
         The main (obvious) downside of unikernels is having to link your app with a bunch of kernel code.
         A lot of people would like to run existing Linux programs!
       </p>
-
-      <h1>Docker in 2015</h1>
       <p>
-        Docker containers are an excellent way to package and run Linux software. However in 2015 the experience on
-        Mac and Windows machines was a little rough.
-        <img src="https://cloud.githubusercontent.com/assets/251292/9585188/2f31d668-4fca-11e5-86c9-826d18cf45fd.png" alt="Docker Toolbox logo" style="float: right; width: auto; max-width: 40%; margin: 8px 8px 8px 16px">
-        When I joined Docker in 2015 the state of the art was
-        <a href="https://github.com/docker-archive/toolbox">Docker Toolbox</a>.
-        It used
-        <a href="https://www.virtualbox.org">VirtualBox</a>, which is a great product with lots of features including a GUI.
-        It had more features than we needed for Docker, and unnecessary extra features mean a larger amount of code needs to be trusted.
+        While we were developing Unikernels, Docker was busy inventing the modern form of Linux containers and revolutionising
+        how software is built, shared and run.
+        <a href="https://techcrunch.com/2016/01/21/docker-acquires-unikernel-systems-as-it-looks-beyond-containers/">Docker acquired Unikernel Systems in 2016</a>
+        and we combined the best of Unikernels (microVMs) and Linux containers into Docker for Mac (later Docker Desktop).
       </p>
 
-      <h1 style="clear: both">A library VMM</h1>
+      <aside class="microvm-timeline" aria-labelledby="microvm-timeline-title">
+        <h2 id="microvm-timeline-title">Brief timeline (some sequences may be shortened)</h2>
+        <ol>
+          <li class="time-gap">
+            <span class="milestone-date">1990s</span>
+            <div class="milestone">
+              <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/projects/archive/nemesis/">Nemesis</a></strong>
+              <p>A vertically integrated OS: applications take responsibility for much of their own system code.</p>
+            </div>
+          </li>
+          <li class="time-gap">
+            <time class="milestone-date" datetime="2003-10">Oct 2003</time>
+            <div class="milestone">
+              <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/papers/2003-xensosp.pdf">Xen and the art of virtualization published</a></strong>
+              <p>The SOSP paper describes the Xen hypervisor, the foundation of the public cloud.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2013-03">Mar 2013</time>
+            <div class="milestone">
+              <strong><a href="/papers/final/asplos2013.pdf">MirageOS unikernels paper published</a></strong>
+              <p>The ASPLOS paper: compile an application and its OS libraries into a specialised VM image.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2015-02-10">Feb 2015</time>
+            <div class="milestone">
+              <strong><a href="https://mirage.io/blog/bitcoin-pinata-results">Bitcoin Piñata security challenge launched</a></strong>
+              <span class="milestone-label">[security challenge]</span>
+              <p><strong>10 BTC</strong> offered for breaking a MirageOS TLS unikernel. The bounty remained unclaimed in June’s review.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2015-05">May 2015</time>
+            <div class="milestone">
+              <strong><a href="https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/madhavapeddy">MirageOS boots in as little as 20ms</a></strong>
+              <p>The Jitsu paper: boot an x86 unikernel on demand in response to a network request.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2016-01-21">21 Jan 2016</time>
+            <div class="milestone">
+              <strong><a href="https://techcrunch.com/2016/01/21/docker-acquires-unikernel-systems-as-it-looks-beyond-containers/">Docker acquires Unikernel Systems</a></strong>
+              <p>The MirageOS and Xen expertise behind Unikernel Systems joins Docker.</p>
+            </div>
+          </li>
+          <li class="microvm-milestone">
+            <time class="milestone-date" datetime="2016-03-24">24 Mar 2016</time>
+            <div class="milestone">
+              <strong><a href="https://web.archive.org/web/20191122200147/https://www.docker.com/blog/docker-for-mac-windows-beta/">Docker for Mac beta announced</a></strong>
+              <p>Uses a <strong>microVM system</strong>: Mirage libraries in the VMM, a minimal Linux kernel and minimal Linux userspace (later open-sourced as <a href="https://www.docker.com/blog/introducing-linuxkit-container-os-toolkit/">LinuxKit</a>).</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2016-07-28">28 Jul 2016</time>
+            <div class="milestone">
+              <strong><a href="https://github.com/docker/docs/blob/main/content/manuals/desktop/previous-versions/archive-mac.md#stable-releases-of-2016">Docker for Mac generally available</a></strong>
+              <p>Containers run inside a minimal Linux VM, with HyperKit and MirageOS libraries on the host.</p>
+            </div>
+          </li>
+          <li class="time-gap">
+            <time class="milestone-date" datetime="2018-11-26">Nov 2018</time>
+            <div class="milestone">
+              <strong><a href="https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/">Firecracker announced at re:Invent</a></strong>
+              <p>AWS announces its minimal KVM-based VMM for serverless workloads.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2026">2026</time>
+            <div class="milestone">
+              <strong><a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">Docker Sandboxes</a></strong>
+              <p>A separate locked-down microVM and Docker daemon for each coding agent session with support for governance.</p>
+            </div>
+          </li>
+        </ol>
+      </aside>
+
+      <h1 style="clear: both">A library VMM for Desktop applications</h1>
       <p>
-        We wanted Docker to feel like a native app on Mac and Windows, rather than a bundle of components.
+        Our priority back then wasn't to add microVMs to Docker for their own sake.
+        Instead our goal was to make Docker feel like a native app on Mac and Windows, rather than a bundle of components.
         Using our
         <a href="https://mirage.io/">Mirage Unikernel libraries</a>
         we started building a &quot;library VMM&quot;: a VMM which could
@@ -206,6 +295,7 @@
       <ul>
       <li>2026-10-03: original version</li>
       <li>2026-10-04: added more history and cool install video </li>
+      <li>2026-10-05: added an inline timeline, with earlier systems context, the Bitcoin Piñata security challenge, Solo5 + ukvm integration and Docker for Mac release milestones</li>
         </ul>
     </div>
   </body>
