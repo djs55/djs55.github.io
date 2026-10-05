@@ -32,6 +32,32 @@
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
     <link rel="stylesheet" href="/theme.css" />
     <script src="/theme.js"></script>
+    <style>
+      .microvm-timeline { margin: 2rem 0; }
+      .microvm-timeline h2 { margin-bottom: 1rem; }
+      .microvm-timeline ol { list-style: none; padding: 0; margin: 0; }
+      .microvm-timeline li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); padding: 0; margin: 0; }
+      .microvm-timeline li::before { content: none; }
+      .microvm-timeline .milestone-date { padding: 0.1rem 1rem 1rem 0; color: var(--secondary-color); font-size: 0.9rem; }
+      .microvm-timeline .milestone { position: relative; border-left: 1px solid var(--secondary-color); padding: 0 0 1rem 1.25rem; }
+      .microvm-timeline .milestone::before { content: ""; position: absolute; left: -5px; top: 0.4rem; width: 9px; height: 9px; border: 1px solid var(--secondary-color); border-radius: 50%; background: var(--background-color); }
+      .microvm-timeline .milestone p { margin: 0.25rem 0 0; }
+      .microvm-timeline .context-milestone .milestone { border-left-color: transparent; }
+      .microvm-timeline .context-milestone .milestone::after { content: ""; position: absolute; left: -2px; top: 0; bottom: 0; width: 2px; background: repeating-linear-gradient(to bottom, var(--secondary-color) 0 10px, transparent 10px 22px); }
+      .microvm-timeline .context-milestone .milestone::before { z-index: 1; }
+      .microvm-timeline .timeline-context-key { color: var(--secondary-color); font-size: 0.8rem; margin: -0.5rem 0 1rem; }
+      .microvm-timeline .timeline-context-key::before { content: ""; display: inline-block; width: 2.5rem; height: 2px; background: repeating-linear-gradient(to right, var(--secondary-color) 0 10px, transparent 10px 22px); vertical-align: middle; margin-right: 0.5rem; }
+      .microvm-timeline .microvm-milestone .milestone::before { background: var(--primary-color); border-color: var(--primary-color); }
+      .microvm-timeline .milestone-label { color: var(--primary-color); font-size: 0.8rem; }
+      .microvm-timeline li:last-child .milestone { padding-bottom: 0; border-left-color: transparent; }
+      .microvm-timeline li:last-child .milestone-date { padding-bottom: 0; }
+      iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; }
+      @media (max-width: 480px) {
+        .microvm-timeline li { grid-template-columns: 5.5rem minmax(0, 1fr); }
+        .microvm-timeline .milestone-date { padding-right: 0.5rem; font-size: 0.8rem; }
+        .microvm-timeline .milestone { padding-left: 1rem; }
+      }
+    </style>
   </head>
 
   <body class="terminal">
@@ -67,6 +93,91 @@
       <p>
         <img src="microvms.jpg" alt="Always has been meme: wait, Docker uses microVMs? Always has been (since 2016)"/>
       </p>
+
+      <aside class="microvm-timeline" aria-labelledby="microvm-timeline-title">
+        <h2 id="microvm-timeline-title">A few milestones</h2>
+        <p class="timeline-context-key">Earlier systems context</p>
+        <ol>
+          <li class="context-milestone">
+            <span class="milestone-date">1990s</span>
+            <div class="milestone">
+              <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/projects/archive/nemesis/">Nemesis</a></strong>
+              <p>A vertically integrated OS: applications take responsibility for much of their own system code.</p>
+            </div>
+          </li>
+          <li class="context-milestone">
+            <time class="milestone-date" datetime="2003-10">Oct 2003</time>
+            <div class="milestone">
+              <strong><a href="https://www.cl.cam.ac.uk/research/srg/netos/papers/2003-xensosp.pdf">Xen and the art of virtualization published</a></strong>
+              <p>The SOSP paper describes the Xen hypervisor, the foundation of the public cloud.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2013-03">Mar 2013</time>
+            <div class="milestone">
+              <strong><a href="/papers/final/asplos2013.pdf">MirageOS unikernels paper published</a></strong>
+              <p>The ASPLOS paper: compile an application and its OS libraries into a specialised VM image.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2015-02-10">Feb 2015</time>
+            <div class="milestone">
+              <strong><a href="https://mirage.io/blog/bitcoin-pinata-results">Bitcoin Piñata security challenge launched</a></strong>
+              <span class="milestone-label">[security challenge]</span>
+              <p><strong>10 BTC</strong> offered for breaking a MirageOS TLS unikernel. The bounty remained unclaimed in June’s review.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2015-05">May 2015</time>
+            <div class="milestone">
+              <strong><a href="https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/madhavapeddy">MirageOS boots in as little as 20ms</a></strong>
+              <p>The Jitsu paper: boot an x86 unikernel on demand in response to a network request.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2016-01-21">21 Jan 2016</time>
+            <div class="milestone">
+              <strong><a href="https://techcrunch.com/2016/01/21/docker-acquires-unikernel-systems-as-it-looks-beyond-containers/">Docker acquires Unikernel Systems</a></strong>
+              <p>The MirageOS and Xen expertise behind Unikernel Systems joins Docker.</p>
+            </div>
+          </li>
+          <li class="microvm-milestone">
+            <time class="milestone-date" datetime="2016-03-24">24 Mar 2016</time>
+            <div class="milestone">
+              <strong><a href="https://web.archive.org/web/20191122200147/https://www.docker.com/blog/docker-for-mac-windows-beta/">Docker for Mac beta announced</a></strong>
+              <p>Uses a <strong>microVM system</strong>: Mirage libraries in the VMM, a minimal Linux kernel and minimal Linux userspace (later open-sourced as <a href="https://www.docker.com/blog/introducing-linuxkit-container-os-toolkit/">LinuxKit</a>).</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2016-07-22">22 Jul 2016</time>
+            <div class="milestone">
+              <strong><a href="https://github.com/mirage/mirage/pull/565">Mirage integrates Solo5 + ukvm</a></strong>
+              <p>Solo5’s minimal kernel + ukvm’s <a href="https://www.usenix.org/conference/hotcloud16/workshop-program/presentation/williams">minimal VMM</a>, integrated into the Mirage tool.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2016-07-28">28 Jul 2016</time>
+            <div class="milestone">
+              <strong><a href="https://github.com/docker/docs/blob/main/content/manuals/desktop/previous-versions/archive-mac.md#stable-releases-of-2016">Docker for Mac generally available</a></strong>
+              <p>Containers run inside a minimal Linux VM, with HyperKit and MirageOS libraries on the host.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2018-11-26">Nov 2018</time>
+            <div class="milestone">
+              <strong><a href="https://aws.amazon.com/blogs/aws/firecracker-lightweight-virtualization-for-serverless-computing/">Firecracker announced at re:Invent</a></strong>
+              <p>AWS announces its minimal KVM-based VMM for serverless workloads.</p>
+            </div>
+          </li>
+          <li>
+            <time class="milestone-date" datetime="2026">2026</time>
+            <div class="milestone">
+              <strong><a href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/">Docker Sandboxes</a></strong>
+              <p>A separate microVM and Docker daemon for each coding agent session.</p>
+            </div>
+          </li>
+        </ol>
+      </aside>
 
       <h1>Some pre-history</h1>
       <p>
@@ -206,6 +317,7 @@
       <ul>
       <li>2026-10-03: original version</li>
       <li>2026-10-04: added more history and cool install video </li>
+      <li>2026-10-05: added an inline timeline, with earlier systems context, the Bitcoin Piñata security challenge, Solo5 + ukvm integration and Docker for Mac release milestones</li>
         </ul>
     </div>
   </body>
