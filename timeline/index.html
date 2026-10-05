@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Dave Scott: Systems timeline</title>
+    <meta name="description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
+    <meta name="author" content="Dave Scott">
+    <meta name="twitter:title" content="Dave Scott: Systems timeline">
+    <meta name="twitter:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
+    <meta property="og:site_name" content="Dave Scott">
+    <meta property="og:type" content="object">
+    <meta property="og:title" content="Dave Scott: Systems timeline">
+    <meta property="og:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.4/dist/terminal.min.css" />
+    <link rel="stylesheet" href="/theme.css" />
+    <script src="/theme.js"></script>
+    <script>document.documentElement.classList.add('js');</script>
+    <style>
+.lk { display: inline-flex; align-items: center; gap: 4px; margin-right: 0.9em; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.lk svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.links { color: var(--secondary-color); font-size: 0.93em; line-height: 1.7em; }
+.tag { display: inline-block; font-size: 0.78em; line-height: 1.5; padding: 0 6px; margin: 0 4px 2px 0;
+       border: 1px solid currentColor; border-radius: 3px; color: var(--secondary-color); white-space: nowrap; vertical-align: 1px; }
+.terminal-menu li::after { content: none; }
+
+/* Boot Console: an ASCII subset of Terminus (TTF) 4.49.3, (c) 2010 Dimitar Toshkov Zhekov,
+   (c) 2011-2023 Tilman Blumenbach. SIL Open Font License 1.1 (https://openfontlicense.org),
+   renamed as its Reserved Font Name terms require. */
+@font-face { font-family: "Boot Console"; font-display: block;
+  src: url(data:font/woff2;base64,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MxUzNTM1IzUjNSM1IzUzNX36HyA/H7wfH9sfICAf+h8gPx+8Hx/bHyAgAmYgIB9ePx8fnCAfH9sfICAfXj8fH5wgHx/bHwABAD4AFAG2AoYABwAAEzUhFSMRIxE+AXidPgJHPz/9zQIzAAABAD4AFAG2AoYAEwAANxEzETMVMzUzETMRIxUjFSM1IzU+Px+8Hz8gH/ofUwIz/ewfHwIU/c0fICAfAAABAD4AFAG2AoYAIwAAEzUzFTMVMxUzFTM1MzUzNTM1MxUjFSMVIxUjFSM1IzUjNSM1Pj8fIB8+HyAfPyAfHyB8IB8fAemdnZx9Xl59nJ2dnH1eXl5efZwAAQAfABQBtgKGACcAADcRMxEzNTM1MzUzNTMVMxUzFTMVMxEzESM1IzUjNSM1IxUjFSMVIxUfPx8fIB8fHx8gHz8/HyAfXSAfHxQCcv4MPh8/Hx8/Hz4B9P2OPx8gPj4gHz8AAAEAPgAUAbYChgBDAAATNTMVMxUzFTMVMzUzNTM1MzUzFSMVIxUjFSMVMxUzFTMVMxUjNSM1IzUjNSMVIxUjFSMVIzUzNTM1MzUzNSM1IzUjNT4/HyAfPh8gHz8gHx8gIB8fID8fIB8+HyAfPyAfHyAgHx8CRz8/Pz4+Pj4/Pz8/Pj5+Pj4/Pz8/Pj4+Pj8/Pz8+Pn4+Pj8AAQA+ABQBtgKGACcAABM1MxUzFTMVMxUzNTM1MzUzNTMVIxUjFSMVIxUjESMRIzUjNSM1IzU+Px8gHz4fIB8/IB8fIB8+HyAfHwIoXl4/Pj8/Pj9eXj8+Pz7+5gEaPj8+PwABAD4AFAG2AoYALwAAEzUhFSMVIxUjFSMVIxUjFSMVIxUjFSMVIRUhNTM1MzUzNTM1MzUzNTM1MzUzNTM1PgF4IB8fIB8fHx8gHwE5/oggHx8gHx8fHyAfAkc/vB8fIB8fIB8fH14/vB8fIB8fIB8fH14AAAEAfQAUAVgChgAHAAA3ETMVIxEzFX3bnJwUAnI//gw/AAABAD4AFAGWAoYAJwAAEzUzFTMVMxUzFTMVMxUzFTMVMxUzFSM1IzUjNSM1IzUjNSM1IzUjNT4/HyAfHx8fIB8fPiAfHx8fIB8fAkc/Pz8+Pj8/Pj4/Pz8/Pj4/Pz4+PwABAH0AFAFYAoYABwAAEzUzESM1MxF929ucAkc//Y4/AfQAAQA+AggBtgLEACMAABM1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AEMAABM1MxUzFTMVMxUzNTM1MzUzNTMVIxUjFSMVIxUzFTMVMxUzFSM1IzUjNSM1IxUjFSMVIxUjNTM1MzUzNTM1IzUjNSM1Pj8fIB8+HyAfPyAfHyAgHx8gPx8gHz4fIB8/IB8fICAfHwFsXj4gHx8fHyA+Xh8fID4fHyBePx8gHx8gHz9eIB8fPiAfHwABAD7/eAG2AcoAFwAANxEzETMVMxEzESMVIxUhNTM1MzUjNSM1Pj8f2z8gH/7n+h/6H1MBd/6oHwF3/e0fID8fPiAfAAEAPgAUAbYBygArAAATNSEVIxUjFSMVIxUjFSMVIxUjFSMVIRUhNTM1MzUzNTM1MzUzNTM1MzUzNT4BeCAfHyAfHx8fIAEa/oggHx8gHx8fHyABjD5eHx8gHx8fHyAfP14gHx8fHyAfHyAAAAEAXgAUAXcChgAbAAATNTMVIxUjFSMVMxUzFTMVIzUjNSM1IzUzNTM1+n1eHx8fH159Hx9eXh8CZiA/H7w+vB8/IB/bPtsfAAEA2wAUARkChgADAAA3ETMR2z4UAnL9jgAAAQBeABQBdwKGABsAABM1MxUzFTMVMxUjFSMVIxUjNTM1MzUzNSM1IzVefR8fXl4fH31eHx8fHwJHPyAf2z7bHyA/H7w+vB8AAQA+AggBtgLEACMAABM1MxUzFTMVMxUzNTM1MxUjFSMVIzUjNSM1IzUjFSMVIzUzNX1eHx8fIB8/IB9eHx8fIB8/IAKlHx8fIB8fXn0fICAfHyAgXn4fAAAACQByAAMAAQQJAAAAsAAAAAMAAQQJAAEAGACwAAMAAQQJAAIADgDIAAMAAQQJAAMAdgDWAAMAAQQJAAQAKAFMAAMAAQQJAAUAHAF0AAMAAQQJAAYAJgGQAAMAAQQJAA0AagG2AAMAAQQJAA4ANgIgAEMAbwBwAHkAcgBpAGcAaAB0ACAAKABjACkAIAAyADAAMQAwACAARABpAG0AaQB0AGEAcgAgAFQAbwBzAGgAawBvAHYAIABaAGgAZQBrAG8AdgA7ACAAKABjACkAIAAyADAAMQAxAC0AMgAwADIAMwAgAFQAaQBsAG0AYQBuACAAQgBsAHUAbQBlAG4AYgBhAGMAaAAuACAAUwBJAEwAIABPAEYATAAgADEALgAxAC4AQgBvAG8AdAAgAEMAbwBuAHMAbwBsAGUAUgBlAGcAdQBsAGEAcgBCAG8AbwB0ACAAQwBvAG4AcwBvAGwAZQAgAFIAZQBnAHUAbABhAHIAOwAgAEEAUwBDAEkASQAgAHMAdQBiAHMAZQB0ACAAbwBmACAAVABlAHIAbQBpAG4AdQBzACAAKABUAFQARgApACAANAAuADQAOQAuADMAQgBvAG8AdAAgAEMAbwBuAHMAbwBsAGUAIABSAGUAZwB1AGwAYQByAFYAZQByAHMAaQBvAG4AIAA0AC4ANAA5AC4AMwBCAG8AbwB0AEMAbwBuAHMAbwBsAGUALQBSAGUAZwB1AGwAYQByAEwAaQBjAGUAbgBzAGUAZAAgAHUAbgBkAGUAcgAgAHQAaABlACAAUwBJAEwAIABPAHAAZQBuACAARgBvAG4AdAAgAEwAaQBjAGUAbgBzAGUALAAgAFYAZQByAHMAaQBvAG4AIAAxAC4AMQBoAHQAdABwAHMAOgAvAC8AbwBwAGUAbgBmAG8AbgB0AGwAaQBjAGUAbgBzAGUALgBvAHIAZwADAAAAAAAA/7UAMgAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAf//AAI=) format("woff2"); }
+#boot { --boot-bg: #0a0f0b; --boot-fg: #b8ffc9; --boot-dim: #4f8a5e; --boot-glow: rgba(57,255,106,.45);
+  position: fixed; inset: 0; z-index: 9500; background: var(--boot-bg); padding: 30px 24px; overflow: hidden; cursor: pointer; }
+#boot::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.22) 3px); }
+#boot pre { background: none; border: 0; margin: 0; padding: 0; color: var(--boot-fg); white-space: pre-wrap;
+  font-size: 14px; line-height: 1.5; text-shadow: 0 0 6px var(--boot-glow); }
+#boot .cursor { display: inline-block; width: .6em; height: 1.1em; vertical-align: text-bottom; background: var(--boot-fg);
+  box-shadow: 0 0 8px var(--boot-glow); animation: boot-blink 1.1s steps(1) infinite; }
+@keyframes boot-blink { 50% { opacity: 0; } }
+#boot .skip { position: absolute; bottom: 20px; right: 24px; color: var(--boot-dim); }
+#boot .noise, #boot .xcursor { display: none; }
+
+/* VGA text mode: grey on black, underscore cursor, no glow */
+#boot.dos { --boot-bg: #000; --boot-fg: #aaa; --boot-dim: #555; --boot-glow: transparent; }
+#boot.dos pre { font-size: 16px; line-height: 1.3; }
+#boot.dos .cursor, #boot.x11 .cursor { height: .18em; vertical-align: baseline; box-shadow: none; animation-duration: .5s; }
+
+/* Linux text console: VGA grey on black in Terminus, no CRT effects, systemd's green OK */
+#boot.x11 { --boot-bg: #000; --boot-fg: #aaa; --boot-dim: #555; --boot-glow: transparent; }
+#boot.x11::after { display: none; }
+#boot.x11 pre { font-family: "Boot Console", var(--mono-font-stack); font-size: 16px; line-height: 1; }
+#boot.x11 .ok { color: #55ff55; }
+#boot.x11 .skip { font-family: "Boot Console", var(--mono-font-stack); font-size: 16px; }
+
+/* the mode switch: the monitor loses sync and shows nothing */
+#boot.blank { background: #000; cursor: none; }
+#boot.blank > *, #boot.blank::after { visibility: hidden; }
+
+/* X root window: the grey weave, with the X cursor in the middle */
+#boot.xroot { background-color: #000; cursor: none;
+  background-image: repeating-conic-gradient(#000 0 25%, #fff 0 50%); background-size: 2px 2px; }
+#boot.xroot > * { visibility: hidden; }
+#boot.xroot > .xcursor { visibility: visible; display: block; position: absolute; left: 50%; top: 50%;
+  width: 16px; height: 16px; margin: -8px 0 0 -8px; }
+
+/* losing vertical hold: the picture rolls, with a blanking bar and static */
+#boot.roll { cursor: none; animation: roll-flicker .09s steps(2) infinite; }
+#boot.roll pre { animation: roll .3s linear infinite; }
+#boot pre.ghost { position: absolute; left: 24px; right: 24px; top: calc(100vh + 30px); }
+#boot.roll .skip { visibility: hidden; }
+@keyframes roll { from { transform: translateY(0); } to { transform: translateY(-100vh); } }
+#boot.roll::before { content: ""; position: absolute; left: 0; right: 0; height: 12vh; z-index: 2;
+  background: #000; box-shadow: 0 0 24px 10px #000; animation: roll-bar .3s linear infinite; }
+@keyframes roll-bar { from { top: 100%; } to { top: -12vh; } }
+#boot.roll .noise { display: block; position: absolute; inset: 0; opacity: .14; z-index: 3;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: roll-noise .12s steps(3) infinite; }
+@keyframes roll-noise { 0% { background-position: 0 0; } 100% { background-position: 97px 53px; } }
+@keyframes roll-flicker { 50% { filter: brightness(1.35); } }
+
+/* the picture locking on after a resync */
+html.boot-sync body { animation: boot-sync .28s steps(4) 1; }
+@keyframes boot-sync {
+  0% { transform: translateX(7px); filter: brightness(1.4); }
+  25% { transform: translateX(-4px); filter: brightness(1.15); }
+  50% { transform: translateX(2px); }
+  100% { transform: none; filter: none; }
+}
+
+.lede { max-width: 46em; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 8px; }
+.chip { font: inherit; font-size: .9em; cursor: pointer; padding: 2px 10px; border-radius: 999px;
+  border: 1px solid var(--secondary-color); background: transparent; color: var(--font-color); transition: all .2s ease; }
+.chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.chip.active { background: var(--primary-color); border-color: var(--primary-color); color: var(--invert-font-color); }
+.years { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; padding: 0; margin: 12px 0 30px; }
+.years li { margin: 0; padding: 0; } .years li::after { content: none; }
+.years a.active { background: var(--primary-color); color: var(--invert-font-color); }
+
+.zz { display: flex; flex-direction: column; position: relative; padding: 10px 0 40px; }
+.zz-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--secondary-color); opacity: .5; }
+.zz-fill { position: absolute; left: 50%; top: 0; width: 2px; margin-left: -1px; height: 0; background: var(--primary-color); }
+.zz-year { position: relative; display: flex; margin: 0 0 34px; scroll-margin-top: 20px; pointer-events: none; }
+.zz-card, .zz-node { pointer-events: auto; }
+.zz-year.left { justify-content: flex-start; } .zz-year.right { justify-content: flex-end; }
+.zz-node { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 3;
+  background: var(--background-color); border: 2px solid var(--secondary-color); color: var(--secondary-color);
+  font-weight: bold; padding: 2px 10px; border-radius: 999px; transition: all .4s ease; }
+.zz-year.seen .zz-node { background: var(--primary-color); border-color: var(--primary-color); color: var(--invert-font-color); }
+.zz-card { width: calc(50% - 56px); position: relative; background: var(--background-color); }
+.zz-card::after { content: ""; position: absolute; top: 25px; width: 40px; height: 2px; background: var(--secondary-color); opacity: .5; }
+.zz-year.left .zz-card::after { right: -42px; } .zz-year.right .zz-card::after { left: -42px; }
+.zz-card > header { text-align: left; padding-left: 10px; transition: background-color .4s ease; }
+.zz-year.seen .zz-card > header { background: var(--font-color); color: var(--background-color); }
+.zz-card article { display: flow-root; margin-bottom: 18px; transition: opacity .3s ease; }
+.zz-card article:last-child { margin-bottom: 0; }
+.zz-card h3 { font-size: var(--global-font-size); margin: 0 0 4px; padding: 0; }
+.zz-card h3 .date { color: var(--secondary-color); font-weight: normal; }
+.zz-card p { margin-bottom: .4em; }
+.thumbnail { float: right; width: 112px; max-width: 38%; margin: 4px 0 12px 16px; }
+.thumbnail a { display: block; background: #fff; }
+.thumbnail img { display: block; width: 100%; height: auto; max-height: 170px; object-fit: contain;
+  border: 1px solid var(--secondary-color); border-radius: 2px; }
+.thumbnail a:hover img { border-color: var(--primary-color); }
+.links { clear: both; }
+@media (max-width: 480px) {
+  .thumbnail { float: none; max-width: 100%; margin: 10px 0 14px; }
+}
+.meta { margin: 0 0 4px; }
+.filtered { display: none !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .zz-card { opacity: 0; transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+  .js .zz-year.left .zz-card { transform: translateX(-40px); }
+  .js .zz-year.right .zz-card { transform: translateX(40px); }
+  .js .zz-year.seen .zz-card { opacity: 1; transform: none; }
+  .zz-year.seen .zz-node { animation: pop .5s ease; }
+  @keyframes pop { 50% { transform: translateX(-50%) scale(1.18); } }
+  .zz-fill { transition: height .15s linear; }
+}
+
+@media (max-width: 760px) {
+  .zz-line, .zz-fill { left: 14px; }
+  .zz-year, .zz-year.left, .zz-year.right { justify-content: flex-end; padding-top: 40px; }
+  .zz-node { left: 14px; top: 0; transform: none; }
+  @keyframes pop { 50% { transform: scale(1.12); } }
+  .zz-card { width: calc(100% - 34px); }
+  .zz-card::after { display: none; }
+  .js .zz-year.left .zz-card, .js .zz-year.right .zz-card { transform: translateY(24px); }
+  .js .zz-year.seen .zz-card { transform: none; }
+}
+</style>
+  </head>
+
+  <body class="terminal">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-pr" viewBox="0 0 16 16"><circle cx="4" cy="3.5" r="1.7"/><circle cx="4" cy="12.5" r="1.7"/><circle cx="12" cy="12.5" r="1.7"/><path d="M4 5.2v5.6M12 10.8V6.5a2 2 0 0 0-2-2H7M8.8 2.8 7 4.5l1.8 1.7"/></symbol>
+    <symbol id="i-issue" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="1.2"/></symbol>
+    <symbol id="i-code" viewBox="0 0 16 16"><path d="M5.5 4 2 8l3.5 4M10.5 4 14 8l-3.5 4"/></symbol>
+    <symbol id="i-post" viewBox="0 0 16 16"><path d="M3 1.8h6.5l3.5 3.5v8.9H3zM9.5 1.8v3.5H13M5.5 8.3h5M5.5 11h5"/></symbol>
+    <symbol id="i-paper" viewBox="0 0 16 16"><path d="M1.8 3h4.5A1.7 1.7 0 0 1 8 4.7V13.5a1.5 1.5 0 0 0-1.5-1.5H1.8zM14.2 3H9.7A1.7 1.7 0 0 0 8 4.7V13.5A1.5 1.5 0 0 1 9.5 12h4.7z"/></symbol>
+    <symbol id="i-talk" viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M6.5 5.8v4.4L10.3 8z"/></symbol>
+    <symbol id="i-award" viewBox="0 0 16 16"><path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/></symbol>
+    <symbol id="i-release" viewBox="0 0 16 16"><path d="M1.8 2.2h5.6l6.8 6.8-5.2 5.2-7.2-6.8z"/><circle cx="4.9" cy="5.3" r="1"/></symbol>
+    <symbol id="i-news" viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="1"/><path d="M4.5 6h7M4.5 8.5h7M4.5 11h4"/></symbol>
+    <symbol id="i-link" viewBox="0 0 16 16"><path d="M7 9a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2L8.5 3.3M9 7a3 3 0 0 0-4.2 0L2.5 9.3a3 3 0 0 0 4.2 4.2l.8-.8"/></symbol>
+  </defs>
+</svg>
+    <div id="boot" data-style="x11" aria-hidden="true"><pre></pre><span class="skip">click or press any key to skip</span><span class="noise"></span><svg class="xcursor" viewBox="0 0 16 16"><path d="M2 2 14 14M14 2 2 14" stroke="#fff" stroke-width="5"/><path d="M2 2 14 14M14 2 2 14" stroke="#000" stroke-width="2.4"/></svg></div>
+
+    <div class="container">
+      <div class="terminal-nav">
+        <header class="terminal-logo">
+          <div class="logo terminal-prompt"><a href="/" class="no-style">Dave Scott</a></div>
+        </header>
+      <nav class="terminal-menu">
+        <ul vocab="https://schema.org/" typeof="BreadcrumbList">
+          <li><a href="/" class="menu-item"><span>Home</span></a><meta property="position"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/blog.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Blog</span></a><meta property="position" content="1"></li>
+          <li property="itemListElement" typeof="ListItem"><a href="/research.html" property="item" typeof="WebPage" class="menu-item"><span property="name">Research</span></a><meta property="position" content="2"></li>
+          <li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="container">
+      <div class="lede"><p>
+        My work on Docker grew out of earlier work on MirageOS, OCaml and the
+        <a href="https://xapi-project.github.io/">Xapi</a> / Xen toolstack. We explored how to build systems from reusable,
+        type-safe libraries: network protocols, storage and the machinery for managing VMs.
+        The timeline includes both the papers and the code, back to Melange in 2007.
+      </p>
+      <p>
+        We used our systems background (and unikernel libraries) to create a seamless &quot;Docker for Mac&quot;
+        and &quot;Docker for Windows&quot; experience.
+        Later the same code evolved into a platform for running containers and AI agents in microVMs
+        and is used across the Docker product suite.
+        Here's a list of some of the things I've worked on, newest first.
+        Almost all of it was done with other people, so where I can I've linked to
+        the code, the blog posts and the papers.
+      </p></div>
+      <div class="filters" role="group" aria-label="Filter by theme"><button type="button" class="chip active" data-tag="all">all</button><button type="button" class="chip" data-tag="networking">networking</button><button type="button" class="chip" data-tag="storage">storage</button><button type="button" class="chip" data-tag="files">file sharing</button><button type="button" class="chip" data-tag="vms">VMs &amp; platforms</button><button type="button" class="chip" data-tag="enterprise">enterprise</button><button type="button" class="chip" data-tag="writing">papers &amp; talks</button></div>
+      <ul class="years"><li><a href="#y2026">2026</a></li><li><a href="#y2025">2025</a></li><li><a href="#y2024">2024</a></li><li><a href="#y2023">2023</a></li><li><a href="#y2022">2022</a></li><li><a href="#y2021">2021</a></li><li><a href="#y2020">2020</a></li><li><a href="#y2019">2019</a></li><li><a href="#y2018">2018</a></li><li><a href="#y2017">2017</a></li><li><a href="#y2016">2016</a></li><li><a href="#y2015">2015</a></li><li><a href="#y2014">2014</a></li><li><a href="#y2013">2013</a></li><li><a href="#y2012">2012</a></li><li><a href="#y2011">2011</a></li><li><a href="#y2010">2010</a></li><li><a href="#y2007">2007</a></li></ul>
+      <div class="zz" id="timeline"><div class="zz-line"></div><div class="zz-fill" id="fill"></div>
+      <section class="zz-year left" id="y2026" data-year="2026">
+        <div class="zz-node">2026</div>
+        <div class="zz-card terminal-card"><header>microVMs <b>and</b> containers</header><div>
+          <article data-tags="writing"><h3><span class="date">2026-03:</span> A Decade of Docker Containers (CACM cover article)</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://cacm.acm.org/research/a-decade-of-docker-containers/"><img src="/carousel/2026-cacm.png" alt="Communications of the ACM cover for A Decade of Docker Containers" width="581" height="778" loading="lazy" decoding="async"></a>
+              </figure><p>
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>,
+                <a href="https://openuk.uk/profiles/justincormack/">Justin Cormack</a> and I wrote up how Docker
+                got from Linux to Mac and Windows, the systems research underneath it, and where things are
+                heading with coding agents. The ACM made a nice video and cover art!
+              </p><p class="links"><a class="lk lk-paper" href="https://cacm.acm.org/research/a-decade-of-docker-containers/" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>article</a><a class="lk lk-paper" href="https://doi.org/10.1145/3761803" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>doi</a><a class="lk lk-news" href="https://anil.recoil.org/notes/cacm-docker-cover" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>the cover</a><a class="lk lk-news" href="https://www.cst.cam.ac.uk/news/celebrating-decade-docker-containers" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>Cambridge news</a></p></article>
+          <article data-tags="networking vms"><h3>MicroVMs for Docker Sandboxes</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                Agents need to run somewhere where access to the outside is carefully controlled
+                i.e. a &quot;sandbox&quot;.
+                The unikernel derived VMM tech used in Docker Desktop is now also the isolation layer in
+                Docker Sandboxes, now enhanced with ultra-fast networking and support for running GUIs safely
+                inside the VMs.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/why-microvms-the-architecture-behind-docker-sandboxes/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>why microVMs? from Srini and Craig</a><a class="lk lk-link" href="https://lnkd.in/p/eiRzHAgR" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>an example safe GUI from Cody</a></p></article>
+          <article data-tags="networking writing"><h3>Publication of the Year</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                Our ICFP networking paper (see 2025) won the Cambridge Computer Lab Ring's
+                Publication of the Year award.
+              </p><p class="links"><a class="lk lk-award" href="https://www.cl.cam.ac.uk/ring/awards.html" title="award"><svg aria-hidden="true"><use href="#i-award"/></svg>awards</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2025" data-year="2025">
+        <div class="zz-node">2025</div>
+        <div class="zz-card terminal-card"><header>research reports</header><div>
+          <article data-tags="networking writing"><h3><span class="date">2025-10:</span> Functional Networking for Millions of Docker Desktops (ICFP)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/2025-icfp-docker.pdf"><img src="/papers/2025-icfp-docker.png" alt="First page of Functional Networking for Millions of Docker Desktops" width="684" height="1012" loading="lazy" decoding="async"></a>
+              </figure><p>
+                An experience report on ten years of running an OCaml, unikernel-inspired network stack
+                on millions of developer machines: what worked, what didn't and what we'd do again.
+                Written with
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>,
+                <a href="https://patrick.sirref.org/index/index.xml">Patrick Ferris</a>,
+                <a href="https://ryan.freumh.org/">Ryan Gibb</a>
+                and
+                <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>;
+                Anil gave the talk.
+              </p><p class="links"><a class="lk lk-paper" href="https://dave.recoil.org/papers/2025-icfp-docker.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-paper" href="https://doi.org/10.1145/3747525" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>doi</a><a class="lk lk-paper" href="https://icfp25.sigplan.org/details/icfp-2025-papers/21/Functional-Networking-for-Millions-of-Docker-Desktops-Experience-Report-" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>programme</a><a class="lk lk-talk" href="https://anil.recoil.org/slides/icfp-docker-25.pdf" title="talk"><svg aria-hidden="true"><use href="#i-talk"/></svg>slides</a></p></article>
+          <article data-tags="writing"><h3><span class="date">2025-04-01:</span> ASPLOS Influential Paper Award</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/asplos2013.pdf"><img src="/papers/final/asplos2013.jpg" alt="First page of the 2013 Unikernels paper" width="160" height="207" loading="lazy" decoding="async"></a>
+              </figure><p>
+                Our 2013 Unikernels paper won one of the ASPLOS Influential Paper Awards.
+                The Mirage OS libraries from that work are the same ones that ended up inside Docker Desktop.
+              </p><p class="links"><a class="lk lk-award" href="https://www.asplos-conference.org/asplos2025/awards/" title="award"><svg aria-hidden="true"><use href="#i-award"/></svg>awards</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2024" data-year="2024">
+        <div class="zz-node">2024</div>
+        <div class="zz-card terminal-card"><header>faster and more compatible</header><div>
+          <article data-tags="files vms"><h3>Optimising virtiofs for containers</h3><p class="meta"><span class="tag tag-files">file sharing</span><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                Although Apple's virtualization.framework is a great general-purpose VMM,
+                there are various ways to optimize specifically for Linux containers.
+                Therefore we created Docker VMM using Apple's lower-level hypervisor.framework,
+                built using a fork of
+                the excellent
+                <a href="https://github.com/libkrun/libkrun">libkrun project</a>.
+                Filesharing perf improved to the point where
+                a directory search over virtiofs would be &quot;faster than native macOS&quot;
+                if caches are warm. We shipped Docker VMM
+                as a beta in Desktop 4.35.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/docker-desktop-4-35/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>4.35 announcement</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2023" data-year="2023">
+        <div class="zz-node">2023</div>
+        <div class="zz-card terminal-card"><header>faster and more efficient</header><div>
+          <article data-tags="vms writing"><h3><span class="date">2023-08-17:</span> Resource Saver mode</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                In the cloud people often talk about &quot;scaling to zero&quot;. I've always
+                been a fan of the principle that your laptop should only be executing code if
+                you actually tell it to, i.e. definitely no battery reducing background polling loops.
+                I built a mechanism for shutting down the Docker Desktop helper VM, keeping it offline
+                as much as possible (e.g. by not booting it up for read API requests) and starting
+                it on demand to actually run containers.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>my 4.22 post</a><a class="lk lk-post" href="https://www.docker.com/blog/docker-desktop-4-21/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>4.21</a><a class="lk lk-post" href="https://www.docker.com/blog/docker-desktop-4-22/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>4.22</a><a class="lk lk-post" href="https://docs.docker.com/desktop/use-desktop/resource-saver/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>docs</a></p></article>
+          <article data-tags="networking vms enterprise"><h3><span class="date">2023-04-27:</span> userspace TCP/IP version 2</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-enterprise">enterprise</span></p><p>
+                I originally switched Docker from kernel networking to a custom userspace
+                stack
+                <a href="https://github.com/moby/vpnkit">vpnkit</a> (based on the Mirage unikernel libraries)
+                to work around OS security issues and to allow us to interoperate more easily
+                with corporate firewalls and VPNs.
+                Now it was time to switch Mac again to a
+                <a href="https://github.com/google/gvisor">google/gvisor</a>-based solution.
+                In our published
+                <code>iperf3</code> benchmark on a first-generation M1 Mac Mini, throughput went
+                from about 3.5 to 19 Gbit/s &mdash; over five times faster.
+              </p><p class="links"><a class="lk lk-release" href="https://docs.docker.com/desktop/release-notes/#4190" title="release notes"><svg aria-hidden="true"><use href="#i-release"/></svg>4.19 release notes</a><a class="lk lk-post" href="https://www.docker.com/blog/unleash-docker-desktop-4-22-rapid-development/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>my performance write-up</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2022" data-year="2022">
+        <div class="zz-node">2022</div>
+        <div class="zz-card terminal-card"><header>Docker in the enterprise</header><div>
+          <article data-tags="vms writing"><h3>Kubernetes beyond dockershim</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                Kubernetes was built on top of Docker, but in 2022 the method of talking to Docker was changing.
+                Various misleading headlines saying alarming things like
+                &quot;Kubernetes is deprecating Docker&quot; started appearing so we needed to act quickly.
+                To ensure zero hassle for our users, I migrated Desktop's Kubernetes integration to
+                <a href="https://github.com/mirantis/cri-dockerd">cri-dockerd</a>. This migration shipped in Desktop 4.7.0.
+                To explain what this all means properly I blogged about it in an April article
+                ahead of Kubernetes 1.24.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/dockershim-not-needed-docker-desktop-with-kubernetes-1-24/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>blog post</a></p></article>
+          <article data-tags="networking enterprise"><h3>One HTTP proxy to rule them all</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-enterprise">enterprise</span></p><p>
+                Enterprises often have sophisticated HTTP proxy setups, especially if they operate worldwide.
+                Originally Docker Desktop's handling of HTTP proxies was fragmented, each component
+                doing its own thing.
+                A customer told us the obvious truth, that proxy configuration should be "one and done", not something
+                that needs per-component consideration.
+                I consoliated all proxy handling across the product so every subcomponent behaved
+                identically, irrespective of programming language, and all supported the same feature set. Previously for example one component
+                would support PAC files proxy auth, while another relied on Unix-style environment variables.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/558" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#558</a><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/543" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#543</a></p></article>
+          <article data-tags="networking enterprise writing"><h3><span class="date">2022-01-25:</span> How Docker Desktop Networking works under the hood</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-enterprise">enterprise</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                A common topic when speaking with customers is how exactly Docker Desktop's networking works
+                and how well will it interop with other network products.
+                I wrote a detailed blog post all
+                about the unikernel-inspired userspace networking stack that connects containers to
+                the outside world in Docker Desktop.
+                Later this work was refined and used by Valentin and Julius from CARIAD to produce a white paper.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/how-docker-desktop-networking-works-under-the-hood/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>blog post</a><a class="lk lk-link" href="https://www.docker.com/resources/how-docker-desktop-works-under-the-hood-white-paper/" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>CARIAD white paper</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2021" data-year="2021">
+        <div class="zz-node">2021</div>
+        <div class="zz-card terminal-card"><header>More Apple Silicon (and policy)</header><div>
+          <article data-tags="networking enterprise"><h3>Registry Access Management</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-enterprise">enterprise</span></p><p>
+                Businesses want to control which registries their developers can pull from.
+                Inspired by
+                <a href="https://cilium.io/">Cilium</a>
+                I defined a network policy and then built an enforcement mechanism
+                using a combination of DNS + eBPF + cgroup hooks.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/introducing-registry-access-management-for-docker-business/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>announcement</a></p></article>
+          <article data-tags="vms"><h3>Apple Silicon support released</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                We shipped the GA version of Apple Silicon support! In the meantime Apple had published
+                a nice higher-level VMM API called virtualization.framework
+                which we intended to become our default. So I added support for this too and it shipped as an experimental
+                choice, while QEMU remained the default.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/released-docker-desktop-for-mac-apple-silicon/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>Docker + Apple Silicon GA</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2020" data-year="2020">
+        <div class="zz-node">2020</div>
+        <div class="zz-card terminal-card"><header>Apple Silicon</header><div>
+          <article data-tags="vms"><h3><span class="date">2020-11-29:</span> Early build demonstrates incoming Apple Silicon support</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                The first M1 Macs arrived and Docker didn't run on them yet. I put together the
+                early preview builds: integrating the engine and CLI, fixing startup problems and
+                iterating until the tech preview shipped in December, immediately after the hardware itself shipped.
+                 My screenshot of an early
+                build ended up in an AppleInsider post by Malcolm Owen.
+              </p><p class="links"><a class="lk lk-news" href="https://appleinsider.com/articles/20/11/29/early-docker-build-demonstrates-incoming-apple-silicon-support" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>AppleInsider</a><a class="lk lk-issue" href="https://github.com/docker/roadmap/issues/142" title="issue comment"><svg aria-hidden="true"><use href="#i-issue"/></svg>roadmap issue</a><a class="lk lk-news" href="https://www.docker.com/press-release/Docker-Desktop-for-M1-powered-Macs/" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>press release</a></p></article>
+          <article data-tags="files writing"><h3>DockerCon LIVE: New Docker Desktop filesharing features</h3><p class="meta"><span class="tag tag-files">file sharing</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                A talk about the new file sharing on Windows and Mutagen on the Mac, and how they speed up
+                the edit-compile-test loop.
+              </p><p class="links"><a class="lk lk-talk" href="https://www.youtube.com/watch?v=gyddZyc8r48" title="talk"><svg aria-hidden="true"><use href="#i-talk"/></svg>video</a></p></article>
+          <article data-tags="storage files"><h3>gRPC-FUSE becomes the Mac default</h3><p class="meta"><span class="tag tag-storage">storage</span><span class="tag tag-files">file sharing</span></p><p>
+                After Windows, I brought the gRPC-FUSE file-sharing implementation to the Mac as
+                the default, reducing file-event CPU overhead and allowing shared paths to change
+                without restarting the VM. It shipped as the default in Docker Desktop 2.4.0.0
+                on 30 September.
+              </p><p>
+                I also implemented virtio-blk DISCARD in hyperkit so deleted data could be
+                given back to the host.
+              </p><p class="links"><a class="lk lk-release" href="https://github.com/docker/docs/blob/main/content/manuals/desktop/previous-versions/2.x-mac.md#docker-desktop-community-2400" title="release notes"><svg aria-hidden="true"><use href="#i-release"/></svg>2.4.0.0 release notes</a><a class="lk lk-pr" href="https://github.com/moby/hyperkit/pull/272" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/hyperkit#272</a></p></article>
+          <article data-tags="writing"><h3><span class="date">2020-01-17:</span> Capturing logs in Docker Desktop</h3><p class="meta"><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                A deep-dive into how the logging system works, joint work with
+                <a href="http://www.skjegstad.com/">Magnus Skjegstad</a>.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/capturing-logs-in-docker-desktop/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>blog post</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2019" data-year="2019">
+        <div class="zz-node">2019</div>
+        <div class="zz-card terminal-card"><header>file sharing</header><div>
+          <article data-tags="networking files writing"><h3><span class="date">2019-12-12:</span> New file sharing implementation in Docker Desktop for Windows</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-files">file sharing</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                We replaced Samba with FUSE over gRPC over Hyper-V sockets. It's much faster, and file
+                change notifications finally work, so tools that watch for edits (like hot reload)
+                behave properly. I implemented the inotify event injection and spent a lot of time
+                on filesystem semantics and caching. The deep dive explains how it all fits together.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/new-filesharing-implementation-in-docker-desktop-windows/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>launch post</a><a class="lk lk-post" href="https://www.docker.com/blog/deep-dive-into-new-docker-desktop-filesharing-implementation/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>deep dive</a></p></article>
+          <article data-tags="networking"><h3>vpnkit: new port forwarder</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                Rewrote host port forwarding in Go with a simple HTTP control protocol, replacing several
+                slightly different copies with one.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/477" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#477</a></p></article>
+          <article data-tags="files vms writing"><h3><span class="date">2019-02-25:</span> Addressing Time Drift in Docker for Mac</h3><p class="meta"><span class="tag tag-files">file sharing</span><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><p>
+                Why the VM's clock drifted away from the Mac's (laptops go to sleep!), why that breaks
+                builds and file sharing, and how we fixed it.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/addressing-time-drift-in-docker-desktop-for-mac/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>blog post</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2018" data-year="2018">
+        <div class="zz-node">2018</div>
+        <div class="zz-card terminal-card"><header>Kubernetes and proxies</header><div>
+          <article data-tags="networking"><h3>Native Windows DNS</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                I changed Docker Desktop's Windows DNS handling to use the native
+                APIs. Using Windows' own resolver instead of reimplementing
+                its behaviour meant Docker followed the same DNS and VPN rules as other
+                Windows applications.
+              </p></article>
+          <article data-tags="networking vms"><h3>Kubernetes on Windows</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                Docker for Windows gained Kubernetes. I worked on networking for it, and looked at how to
+                change the VM's IP address without forcing everyone to reset their cluster.
+              </p><p class="links"><a class="lk lk-post" href="https://www.docker.com/blog/docker-windows-desktop-now-kubernetes/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>announcement</a></p></article>
+          <article data-tags="networking"><h3>Logging, sockets and named pipes</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                Added pluggable logging to LinuxKit, building on Magnus Skjegstad's earlier work, and taught
+                vpnkit to forward Unix sockets and Windows named pipes, including connections to
+                services such as the Docker socket.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/linuxkit/linuxkit/pull/3085" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>linuxkit/linuxkit#3085</a><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/428" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#428</a></p></article>
+          <article data-tags="networking enterprise"><h3>HTTP proxies on restricted networks</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-enterprise">enterprise</span></p><p>
+                I added HTTP proxy modes for networks where only the proxy could resolve DNS,
+                with CONNECT support for TLS traffic and tests for the different request paths.
+                I also built more realistic HTTP proxy tests using host firewalls.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/320" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#320</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2017" data-year="2017">
+        <div class="zz-node">2017</div>
+        <div class="zz-card terminal-card"><header>disks that shrink</header><div>
+          <article data-tags="storage"><h3>Don't corrupt the disk</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                Two hyperkit instances writing to the same disk file is a recipe for corruption.
+                I added locking on the backing file, replacing a fragile separate lock file, and added
+                TRIM for sparse raw disks.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/moby/hyperkit/pull/173" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/hyperkit#173</a><a class="lk lk-pr" href="https://github.com/moby/hyperkit/pull/158" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/hyperkit#158</a></p></article>
+          <article data-tags="storage writing"><h3>Online disk compaction, enabled by default</h3><p class="meta"><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/disk-compact/"><img src="/disk-compact/qcow2.png" alt="Diagram of qcow2 disk storage" width="1056" height="642" loading="lazy" decoding="async"></a>
+              </figure><p>
+                I implemented online qcow2 compaction so Docker could return disk space without
+                a restart, enabled it by default, and later used sparse raw disks where APFS made
+                the simpler approach possible. Building on TRIM support from late 2016, the OCaml
+                algorithm recycles clusters in the background while the VM keeps running.
+              </p><p class="links"><a class="lk lk-post" href="https://dave.recoil.org/blogs/docker-for-mac-disk-space.html" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>blog post</a><a class="lk lk-pr" href="https://github.com/mirage/ocaml-qcow/pull/63" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-qcow#63</a><a class="lk lk-post" href="https://dave.recoil.org/disk-compact/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>2025 retrospective</a></p></article>
+          <article data-tags="networking"><h3>Reaching the host by name</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                I introduced <code>docker.for.mac.localhost</code> and
+                <code>docker.for.win.localhost</code> so containers could reach services on the
+                host without hard-coded IP addresses. These were precursors to the later
+                <code>host.docker.internal</code> name.
+              </p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2016" data-year="2016">
+        <div class="zz-node">2016</div>
+        <div class="zz-card terminal-card"><header>vpnkit</header><div>
+          <article data-tags="networking"><h3><span class="date">2016-09-20:</span> CVE-2016-4739 in macOS Sierra</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                With <a href="http://www.skjegstad.com/">Magnus Skjegstad</a> and
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> I found that apps using
+                VMnet.framework could end up with a DNS proxy listening on all network interfaces.
+                Apple fixed it in macOS Sierra and credited us.
+              </p><p class="links"><a class="lk lk-news" href="https://support.apple.com/en-us/103424" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>Apple security notes</a></p></article>
+          <article data-tags="networking"><h3><span class="date">2016-01-27:</span> A userspace network stack for Docker for Mac</h3><p class="meta"><span class="tag tag-networking">networking</span></p><p>
+                Lots of early users had VPNs, and VPNs didn't get along with the VM's networking.
+                So I plugged the Mirage OCaml TCP/IP stack into Docker for Mac: Ethernet frames from
+                the VM are turned into ordinary socket calls on the Mac, so as far as the VPN is concerned
+                it's just another app. On 2016-04-18 it became the default. It was open-sourced as
+                vpnkit in May, and I merged the Mac and Windows frontends (using Hyper-V sockets on Windows)
+                in July.
+              </p><p class="links"><a class="lk lk-code" href="https://github.com/moby/vpnkit" title="code"><svg aria-hidden="true"><use href="#i-code"/></svg>moby/vpnkit</a><a class="lk lk-post" href="https://www.docker.com/blog/docker-unikernels-open-source/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>open-source announcement</a><a class="lk lk-post" href="https://web.archive.org/web/20191122200147/https://www.docker.com/blog/docker-for-mac-windows-beta/" title="article"><svg aria-hidden="true"><use href="#i-post"/></svg>beta announcement</a><a class="lk lk-pr" href="https://github.com/moby/vpnkit/pull/93" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>moby/vpnkit#93</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2015" data-year="2015">
+        <div class="zz-node">2015</div>
+        <div class="zz-card terminal-card"><header>from Xen and Mirage to Docker</header><div>
+          <article data-tags="storage"><h3>Thin-provisioned storage with qcow2</h3><p class="meta"><span class="tag tag-storage">storage</span></p><figure class="thumbnail">
+                <a href="/disk-compact/"><img src="/disk-compact/qcow2.png" alt="Diagram of qcow2 disk storage" width="1056" height="642" loading="lazy" decoding="async"></a>
+              </figure><p>
+                I integrated the Mirage qcow2 block layer into Docker for Mac's VM, giving
+                containers a disk that grew as needed instead of reserving its full size on the
+                laptop. This provided sparse storage even on HFS+, which lacked sparse-file
+                support, and let us offer a thin-provisioned 64 GiB container disk.
+              </p><p class="links"><a class="lk lk-code" href="https://github.com/mirage/ocaml-qcow" title="code"><svg aria-hidden="true"><use href="#i-code"/></svg>mirage/ocaml-qcow</a></p></article>
+          <article data-tags="vms"><h3>Reactive VM configuration with Irmin</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I integrated Irmin into Docker for Mac to store the VM's configuration, using
+                transactions, snapshots and watches to react to changes. Configuration became
+                versioned data: committing a new memory setting made the VM exit and pick up the change
+                on its next start.
+              </p><p class="links"><a class="lk lk-code" href="https://github.com/mirage/irmin" title="code"><svg aria-hidden="true"><use href="#i-code"/></svg>mirage/irmin</a></p></article>
+          <article data-tags="files vms"><h3>Docker for Mac alpha</h3><p class="meta"><span class="tag tag-files">file sharing</span><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                Alongside this, I debugged alpha builds and worked out how diagnostics reports
+                should work. Early changes fixed symlinks in shared folders and kept the VM's
+                clock in sync with the host. That code now lives in the LinuxKit repo.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/linuxkit/linuxkit/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>linuxkit/linuxkit#1</a><a class="lk lk-pr" href="https://github.com/linuxkit/linuxkit/pull/2" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>linuxkit/linuxkit#2</a></p></article>
+          <article data-tags="networking vms writing"><h3><span class="date">2015-05:</span> Jitsu: Just-In-Time Summoning of Unikernels (NSDI)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/2015-nsdi-jitsu.pdf"><img src="/papers/final/2015-nsdi-jitsu.jpg" alt="First page of Jitsu: Just-In-Time Summoning of Unikernels" width="175" height="226" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With the Jitsu team, I co-authored a paper on starting small MirageOS unikernels in
+                response to network traffic on Xen/ARM. Shared-memory communication and connection
+                hand-off let services start on demand while masking boot latency. In January I also
+                proposed a simpler Jitsu backend using libxl directly; that PR was an RFC.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/2015-nsdi-jitsu.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/madhavapeddy" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>paper and talk</a><a class="lk lk-pr" href="https://github.com/mirage/jitsu/pull/3" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/jitsu#3</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2015-02 to 03:</span> Journalled storage with Mirage block libraries</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I exposed LVM logical volumes as Mirage BLOCK devices and added a transparent redo
+                log to mirage-block-volume. Alongside this, I worked on shared-block-ring
+                suspend/resume and modelled the queue protocol in Promela to reason about
+                synchronising storage updates.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/26" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#26</a><a class="lk lk-pr" href="https://github.com/djs55/mirage-block-volume/pull/32" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/mirage-block-volume#32</a><a class="lk lk-pr" href="https://github.com/mirage/shared-block-ring/pull/20" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/shared-block-ring#20</a><a class="lk lk-pr" href="https://github.com/xapi-project/xapi-project.github.io/pull/94" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xapi-project.github.io#94</a></p></article>
+          <article data-tags="vms storage"><h3><span class="date">2015-02-10:</span> Running Xapi on ARM</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span></p><p>
+                I added <a href="https://xapi-project.github.io/">Xapi</a> to the Xen ARM builder, so hosts could upload and run VMs through
+                XenAPI and xe, collect performance metrics, and use thin-provisioned LVM storage.
+                <a href="https://xapi-project.github.io/">Xapi</a> could run alongside xl and libvirt on the same host.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/xen-arm-builder/pull/51" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/xen-arm-builder#51</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2015-01-31:</span> Choosing entropy sources for Mirage on Xen</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I added separate choices for the strongest available Xen entropy source and a weak
+                source for development and experiments. This made the choice explicit in the
+                unikernel configuration.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/359" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#359</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2015-01-19:</span> OCaml Ctypes for device mapper</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I switched camldm from hand-written C stubs to OCaml Ctypes bindings, part of the
+                work on reusable storage tools for <a href="https://xapi-project.github.io/">Xapi</a>.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/camldm/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/camldm#1</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2014" data-year="2014">
+        <div class="zz-node">2014</div>
+        <div class="zz-card terminal-card"><header>Mirage libraries and the Xen toolstack</header><div>
+          <article data-tags="vms"><h3><span class="date">2014-09-14:</span> Packaging the Xapi toolstack with opam</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I submitted the <a href="https://xapi-project.github.io/">Xapi</a> toolstack and its supporting libraries and services to the main
+                opam repository, making the OCaml components available through the same package
+                manager as the wider ecosystem.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/ocaml/opam-repository/pull/2700" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>ocaml/opam-repository#2700</a></p></article>
+          <article data-tags="vms networking"><h3><span class="date">2014-08 to 09:</span> Deploying and connecting Mirage unikernels</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span></p><p>
+                I taught Mirage to generate a .xe script to upload a unikernel to a host running
+                <a href="https://xapi-project.github.io/">Xapi</a>, using xe-unikernel-upload. I also made the shared-memory vchan implementation
+                easier to test by functorising its environmental dependencies and adding Unix tests.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/285" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#285</a><a class="lk lk-pr" href="https://github.com/mirage/ocaml-vchan/pull/38" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-vchan#38</a></p></article>
+          <article data-tags="vms storage writing"><h3><span class="date">2014-07-21:</span> Irmin-backed Xenstore prototype</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-storage">storage</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://mirage.io/blog/introducing-irmin-in-xenstore"><img src="/timeline/xenstore-diagram.png" alt="Xenstore controls device configuration while VM I/O uses shared memory" width="500" height="371" loading="lazy" decoding="async"></a>
+              </figure><p>
+                I built a Xenstore prototype using Irmin for transactions and persistence. It
+                recorded both the database and connection state, allowing the server to recover
+                after a restart while VMs kept running. The history could be inspected with <code>git log</code>,
+                and Irmin could merge independent device-configuration transactions without forcing
+                clients to retry. I described the design in a Mirage blog post and the Xenstore TNG
+                talk.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/djs55/ocaml-xenstore/pull/43" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>djs55/ocaml-xenstore#43</a><a class="lk lk-link" href="https://mirage.io/blog/introducing-irmin-in-xenstore" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>blog post</a><a class="lk lk-talk" href="https://crank.recoil.org/w/ri2YvBLjpz8YF1CUp3GfPV" title="talk"><svg aria-hidden="true"><use href="#i-talk"/></svg>Xenstore TNG video</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2014-02-01:</span> Indirect descriptors for Xen block I/O</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I added an initial implementation of indirect descriptors to the Mirage Xen block
+                driver, extending the way block requests could describe their buffers.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-block-xen/pull/26" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-block-xen#26</a></p></article>
+          <article data-tags="vms writing"><h3><span class="date">2014-01:</span> Unikernels: The Rise of the Virtual Library Operating System (CACM)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="https://cacm.acm.org/magazines/2014/1/170866-unikernels"><img src="/carousel/2014-cacm.png" alt="Communications of the ACM cover featuring Unikernels" width="832" height="1113" loading="lazy" decoding="async"></a>
+              </figure><p>
+                <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> and I wrote a broader overview of unikernels for Communications of
+                the ACM, explaining the library OS approach and the ideas behind MirageOS.
+              </p><p class="links"><a class="lk lk-paper" href="https://cacm.acm.org/magazines/2014/1/170866-unikernels" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>article</a><a class="lk lk-link" href="https://queue.acm.org/detail.cfm?id=2566628" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>open access</a><a class="lk lk-news" href="https://anil.recoil.org/notes/unikernels-in-cacm" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>background</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2013" data-year="2013">
+        <div class="zz-node">2013</div>
+        <div class="zz-card terminal-card"><header>unikernels for the cloud</header><div>
+          <article data-tags="storage"><h3><span class="date">2013-12:</span> Reusable storage libraries for Mirage</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I worked on the FAT filesystem and Unix/Xen block interfaces, including adding files
+                to FAT images and implementing the common Mirage BLOCK signature in the Xen driver.
+                These libraries let storage code run across different backends.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/ocaml-fat/pull/10" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/ocaml-fat#10</a><a class="lk lk-pr" href="https://github.com/mirage/mirage-block-xen/pull/8" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-block-xen#8</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2013-09:</span> Xen event delivery without periodic polling</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I changed the Mirage Xen runtime to use asynchronous hypervisor callbacks and event-
+                channel counters. Waiting threads could block and resume without missing
+                notifications, with a timer interrupt handling timeouts.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/58" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#58</a></p></article>
+          <article data-tags="vms networking writing"><h3><span class="date">2013-03:</span> Unikernels: Library Operating Systems for the Cloud (ASPLOS)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/asplos2013.pdf"><img src="/papers/final/asplos2013.jpg" alt="First page of Unikernels: Library Operating Systems for the Cloud" width="160" height="207" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With the Mirage team, I co-authored the paper describing how to compile an OCaml
+                application and the libraries it needs into a small, specialised VM image running
+                directly on a hypervisor. We evaluated network services built this way. The paper
+                later received an ASPLOS Influential Paper Award in 2025.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/asplos2013.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="/unikernels/" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>2025 retrospective</a><a class="lk lk-award" href="https://www.asplos-conference.org/asplos2025/awards/" title="award"><svg aria-hidden="true"><use href="#i-award"/></svg>award</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2012" data-year="2012">
+        <div class="zz-node">2012</div>
+        <div class="zz-card terminal-card"><header>building the Mirage Xen runtime</header><div>
+          <article data-tags="vms networking"><h3><span class="date">2012-12-20:</span> Suspend/resume and multiple network interfaces</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-networking">networking</span></p><p>
+                I integrated suspend/resume support, Cstruct changes and fixes for multiple virtual
+                network interfaces into the Mirage platform.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/14" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#14</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2012-09-04:</span> Infrastructure for a Xenstore stub domain</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I added Xen infrastructure for running Xenstore in a stub domain: a small VM
+                separate from the host control domain. Grant-reference mapping also provided
+                building blocks for device backends and proxies.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage-platform/pull/1" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage-platform#1</a></p></article>
+          <article data-tags="storage"><h3><span class="date">2012-04-21:</span> Faster Mirage block I/O</h3><p class="meta"><span class="tag tag-storage">storage</span></p><p>
+                I added multi-page rings and batched requests to the block performance test. On my
+                test storage, this reached about 770 MiB/s for random reads in 512 KiB blocks.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/87" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#87</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2011" data-year="2011">
+        <div class="zz-node">2011</div>
+        <div class="zz-card terminal-card"><header>Mirage meets Xapi</header><div>
+          <article data-tags="vms"><h3><span class="date">2011-08-10:</span> Memory accounting in the Xen toolstack</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I fixed a memory-management problem in the
+                <a href="https://xapi-project.github.io/squeezed/architecture/architecture.html">memory ballooning daemon</a> that could leak host memory when VMs
+                had no balloon drivers, part of the ongoing work on XenServer VM management.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/xapi-project/xen-api/pull/305" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>xapi-project/xen-api#305</a></p></article>
+          <article data-tags="vms"><h3><span class="date">2011-07-15:</span> Mirage deployment through xe</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span></p><p>
+                I improved Mirage's XCP deployment script to use the xe remote API directly,
+                discover the running VM's UUID from Xenstore, and query block-device information
+                instead of relying on a lookup table.
+              </p><p class="links"><a class="lk lk-pr" href="https://github.com/mirage/mirage/pull/10" title="pull request"><svg aria-hidden="true"><use href="#i-pr"/></svg>mirage/mirage#10</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year left" id="y2010" data-year="2010">
+        <div class="zz-node">2010</div>
+        <div class="zz-card terminal-card"><header>OCaml in an industrial product</header><div>
+          <article data-tags="vms writing"><h3><span class="date">2010-09:</span> Using Functional Programming within an Industrial Product Group: Perspectives and Perceptions (ICFP)</h3><p class="meta"><span class="tag tag-vms">VMs &amp; platforms</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/icfp2010.pdf"><img src="/papers/final/icfp2010.png" alt="First page of the XenServer OCaml experience report" width="387" height="500" loading="lazy" decoding="async"></a>
+              </figure><p>
+                <a href="https://www.linkedin.com/in/richardsharp/">Richard Sharp</a>, <a href="https://gazagnaire.org/">Thomas Gazagnaire</a>, <a href="https://anil.recoil.org/">Anil Madhavapeddy</a> and I reported on using OCaml to
+                build XenServer. We discussed the engineering experience as well as hiring,
+                collaboration and the reactions to using a less mainstream language in a large
+                product team.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/icfp2010.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-link" href="https://www.icfpconference.org/icfp2010/accepted_papers.html" title="link"><svg aria-hidden="true"><use href="#i-link"/></svg>programme</a></p></article>
+        </div></div>
+      </section>
+      <section class="zz-year right" id="y2007" data-year="2007">
+        <div class="zz-node">2007</div>
+        <div class="zz-card terminal-card"><header>type-safe network services</header><div>
+          <article data-tags="networking writing"><h3><span class="date">2007-03:</span> Melange: Creating a “Functional” Internet (EuroSys)</h3><p class="meta"><span class="tag tag-networking">networking</span><span class="tag tag-writing">papers &amp; talks</span></p><figure class="thumbnail">
+                <a href="/papers/final/eurosys2007.pdf"><img src="/papers/final/eurosys2007.jpg" alt="First page of Melange: Creating a Functional Internet" width="160" height="226" loading="lazy" decoding="async"></a>
+              </figure><p>
+                With <a href="https://anil.recoil.org/">Anil Madhavapeddy</a>, <a href="https://www.linkedin.com/in/alexho/">Alex Ho</a>, <a href="https://tjd.phlegethon.org/">Tim Deegan</a> and <a href="https://www.linkedin.com/in/rip-sohan-470928b/">Ripduman Sohan</a>, I co-authored the
+                Melange paper. We combined OCaml's static typing with generated packet-handling code
+                to build SSH and DNS servers, exploring how type-safe network services could perform
+                competitively with existing C implementations. The work was a precursor to MirageOS.
+              </p><p class="links"><a class="lk lk-paper" href="/papers/final/eurosys2007.pdf" title="paper"><svg aria-hidden="true"><use href="#i-paper"/></svg>pdf</a><a class="lk lk-news" href="https://anil.recoil.org/notes/unikernels-in-cacm" title="news"><svg aria-hidden="true"><use href="#i-news"/></svg>background</a></p></article>
+        </div></div>
+      </section>
+      </div>
+    </div>
+    <script>
+function setupReveal(opts) {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var cards = Array.prototype.slice.call(document.querySelectorAll(opts.cards));
+  var yearLinks = {};
+  document.querySelectorAll('.years a').forEach(function (a) { yearLinks[a.getAttribute('href').slice(1)] = a; });
+  function reveal(c) { if (!c.classList.contains('seen')) { c.classList.add('seen'); if (opts.onReveal) opts.onReveal(c, reduce); } }
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); } });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    cards.forEach(function (c) { io.observe(c); });
+  } else { cards.forEach(reveal); }
+  Object.keys(yearLinks).forEach(function (id) {
+    yearLinks[id].addEventListener('click', function () { var c = document.getElementById(id); if (c) reveal(c); });
+  });
+  var timeline = document.querySelector(opts.timeline), ticking = false;
+  function update() {
+    ticking = false;
+    var r = timeline.getBoundingClientRect(), mid = window.innerHeight * 0.6;
+    var h = Math.max(0, Math.min(r.height, mid - r.top));
+    if (opts.onProgress) opts.onProgress(h, r.height);
+    var current = null;
+    cards.forEach(function (c) { if (c.offsetParent !== null && c.getBoundingClientRect().top < mid) current = c.id; });
+    Object.keys(yearLinks).forEach(function (id) { yearLinks[id].classList.toggle('active', id === current); });
+    if (opts.onYear) opts.onYear(current);
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener('resize', update);
+  update();
+  return { update: update, reveal: reveal, reduce: reduce };
+}
+
+function setupFilters(onChange) {
+  var chips = document.querySelectorAll('.chip');
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var tag = chip.getAttribute('data-tag');
+      chips.forEach(function (c) { c.classList.toggle('active', c === chip); c.setAttribute('aria-pressed', c === chip); });
+      document.querySelectorAll('[data-tags]').forEach(function (a) {
+        var show = tag === 'all' || a.getAttribute('data-tags').split(' ').indexOf(tag) >= 0;
+        a.classList.toggle('filtered', !show);
+      });
+      document.querySelectorAll('[data-year]').forEach(function (y) {
+        y.classList.toggle('filtered', y.querySelectorAll('[data-tags]:not(.filtered)').length === 0);
+      });
+      if (onChange) onChange(tag);
+    });
+  });
+}
+
+function store(key, val) {
+  try { if (val === undefined) return localStorage.getItem(key); localStorage.setItem(key, val); } catch (e) { return null; }
+}
+
+function runBoot() {
+  var boot = document.getElementById('boot');
+  if (!boot) return;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var m = location.search.match(/[?&]boot(?:=(\w+))?/);
+  var STYLES = {
+    x11: {
+      exit: [['blank', 350], ['xroot', 650]], sync: false, delay: 60,
+      lines: [
+        '[    0.000000] Linux version 6.12.0-linuxkit (root@moby) #1 SMP PREEMPT_DYNAMIC',
+        '[    0.081234] virtio_blk virtio1: [vda] qcow2, thin-provisioned 64.0 GiB',
+        '[    0.204511] virtio_net virtio0 eth0: vpnkit: ethernet frames <-> host sockets',
+        '[  OK  ] Started irmin.service - VM configuration watcher.',
+        '[  OK  ] Started vpnkit-dns.service - DNS forwarding via host resolver.',
+        '[  OK  ] Mounted Users.mount - grpcfuse share /Users.',
+        '[  OK  ] Started docker.service - Docker Application Container Engine.',
+        '[  OK  ] Reached target resource-saver.target - Pause VM when idle.',
+        '',
+        ['moby login: ', 'djs55'],
+        ['djs55@moby:~$ ', 'git log --author=djs55 --since=2007 > timeline'],
+        ['djs55@moby:~$ ', 'startx ./timeline'],
+        '',
+        'X.Org X Server 1.21.1.8',
+        'X Protocol Version 11, Revision 0',
+        '(==) Log file: "/home/djs55/.local/share/xorg/Xorg.0.log"'
+      ]
+    },
+    dos: {
+      exit: [['blank', 600]], sync: true, delay: 60,
+      lines: [
+        'Starting MS-DOS...',
+        '',
+        'HIMEM is testing extended memory...done.',
+        '',
+        ['C:\\>', 'hyperv /start linuxkit'],
+        ['C:\\>', 'vpnkit /ethernet /dns'],
+        ['C:\\>', 'grpcfuse /share C:\\USERS'],
+        ['C:\\>', 'git log --author=djs55 --since=2007'],
+        ['C:\\>', 'win']
+      ]
+    },
+    aliens: {
+      exit: [['roll', 800], ['blank', 140]], sync: true,
+      lines: [
+        '[    0.000000] hyperkit: starting LinuxKit VM, 2 vCPUs',
+        '[    0.081234] virtio-blk: qcow2 disk attached (thin-provisioned, 64 GiB)',
+        '[    0.112090] irmin: watching VM configuration',
+        '[    0.204511] vpnkit: ethernet frames <-> host sockets',
+        '[    0.231877] vpnkit: DNS forwarding via host resolver',
+        '[    0.415001] grpcfuse: sharing /Users',
+        '[    0.733420] dockerd: API listening on /var/run/docker.sock',
+        '[    0.901337] resource-saver: will pause VM when idle',
+        '',
+        '$ git log --author=djs55 --since=2007'
+      ]
+    }
+  };
+  var name = (m && m[1]) || boot.getAttribute('data-style');
+  var style = STYLES[name] || STYLES.x11;
+  if (!STYLES[name]) name = 'x11';
+  var key = 'timeline-booted:' + location.pathname, seen = null;
+  try { seen = sessionStorage.getItem(key); } catch (e) {}
+  if (m) seen = null;
+  if (reduce || seen) { boot.remove(); return; }
+  try { sessionStorage.setItem(key, '1'); } catch (e) {}
+
+  boot.className = name;
+  var pre = boot.querySelector('pre'), cur = document.createElement('span'), i = 0, finished = false;
+  cur.className = 'cursor';
+  function finish() {
+    if (finished) return; finished = true;
+    var phases = style.exit.slice();
+    (function step() {
+      var p = phases.shift();
+      if (p) {
+        if (p[0] === 'roll') { var ghost = pre.cloneNode(true); ghost.classList.add('ghost'); boot.appendChild(ghost); }
+        boot.className = name + ' ' + p[0]; setTimeout(step, p[1]); return;
+      }
+      boot.remove();
+      if (style.sync) {
+        document.documentElement.classList.add('boot-sync');
+        setTimeout(function () { document.documentElement.classList.remove('boot-sync'); }, 320);
+      }
+    })();
+  }
+  function html(t) {
+    t = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return t.replace('[  OK  ]', '[<span class="ok">  OK  </span>]');
+  }
+  // commands are typed a character at a time after their prompt
+  function type(text, done) {
+    var j = 0;
+    pre.appendChild(cur);
+    (function tick() {
+      if (finished) return;
+      if (j < text.length) { cur.insertAdjacentText('beforebegin', text[j++]); setTimeout(tick, 10 + Math.random() * 14); }
+      else setTimeout(function () { cur.remove(); done(); }, 90);
+    })();
+  }
+  (function next() {
+    if (finished) return;
+    if (i >= style.lines.length) { finish(); return; }
+    var line = style.lines[i++], last = i === style.lines.length, d = style.delay || 110;
+    function after() {
+      if (last) pre.appendChild(cur); else pre.insertAdjacentText('beforeend', '\n');
+      var wait = last ? 450 : !line ? 40 : /^\[\s+\d/.test(line) ? d * 0.5 : d + Math.random() * d;
+      setTimeout(next, wait);
+    }
+    if (Array.isArray(line)) { pre.insertAdjacentHTML('beforeend', html(line[0])); type(line[1], after); }
+    else { pre.insertAdjacentHTML('beforeend', html(line)); after(); }
+  })();
+  boot.addEventListener('click', finish);
+  document.addEventListener('keydown', finish, { once: true });
+}
+
+(function () {
+  var fill = document.getElementById('fill');
+  var r = setupReveal({ cards: '.zz-year', timeline: '#timeline', onProgress: function (h) { fill.style.height = h + 'px'; } });
+  // Pull each card up alongside the previous one, so the two columns interleave.
+  var zz = document.getElementById('timeline');
+  function pack() {
+    var secs = Array.prototype.slice.call(document.querySelectorAll('.zz-year:not(.filtered)'));
+    secs.forEach(function (s, i) {
+      s.style.marginTop = '';
+      s.classList.toggle('left', i % 2 === 0); s.classList.toggle('right', i % 2 === 1);
+    });
+    zz.style.paddingBottom = '';
+    if (window.innerWidth <= 760) return;
+    var bottom = { left: -1e9, right: -1e9 }, prevTop = -1e9, maxBottom = 0;
+    secs.forEach(function (s) {
+      var side = s.classList.contains('left') ? 'left' : 'right';
+      var want = Math.max(prevTop + 120, bottom[side] + 34, 0);
+      s.style.marginTop = (want - s.offsetTop) + 'px';
+      prevTop = s.offsetTop; bottom[side] = prevTop + s.offsetHeight;
+      maxBottom = Math.max(maxBottom, bottom[side]);
+    });
+    var last = secs[secs.length - 1];
+    if (last) zz.style.paddingBottom = (40 + maxBottom - (last.offsetTop + last.offsetHeight)) + 'px';
+    r.update();
+  }
+  pack();
+  window.addEventListener('resize', pack);
+  if (document.fonts) document.fonts.ready.then(pack);
+  setupFilters(function () { pack(); document.querySelectorAll('.zz-year').forEach(r.reveal); r.update(); });
+})();
+runBoot();</script>
+  </body>
+</html>

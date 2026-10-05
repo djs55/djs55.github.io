@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Docker timeline page.
+"""Build the Systems timeline page.
 
 The content lives in timeline-source.html (plain markup, one terminal-card
 per year). This script only changes the presentation, so edit the content
@@ -13,6 +13,7 @@ in another style.
 
 An <article> can override the automatic theme tags with
 data-tags="networking storage" (see TAGS below for the names).
+Linked images in <figure class="thumbnail"> are preserved in the generated page.
 """
 import base64
 import html
@@ -35,7 +36,7 @@ LINK_KINDS = [
     ("issue", r"github\.com/[^/]+/[^/]+/issues/"),
     ("release", r"release-notes|previous-versions"),
     ("code", r"github\.com/"),
-    ("talk", r"youtube\.com|/slides/"),
+    ("talk", r"youtube\.com|crank\.recoil\.org|/slides/"),
     ("award", r"award"),
     ("paper", r"\.pdf$|doi\.org|cacm\.acm\.org|icfp25"),
     ("news", r"press-release|appleinsider|cst\.cam\.ac\.uk/news|support\.apple\.com|/notes/"),
@@ -81,7 +82,7 @@ def parse_article(a):
             links.append({"href": href, "text": strip_tags(text).strip("[]"), "kind": link_kind(href)})
     body = re.sub(r'<p class="links">.*?</p>', "", inner, flags=re.S)
     body = re.sub(r"<h3>.*?</h3>", "", body, flags=re.S).strip()
-    paras = re.findall(r"<p>.*?</p>", body, re.S)
+    paras = re.findall(r'<p>.*?</p>|<figure class="thumbnail">.*?</figure>', body, re.S)
 
     tm = re.search(r'data-tags="([^"]*)"', attrs)
     if tm:
@@ -132,7 +133,7 @@ ICONS = """
 </svg>"""
 
 COMMON_CSS = """
-.lk { display: inline-flex; align-items: center; gap: 4px; margin-right: 0.9em; white-space: nowrap; }
+.lk { display: inline-flex; align-items: center; gap: 4px; margin-right: 0.9em; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .lk svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .links { color: var(--secondary-color); font-size: 0.93em; line-height: 1.7em; }
 .tag { display: inline-block; font-size: 0.78em; line-height: 1.5; padding: 0 6px; margin: 0 4px 2px 0;
@@ -146,14 +147,14 @@ def head(title, extra_css, theme_color="#fff", color_scheme="light dark"):
   <head>
     <meta charset="utf-8">
     <title>{title}</title>
-    <meta name="description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta name="description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta name="author" content="Dave Scott">
     <meta name="twitter:title" content="{title}">
-    <meta name="twitter:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta name="twitter:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta property="og:site_name" content="Dave Scott">
     <meta property="og:type" content="object">
     <meta property="og:title" content="{title}">
-    <meta property="og:description" content="Things Dave Scott has worked on at Docker, from 2026 back to 2015.">
+    <meta property="og:description" content="Work on Docker, MirageOS, OCaml and Xapi / Xen, from 2026 back to 2007.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" href="/favicon.ico">
     <meta name="theme-color" content="#fff" media="(prefers-color-scheme: light)">
@@ -288,7 +289,7 @@ A_CSS = """
 .years li { margin: 0; padding: 0; } .years li::after { content: none; }
 .years a.active { background: var(--primary-color); color: var(--invert-font-color); }
 
-.zz { position: relative; padding: 10px 0 40px; }
+.zz { display: flex; flex-direction: column; position: relative; padding: 10px 0 40px; }
 .zz-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--secondary-color); opacity: .5; }
 .zz-fill { position: absolute; left: 50%; top: 0; width: 2px; margin-left: -1px; height: 0; background: var(--primary-color); }
 .zz-year { position: relative; display: flex; margin: 0 0 34px; scroll-margin-top: 20px; pointer-events: none; }
@@ -303,11 +304,20 @@ A_CSS = """
 .zz-year.left .zz-card::after { right: -42px; } .zz-year.right .zz-card::after { left: -42px; }
 .zz-card > header { text-align: left; padding-left: 10px; transition: background-color .4s ease; }
 .zz-year.seen .zz-card > header { background: var(--font-color); color: var(--background-color); }
-.zz-card article { margin-bottom: 18px; transition: opacity .3s ease; }
+.zz-card article { display: flow-root; margin-bottom: 18px; transition: opacity .3s ease; }
 .zz-card article:last-child { margin-bottom: 0; }
 .zz-card h3 { font-size: var(--global-font-size); margin: 0 0 4px; padding: 0; }
 .zz-card h3 .date { color: var(--secondary-color); font-weight: normal; }
 .zz-card p { margin-bottom: .4em; }
+.thumbnail { float: right; width: 112px; max-width: 38%; margin: 4px 0 12px 16px; }
+.thumbnail a { display: block; background: #fff; }
+.thumbnail img { display: block; width: 100%; height: auto; max-height: 170px; object-fit: contain;
+  border: 1px solid var(--secondary-color); border-radius: 2px; }
+.thumbnail a:hover img { border-color: var(--primary-color); }
+.links { clear: both; }
+@media (max-width: 480px) {
+  .thumbnail { float: none; max-width: 100%; margin: 10px 0 14px; }
+}
 .meta { margin: 0 0 4px; }
 .filtered { display: none !important; }
 
@@ -367,7 +377,7 @@ A_JS = """
 """
 
 
-def render_a(d, boot=False, title="Dave Scott: Docker timeline (zigzag)"):
+def render_a(d, boot=False, title="Dave Scott: Systems timeline (zigzag)"):
     out = [head(title, (BOOT_CSS if boot else "") + A_CSS), '  <body class="terminal">', ICONS, *([boot_html()] if boot else []),
            nav('<li><button type="button" class="theme-toggle" id="theme">theme: auto</button></li>'),
            '    <div class="container">',
@@ -496,7 +506,7 @@ function runBoot() {
         '[  OK  ] Reached target resource-saver.target - Pause VM when idle.',
         '',
         ['moby login: ', 'djs55'],
-        ['djs55@moby:~$ ', 'git log --author=djs55 --since=2015 > timeline'],
+        ['djs55@moby:~$ ', 'git log --author=djs55 --since=2007 > timeline'],
         ['djs55@moby:~$ ', 'startx ./timeline'],
         '',
         'X.Org X Server 1.21.1.8',
@@ -514,7 +524,7 @@ function runBoot() {
         ['C:\\>', 'hyperv /start linuxkit'],
         ['C:\\>', 'vpnkit /ethernet /dns'],
         ['C:\\>', 'grpcfuse /share C:\\USERS'],
-        ['C:\\>', 'git log --author=djs55 --since=2015'],
+        ['C:\\>', 'git log --author=djs55 --since=2007'],
         ['C:\\>', 'win']
       ]
     },
@@ -530,7 +540,7 @@ function runBoot() {
         '[    0.733420] dockerd: API listening on /var/run/docker.sock',
         '[    0.901337] resource-saver: will pause VM when idle',
         '',
-        '$ git log --author=djs55 --since=2015'
+        '$ git log --author=djs55 --since=2007'
       ]
     }
   };
@@ -597,7 +607,7 @@ function runBoot() {
 
 def main():
     d = load()
-    LIVE.write_text(render_a(d, boot=True, title="Dave Scott: Docker timeline"))
+    LIVE.write_text(render_a(d, boot=True, title="Dave Scott: Systems timeline"))
     n = sum(len(y["articles"]) for y in d["years"])
     print(f"built {LIVE.name} from {len(d['years'])} years, {n} entries")
     for y in d["years"]:
