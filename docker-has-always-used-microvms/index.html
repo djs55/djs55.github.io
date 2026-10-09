@@ -49,7 +49,8 @@
       .microvm-timeline .milestone-label { color: var(--primary-color); font-size: 0.8rem; }
       .microvm-timeline li:last-child .milestone { padding-bottom: 0; border-left-color: transparent; }
       .microvm-timeline li:last-child .milestone-date { padding-bottom: 0; }
-      iframe { max-width: 100%; aspect-ratio: 16 / 9; height: auto; }
+      iframe { max-width: 100%; }
+      iframe.video-embed { aspect-ratio: 16 / 9; height: auto; }
       @media (max-width: 480px) {
         .microvm-timeline li { grid-template-columns: 5.5rem minmax(0, 1fr); }
         .microvm-timeline .milestone-date { padding-right: 0.5rem; font-size: 0.8rem; }
@@ -177,6 +178,13 @@
             </div>
           </li>
           <li>
+            <time class="milestone-date" datetime="2015">2015</time>
+            <div class="milestone">
+              <strong><a href="https://x.com/solomonstre/status/961321299413893122">Project Piñata: Docker for Mac begins</a></strong>
+              <p>A skunkworks project to bring Docker to more developers, and Docker's first use of unikernel technology. Solomon Hykes recalled its origins in 2018.</p>
+            </div>
+          </li>
+          <li>
             <time class="milestone-date" datetime="2016-01-21">21 Jan 2016</time>
             <div class="milestone">
               <strong><a href="https://techcrunch.com/2016/01/21/docker-acquires-unikernel-systems-as-it-looks-beyond-containers/">Docker acquires Unikernel Systems</a></strong>
@@ -253,6 +261,18 @@
 
       <h1>Docker for Mac in 2015-2016</h1>
       <p>
+        Docker for Mac began in 2015 as <strong>Project Piñata</strong>, a skunkworks project
+        to make Docker useful to more developers. In this 2018 tweet, Solomon Hykes recalls
+        Docker's first use of unikernel technology and the collaboration between Paris,
+        Cambridge and San Francisco:
+      </p>
+      <blockquote class="twitter-tweet" data-dnt="true">
+        <p lang="en" dir="ltr">&ldquo;It was our first use of Unikernel tech, and our first Paris/Cambridge/SF collaboration.&rdquo;</p>
+        &mdash; Solomon Hykes (@solomonstre)
+        <a href="https://x.com/solomonstre/status/961321299413893122">February 7, 2018</a>
+      </blockquote>
+      <script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
+      <p>
         For Docker for Mac (later renamed Docker Desktop) this allowed:
       </p>
       <ul>
@@ -274,7 +294,7 @@
       <p>
         Here's the OG 2015 Docker for Mac beta installation experience:
         </p>
-        <iframe title="The OG Docker for Mac beta installation experience (2015)" width="560" height="315" src="https://crank.recoil.org/videos/embed/3re5G972kkqjzzujxHQ3E6" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" style="border: 0px;"></iframe>
+        <iframe class="video-embed" title="The OG Docker for Mac beta installation experience (2015)" width="560" height="315" src="https://crank.recoil.org/videos/embed/3re5G972kkqjzzujxHQ3E6" allow="fullscreen" sandbox="allow-same-origin allow-scripts allow-popups allow-forms" style="border: 0px;"></iframe>
       <p>
       </p>
       <h1>And now in 2026</h1>
@@ -322,6 +342,7 @@
       <li>2026-10-04: added more history and cool install video </li>
       <li>2026-10-05: added an inline timeline, with earlier systems context, the Bitcoin Piñata security challenge, Solo5 + ukvm integration and Docker for Mac release milestones</li>
       <li>2026-10-09: added Simon Crosby's 2012 description of Bromium's micro-VMs, Intel Clear Containers and Kata Containers to the timeline</li>
+      <li>2026-10-09: added Project Piñata's 2015 origins and Solomon Hykes's tweet about the first use of unikernel technology at Docker</li>
         </ul>
     </div>
   </body>
